@@ -94,3 +94,29 @@ chmod +x run.sh stop.sh
 tail -f logs/server.log
 ```
 
+### 服务器上用 Git 更新（推荐）
+
+若目录是 rsync 上传的，还没有 `.git`，先初始化一次（**保留 venv 和数据库**）：
+
+```bash
+cd ~/kahoot
+chmod +x server_init_git.sh server_update.sh
+./server_init_git.sh
+```
+
+之后每次更新：
+
+```bash
+cd ~/kahoot
+./server_update.sh 5002
+```
+
+或全新克隆：
+
+```bash
+cd ~
+git clone https://github.com/garywanggali/kahoot.git kahoot-new
+cd kahoot-new
+./run.sh 5002
+```
+
