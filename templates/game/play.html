@@ -16,6 +16,9 @@
     <div id="question-screen" class="question-screen hidden">
         <p class="question-number" id="question-number"></p>
         <div class="timer-bar"><div class="timer-fill" id="timer-fill"></div></div>
+        <div id="question-image-wrap" class="question-image-wrap hidden">
+            <img id="question-image" src="" alt="题目图片">
+        </div>
         <h2 class="question-text" id="question-text"></h2>
         <div id="options-container"></div>
         <p id="answer-feedback"></p>
@@ -161,6 +164,16 @@ function showQuestion(state) {
     document.getElementById('question-text').textContent = q.text;
     document.getElementById('answer-feedback').textContent = '';
     document.querySelector('.timer-bar').style.visibility = 'visible';
+
+    const imgWrap = document.getElementById('question-image-wrap');
+    const imgEl = document.getElementById('question-image');
+    if (q.image_url) {
+        imgEl.src = q.image_url;
+        imgWrap.classList.remove('hidden');
+    } else {
+        imgEl.removeAttribute('src');
+        imgWrap.classList.add('hidden');
+    }
 
     const container = document.getElementById('options-container');
     container.innerHTML = '';

@@ -15,6 +15,7 @@
         <thead>
             <tr>
                 <th>题目</th>
+                <th>图片</th>
                 <th>正确答案</th>
                 <th>时限</th>
                 <th>操作</th>
@@ -24,6 +25,7 @@
             {% for q in questions %}
             <tr>
                 <td>{{ q.text|truncatechars:60 }}</td>
+                <td>{% if q.image %}有{% else %}—{% endif %}</td>
                 <td>{{ q.correct_option }}</td>
                 <td>{{ q.time_limit }}s</td>
                 <td>

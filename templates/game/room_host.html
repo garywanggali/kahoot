@@ -26,6 +26,9 @@
     <div id="host-playing" class="card hidden">
         <p class="question-number" id="host-question-number"></p>
         <div class="timer-bar"><div class="timer-fill" id="host-timer-fill"></div></div>
+        <div id="host-question-image-wrap" class="question-image-wrap hidden">
+            <img id="host-question-image" src="" alt="题目图片">
+        </div>
         <h2 class="question-text" id="host-question-text"></h2>
         <div id="host-options"></div>
         <p class="player-count section-gap">已答题: <span id="answer-count">0</span> / <span id="total-players">0</span></p>
@@ -166,6 +169,16 @@ function showHostQuestion(state) {
     document.getElementById('host-question-number').textContent =
         `第 ${state.current_question_index + 1} / ${state.total_questions} 题`;
     document.getElementById('host-question-text').textContent = q.text;
+
+    const imgWrap = document.getElementById('host-question-image-wrap');
+    const imgEl = document.getElementById('host-question-image');
+    if (q.image_url) {
+        imgEl.src = q.image_url;
+        imgWrap.classList.remove('hidden');
+    } else {
+        imgEl.removeAttribute('src');
+        imgWrap.classList.add('hidden');
+    }
 
     const container = document.getElementById('host-options');
     const colors = ['option-a', 'option-b', 'option-c', 'option-d'];

@@ -9,7 +9,7 @@
 </div>
 
 <div class="card">
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="form-group">
             <label for="text">题目</label>
@@ -17,22 +17,36 @@
                    value="{{ question.text|default:'' }}" required>
         </div>
         <div class="form-group">
-            <label for="option_a">选项 A (红色)</label>
+            <label for="image">题目图片（可选）</label>
+            <input type="file" id="image" name="image" class="form-control"
+                   accept="image/jpeg,image/png,image/gif,image/webp">
+            <p class="form-hint">JPG / PNG / GIF / WEBP，最大 {{ max_image_mb|default:2 }}MB</p>
+            {% if question.image %}
+            <div class="image-preview">
+                <img src="{{ question.image.url }}" alt="当前题目图片">
+            </div>
+            <label class="checkbox-inline">
+                <input type="checkbox" name="remove_image" value="1"> 删除当前图片
+            </label>
+            {% endif %}
+        </div>
+        <div class="form-group">
+            <label for="option_a">选项 A</label>
             <input type="text" id="option_a" name="option_a" class="form-control"
                    value="{{ question.option_a|default:'' }}" required>
         </div>
         <div class="form-group">
-            <label for="option_b">选项 B (蓝色)</label>
+            <label for="option_b">选项 B</label>
             <input type="text" id="option_b" name="option_b" class="form-control"
                    value="{{ question.option_b|default:'' }}" required>
         </div>
         <div class="form-group">
-            <label for="option_c">选项 C (黄色)</label>
+            <label for="option_c">选项 C</label>
             <input type="text" id="option_c" name="option_c" class="form-control"
                    value="{{ question.option_c|default:'' }}" required>
         </div>
         <div class="form-group">
-            <label for="option_d">选项 D (绿色)</label>
+            <label for="option_d">选项 D</label>
             <input type="text" id="option_d" name="option_d" class="form-control"
                    value="{{ question.option_d|default:'' }}" required>
         </div>

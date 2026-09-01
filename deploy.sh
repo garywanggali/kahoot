@@ -18,6 +18,7 @@ rsync -avz --delete \
   --exclude .git \
   --exclude logs \
   --exclude staticfiles \
+  --exclude media \
   ./ "${SERVER}:${REMOTE_DIR}/"
 
 echo "==> Restart (skip pip if deps already installed)..."

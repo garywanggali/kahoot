@@ -2,11 +2,13 @@ import json
 
 from django.conf import settings
 from django.contrib import messages
+from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .models import Answer, Player, Question, Room, RoomQuestion
 from .utils import get_room_state
+from .validators import MAX_QUESTION_IMAGE_BYTES, validate_question_image
 
 
 def index(request):
@@ -100,7 +102,10 @@ def question_create(request):
         return _require_teacher(request)
     if request.method == 'POST':
         return _save_question(request)
-    return render(request, 'game/question_form.html', {'action': 'create'})
+    return render(request, 'game/question_form.html', {
+        'action': 'create',
+        'max_image_mb': MAX_QUESTION_IMAGE_BYTES // (1024 * 1024),
+    })
 
 
 def question_edit(request, pk):
@@ -112,6 +117,7 @@ def question_edit(request, pk):
     return render(request, 'game/question_form.html', {
         'action': 'edit',
         'question': question,
+        'max_image_mb': MAX_QUESTION_IMAGE_BYTES // (1024 * 1024),
     })
 
 
@@ -134,16 +140,28 @@ def _save_question(request, question=None):
     option_d = request.POST.get('option_d', '').strip()
     correct_option = request.POST.get('correct_option', 'A').upper()
     time_limit = int(request.POST.get('time_limit', 20) or 20)
+    image_file = request.FILES.get('image')
+    remove_image = request.POST.get('remove_image') == '1'
+
+    form_ctx = {
+        'action': 'edit' if question else 'create',
+        'question': question,
+        'max_image_mb': MAX_QUESTION_IMAGE_BYTES // (1024 * 1024),
+    }
 
     if not all([text, option_a, option_b, option_c, option_d]):
         messages.error(request, '请填写所有字段')
-        return render(request, 'game/question_form.html', {
-            'action': 'edit' if question else 'create',
-            'question': question,
-        })
+        return render(request, 'game/question_form.html', form_ctx)
 
     if correct_option not in ('A', 'B', 'C', 'D'):
         correct_option = 'A'
+
+    if image_file:
+        try:
+            validate_question_image(image_file)
+        except ValidationError as e:
+            messages.error(request, e.messages[0])
+            return render(request, 'game/question_form.html', form_ctx)
 
     if question:
         question.text = text
@@ -153,6 +171,13 @@ def _save_question(request, question=None):
         question.option_d = option_d
         question.correct_option = correct_option
         question.time_limit = max(5, min(120, time_limit))
+        if remove_image and question.image:
+            question.image.delete(save=False)
+            question.image = None
+        if image_file:
+            if question.image:
+                question.image.delete(save=False)
+            question.image = image_file
         question.save()
         messages.success(request, '题目已更新')
     else:
@@ -164,6 +189,7 @@ def _save_question(request, question=None):
             option_d=option_d,
             correct_option=correct_option,
             time_limit=max(5, min(120, time_limit)),
+            image=image_file,
         )
         messages.success(request, '题目已创建')
 

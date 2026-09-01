@@ -1,6 +1,7 @@
 from django.utils import timezone
 
 from .models import Answer, Player, Room
+from .validators import MAX_QUESTION_IMAGE_BYTES
 
 
 def calculate_points(time_limit_seconds, response_time_ms, is_correct):
@@ -34,13 +35,16 @@ def get_room_state(room):
         'leaderboard': get_leaderboard(room),
     }
     if current_q and room.status in (Room.STATUS_PLAYING, Room.STATUS_LEADERBOARD):
-        state['question'] = {
+        question_data = {
             'id': current_q.id,
             'text': current_q.text,
             'options': current_q.get_options(),
             'time_limit': current_q.time_limit,
             'correct_option': current_q.correct_option if room.status == Room.STATUS_LEADERBOARD else None,
         }
+        if current_q.image:
+            question_data['image_url'] = current_q.image.url
+        state['question'] = question_data
     return state
 
 

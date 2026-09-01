@@ -3,6 +3,8 @@ import string
 
 from django.db import models
 
+from .validators import validate_question_image
+
 
 class Question(models.Model):
     OPTION_CHOICES = [
@@ -13,6 +15,13 @@ class Question(models.Model):
     ]
 
     text = models.CharField('题目', max_length=500)
+    image = models.ImageField(
+        '题目图片',
+        upload_to='questions/',
+        blank=True,
+        null=True,
+        validators=[validate_question_image],
+    )
     option_a = models.CharField('选项 A', max_length=200)
     option_b = models.CharField('选项 B', max_length=200)
     option_c = models.CharField('选项 C', max_length=200)
