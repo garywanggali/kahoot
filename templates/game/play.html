@@ -1,0 +1,334 @@
+{% extends "base.html" %}
+
+{% block title %}游戏 - {{ room.code }}{% endblock %}
+
+{% block content %}
+<div id="app">
+    <div id="waiting-screen" class="waiting-screen">
+        <div class="logo logo-sm">Ka<span>hoo</span>t!</div>
+        <p class="player-count">你是 <strong id="player-nickname">{{ nickname }}</strong></p>
+        <p class="player-count">房间号: <strong>{{ room.code }}</strong></p>
+        <h2 class="page-title section-gap-lg">等待老师开始游戏...</h2>
+        <div class="player-count">已加入: <span id="player-count">0</span> 人</div>
+        <div id="waiting-leaderboard" class="section-gap-lg"></div>
+    </div>
+
+    <div id="question-screen" class="question-screen hidden">
+        <p class="question-number" id="question-number"></p>
+        <div class="timer-bar"><div class="timer-fill" id="timer-fill"></div></div>
+        <h2 class="question-text" id="question-text"></h2>
+        <div id="options-container"></div>
+        <p id="answer-feedback"></p>
+    </div>
+
+    <div id="leaderboard-screen" class="leaderboard-screen hidden">
+        <h2 class="page-title">排行榜</h2>
+        <div id="leaderboard-list"></div>
+        <p class="text-muted-block section-gap">等待下一题...</p>
+    </div>
+
+    <div id="ended-screen" class="ended-screen hidden">
+        <h2 class="page-title">游戏结束</h2>
+        <h3 class="page-title">最终排名</h3>
+        <div id="final-leaderboard"></div>
+        <a href="{% url 'index' %}" class="btn btn-primary section-gap-lg">返回首页</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const ROOM_CODE = '{{ room.code }}';
+const NICKNAME = '{{ nickname }}';
+const INITIAL_STATE = {{ initial_state_json|safe }};
+let ws = null;
+let sessionId = localStorage.getItem('kahoot_session_' + ROOM_CODE) || '';
+let currentQuestion = null;
+let currentQuestionId = null;
+let questionStartTime = null;
+let timerInterval = null;
+let hasAnswered = false;
+let lastAnswerResult = { answered: false, is_correct: false, points: 0, selected_option: null };
+let resultRevealTimer = null;
+const pendingActions = [];
+
+function sendWs(data) {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify(data));
+    } else {
+        pendingActions.push(data);
+    }
+}
+
+function connect() {
+    if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+        return;
+    }
+    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    ws = new WebSocket(`${protocol}//${location.host}/ws/room/${ROOM_CODE}/`);
+
+    ws.onopen = () => {
+        pendingActions.forEach(d => ws.send(JSON.stringify(d)));
+        pendingActions.length = 0;
+        ws.send(JSON.stringify({
+            action: 'join',
+            nickname: NICKNAME,
+            session_id: sessionId,
+        }));
+    };
+
+    ws.onmessage = (e) => {
+        const msg = JSON.parse(e.data);
+        handleEvent(msg.event, msg.data);
+    };
+
+    ws.onclose = () => {
+        setTimeout(connect, 2000);
+    };
+}
+
+function handleEvent(event, data) {
+    switch (event) {
+        case 'joined':
+            sessionId = data.session_id;
+            localStorage.setItem('kahoot_session_' + ROOM_CODE, sessionId);
+            applyState(data.state);
+            break;
+        case 'player_joined':
+            document.getElementById('player-count').textContent = data.player_count;
+            renderLeaderboard(data.leaderboard, 'waiting-leaderboard');
+            break;
+        case 'game_started':
+        case 'question_started':
+            applyState(data);
+            break;
+        case 'question_ended':
+            showResultThenLeaderboard(data);
+            break;
+        case 'game_ended':
+            applyState(data);
+            break;
+        case 'answer_received':
+            showAnswerFeedback(data);
+            break;
+        case 'error':
+            alert(data.message);
+            break;
+    }
+}
+
+function applyState(state) {
+    document.getElementById('player-count').textContent = state.player_count;
+
+    hideAllScreens();
+
+    if (state.status === 'waiting') {
+        document.getElementById('waiting-screen').classList.remove('hidden');
+        renderLeaderboard(state.leaderboard, 'waiting-leaderboard');
+    } else if (state.status === 'playing' && state.question) {
+        document.getElementById('question-screen').classList.remove('hidden');
+        showQuestion(state);
+    } else if (state.status === 'leaderboard') {
+        applyLeaderboardState(state);
+    } else if (state.status === 'ended') {
+        document.getElementById('ended-screen').classList.remove('hidden');
+        renderLeaderboard(state.leaderboard, 'final-leaderboard');
+        clearTimer();
+    }
+}
+
+function hideAllScreens() {
+    ['waiting-screen', 'question-screen', 'leaderboard-screen', 'ended-screen']
+        .forEach(id => document.getElementById(id).classList.add('hidden'));
+}
+
+function showQuestion(state) {
+    const q = state.question;
+    if (currentQuestionId === q.id && hasAnswered) {
+        return;
+    }
+    if (currentQuestionId !== q.id) {
+        currentQuestionId = q.id;
+        hasAnswered = false;
+        lastAnswerResult = { answered: false, is_correct: false, points: 0, selected_option: null };
+        questionStartTime = Date.now();
+        clearResultRevealTimer();
+    }
+    currentQuestion = q;
+
+    document.getElementById('question-number').textContent =
+        `第 ${state.current_question_index + 1} / ${state.total_questions} 题`;
+    document.getElementById('question-text').textContent = q.text;
+    document.getElementById('answer-feedback').textContent = '';
+    document.querySelector('.timer-bar').style.visibility = 'visible';
+
+    const container = document.getElementById('options-container');
+    container.innerHTML = '';
+    const colors = ['option-a', 'option-b', 'option-c', 'option-d'];
+
+    q.options.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = `option-btn ${colors[i]}`;
+        btn.textContent = opt.text;
+        btn.dataset.key = opt.key;
+        btn.onclick = () => submitAnswer(opt.key, btn);
+        container.appendChild(btn);
+    });
+
+    startTimer(q.time_limit);
+}
+
+function startTimer(seconds) {
+    clearTimer();
+    const fill = document.getElementById('timer-fill');
+    fill.style.width = '100%';
+    let remaining = seconds;
+
+    timerInterval = setInterval(() => {
+        remaining -= 0.1;
+        const pct = (remaining / seconds) * 100;
+        fill.style.width = pct + '%';
+        if (remaining <= 0) {
+            clearTimer();
+            if (!hasAnswered) {
+                hasAnswered = true;
+                document.getElementById('answer-feedback').textContent = '时间到';
+                disableOptions();
+            }
+        }
+    }, 100);
+}
+
+function clearTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+}
+
+function submitAnswer(key, btn) {
+    if (hasAnswered) return;
+    hasAnswered = true;
+    btn.classList.add('selected');
+    disableOptions();
+
+    const responseTime = Date.now() - questionStartTime;
+    sendWs({
+        action: 'submit_answer',
+        selected_option: key,
+        response_time_ms: responseTime,
+    });
+}
+
+function disableOptions() {
+    document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+}
+
+function showAnswerFeedback(data) {
+    lastAnswerResult = {
+        answered: true,
+        is_correct: data.is_correct,
+        points: data.points,
+        selected_option: data.selected_option,
+    };
+    const fb = document.getElementById('answer-feedback');
+    if (data.is_correct) {
+        fb.textContent = `正确 +${data.points}`;
+        fb.style.color = '';
+    } else {
+        fb.textContent = '错误';
+        fb.style.color = '';
+    }
+}
+
+function clearResultRevealTimer() {
+    if (resultRevealTimer) {
+        clearTimeout(resultRevealTimer);
+        resultRevealTimer = null;
+    }
+}
+
+function showResultThenLeaderboard(state) {
+    clearResultRevealTimer();
+    clearTimer();
+    document.getElementById('player-count').textContent = state.player_count;
+
+    hideAllScreens();
+    document.getElementById('question-screen').classList.remove('hidden');
+    document.querySelector('.timer-bar').style.visibility = 'hidden';
+    disableOptions();
+
+    const correctKey = state.question?.correct_option;
+    if (correctKey) {
+        highlightCorrectAnswer(correctKey);
+    }
+
+    showResultMessage(state);
+
+    resultRevealTimer = setTimeout(() => {
+        resultRevealTimer = null;
+        applyLeaderboardState(state);
+    }, 3000);
+}
+
+function showResultMessage(state) {
+    const fb = document.getElementById('answer-feedback');
+    const correctLabel = state.question?.correct_option || '';
+
+    if (lastAnswerResult.answered) {
+        if (lastAnswerResult.is_correct) {
+            fb.innerHTML = `
+                <div class="result-big correct">回答正确</div>
+                <div class="result-points">+${lastAnswerResult.points}</div>
+            `;
+        } else {
+            fb.innerHTML = `
+                <div class="result-big wrong">回答错误</div>
+                <div class="result-hint">正确答案 ${correctLabel}</div>
+            `;
+        }
+    } else {
+        fb.innerHTML = `
+            <div class="result-big wrong">时间到</div>
+            <div class="result-hint">${correctLabel ? `正确答案 ${correctLabel}` : '未作答'}</div>
+        `;
+    }
+    fb.innerHTML += '<div class="result-hint" style="margin-top:1rem;">即将显示排行榜...</div>';
+}
+
+function applyLeaderboardState(state) {
+    hideAllScreens();
+    document.querySelector('.timer-bar').style.visibility = 'visible';
+    document.getElementById('leaderboard-screen').classList.remove('hidden');
+    renderLeaderboard(state.leaderboard, 'leaderboard-list');
+}
+
+function highlightCorrectAnswer(correctKey) {
+    document.querySelectorAll('.option-btn').forEach(btn => {
+        if (btn.dataset.key === correctKey) {
+            btn.classList.add('correct');
+        } else if (btn.classList.contains('selected')) {
+            btn.classList.add('wrong');
+        }
+    });
+}
+
+function renderLeaderboard(leaderboard, containerId) {
+    const container = document.getElementById(containerId);
+    if (!leaderboard || leaderboard.length === 0) {
+        container.innerHTML = '<p class="text-muted-block">暂无玩家</p>';
+        return;
+    }
+    container.innerHTML = leaderboard.map(p => `
+        <div class="leaderboard-item">
+            <span class="leaderboard-rank">#${p.rank}</span>
+            <span class="leaderboard-name">${p.nickname}</span>
+            <span class="leaderboard-score">${p.score}</span>
+        </div>
+    `).join('');
+}
+
+applyState(INITIAL_STATE);
+connect();
+</script>
+{% endblock %}

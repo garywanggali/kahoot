@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block title %}主持游戏 - {{ room.code }}{% endblock %}
+
+{% block content %}
+<div id="host-app">
+    <div class="logo logo-sm">主持游戏</div>
+
+    <div id="host-waiting" class="card">
+        <h3>{{ room.name }}</h3>
+        <p class="room-code-display">{{ room.code }}</p>
+        <p class="player-count">让学生输入房间号加入</p>
+        <p class="player-count">已加入: <span id="host-player-count">0</span> 人</p>
+        <p class="player-count">共 <strong>{{ questions|length }}</strong> 道题</p>
+        <div id="host-waiting-leaderboard" class="section-gap"></div>
+        <div class="host-controls">
+            <button id="btn-start" class="btn btn-primary" onclick="startGame()">开始游戏</button>
+            <form method="post" action="{% url 'room_reset' room.pk %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline" onclick="return confirm('重置房间？将清空分数和答题记录')">重置房间</button>
+            </form>
+        </div>
+        <p id="conn-status" class="conn-status">连接中...</p>
+    </div>
+
+    <div id="host-playing" class="card hidden">
+        <p class="question-number" id="host-question-number"></p>
+        <div class="timer-bar"><div class="timer-fill" id="host-timer-fill"></div></div>
+        <h2 class="question-text" id="host-question-text"></h2>
+        <div id="host-options"></div>
+        <p class="player-count section-gap">已答题: <span id="answer-count">0</span> / <span id="total-players">0</span></p>
+        <div class="host-controls">
+            <button class="btn btn-warning" onclick="endQuestion()">结束本题 & 显示排行</button>
+        </div>
+    </div>
+
+    <div id="host-leaderboard" class="card hidden">
+        <h2 class="page-title">排行榜</h2>
+        <div id="host-leaderboard-list"></div>
+        <div class="host-controls">
+            <button id="btn-next" class="btn btn-primary" onclick="nextQuestion()">下一题</button>
+        </div>
+    </div>
+
+    <div id="host-ended" class="card hidden">
+        <h2 class="page-title">游戏结束</h2>
+        <h3 class="page-title">最终排名</h3>
+        <div id="host-final-leaderboard"></div>
+        <div class="host-controls">
+            <a href="{% url 'teacher_dashboard' %}" class="btn btn-primary">返回控制台</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const ROOM_CODE = '{{ room.code }}';
+const INITIAL_STATE = {{ initial_state_json|safe }};
+let ws = null;
+let hostTimerInterval = null;
+let currentHostQuestionId = null;
+let wsConnected = false;
+const pendingActions = [];
+
+function setConnStatus(text) {
+    const el = document.getElementById('conn-status');
+    if (el) el.textContent = text;
+}
+
+function sendWs(data) {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify(data));
+    } else {
+        pendingActions.push(data);
+        setConnStatus('连接中，操作将稍后发送...');
+    }
+}
+
+function connect() {
+    if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+        return;
+    }
+    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    ws = new WebSocket(`${protocol}//${location.host}/ws/room/${ROOM_CODE}/`);
+
+    ws.onopen = () => {
+        wsConnected = true;
+        setConnStatus('已连接');
+        pendingActions.forEach(d => ws.send(JSON.stringify(d)));
+        pendingActions.length = 0;
+        ws.send(JSON.stringify({ action: 'get_state' }));
+    };
+
+    ws.onmessage = (e) => {
+        const msg = JSON.parse(e.data);
+        handleHostEvent(msg.event, msg.data);
+    };
+
+    ws.onerror = () => setConnStatus('连接异常，正在重试...');
+    ws.onclose = () => {
+        wsConnected = false;
+        setConnStatus('连接断开，正在重连...');
+        setTimeout(connect, 2000);
+    };
+}
+
+function handleHostEvent(event, data) {
+    switch (event) {
+        case 'player_joined':
+            document.getElementById('host-player-count').textContent = data.player_count;
+            document.getElementById('total-players').textContent = data.player_count;
+            if (!document.getElementById('host-waiting').classList.contains('hidden')) {
+                renderLeaderboard(data.leaderboard, 'host-waiting-leaderboard');
+            }
+            break;
+        case 'state':
+        case 'game_started':
+        case 'question_started':
+        case 'question_ended':
+        case 'game_ended':
+            applyHostState(data);
+            break;
+    }
+}
+
+function applyHostState(state) {
+    document.getElementById('host-player-count').textContent = state.player_count;
+    document.getElementById('total-players').textContent = state.player_count;
+
+    hideHostScreens();
+
+    if (state.status === 'waiting') {
+        document.getElementById('host-waiting').classList.remove('hidden');
+        renderLeaderboard(state.leaderboard, 'host-waiting-leaderboard');
+    } else if (state.status === 'playing' && state.question) {
+        document.getElementById('host-playing').classList.remove('hidden');
+        showHostQuestion(state);
+    } else if (state.status === 'leaderboard') {
+        currentHostQuestionId = null;
+        document.getElementById('host-leaderboard').classList.remove('hidden');
+        renderLeaderboard(state.leaderboard, 'host-leaderboard-list');
+        const btn = document.getElementById('btn-next');
+        if (state.current_question_index + 1 >= state.total_questions) {
+            btn.textContent = '结束游戏';
+        } else {
+            btn.textContent = '下一题';
+        }
+    } else if (state.status === 'ended') {
+        document.getElementById('host-ended').classList.remove('hidden');
+        renderLeaderboard(state.leaderboard, 'host-final-leaderboard');
+    }
+}
+
+function hideHostScreens() {
+    clearHostTimer();
+    ['host-waiting', 'host-playing', 'host-leaderboard', 'host-ended']
+        .forEach(id => document.getElementById(id).classList.add('hidden'));
+}
+
+function showHostQuestion(state) {
+    const q = state.question;
+    if (currentHostQuestionId === q.id) return;
+    currentHostQuestionId = q.id;
+
+    document.getElementById('host-question-number').textContent =
+        `第 ${state.current_question_index + 1} / ${state.total_questions} 题`;
+    document.getElementById('host-question-text').textContent = q.text;
+
+    const container = document.getElementById('host-options');
+    const colors = ['option-a', 'option-b', 'option-c', 'option-d'];
+    container.innerHTML = q.options.map((opt, i) =>
+        `<div class="option-btn ${colors[i]}">${opt.key}. ${opt.text}</div>`
+    ).join('');
+
+    startHostTimer(q.time_limit);
+}
+
+function startHostTimer(seconds) {
+    clearHostTimer();
+    const fill = document.getElementById('host-timer-fill');
+    fill.style.width = '100%';
+    let remaining = seconds;
+
+    hostTimerInterval = setInterval(() => {
+        remaining -= 0.1;
+        fill.style.width = ((remaining / seconds) * 100) + '%';
+        if (remaining <= 0) {
+            clearHostTimer();
+            endQuestion();
+        }
+    }, 100);
+}
+
+function clearHostTimer() {
+    if (hostTimerInterval) {
+        clearInterval(hostTimerInterval);
+        hostTimerInterval = null;
+    }
+}
+
+function renderLeaderboard(leaderboard, containerId) {
+    const container = document.getElementById(containerId);
+    if (!leaderboard || leaderboard.length === 0) {
+        container.innerHTML = '<p class="text-muted-block">暂无玩家</p>';
+        return;
+    }
+    container.innerHTML = leaderboard.map(p => `
+        <div class="leaderboard-item">
+            <span class="leaderboard-rank">#${p.rank}</span>
+            <span class="leaderboard-name">${p.nickname}</span>
+            <span class="leaderboard-score">${p.score}</span>
+        </div>
+    `).join('');
+}
+
+function startGame() { sendWs({ action: 'start_game' }); }
+function endQuestion() { sendWs({ action: 'end_question' }); }
+function nextQuestion() { sendWs({ action: 'next_question' }); }
+
+applyHostState(INITIAL_STATE);
+connect();
+</script>
+{% endblock %}

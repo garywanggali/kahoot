@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}题库管理 - Kahoot{% endblock %}
+
+{% block content %}
+<div class="logo logo-sm">题库管理</div>
+<div class="nav-links">
+    <a href="{% url 'teacher_dashboard' %}" class="btn btn-outline">返回控制台</a>
+    <a href="{% url 'question_create' %}" class="btn btn-primary">添加题目</a>
+</div>
+
+<div class="card">
+    {% if questions %}
+    <table>
+        <thead>
+            <tr>
+                <th>题目</th>
+                <th>正确答案</th>
+                <th>时限</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for q in questions %}
+            <tr>
+                <td>{{ q.text|truncatechars:60 }}</td>
+                <td>{{ q.correct_option }}</td>
+                <td>{{ q.time_limit }}s</td>
+                <td>
+                    <a href="{% url 'question_edit' q.pk %}">编辑</a>
+                    &nbsp;
+                    <a href="{% url 'question_delete' q.pk %}" class="delete-link">删除</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-muted-block">暂无题目，<a href="{% url 'question_create' %}">添加第一道题目</a></p>
+    {% endif %}
+</div>
+{% endblock %}

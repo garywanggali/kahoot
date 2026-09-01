@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}老师控制台 - Kahoot{% endblock %}
+
+{% block content %}
+<div class="logo logo-sm">老师控制台</div>
+<div class="nav-links">
+    <a href="{% url 'question_list' %}" class="btn btn-secondary">题库管理 ({{ question_count }})</a>
+    <a href="{% url 'room_create' %}" class="btn btn-primary">创建房间</a>
+    <a href="{% url 'teacher_logout' %}" class="btn btn-outline">退出</a>
+</div>
+
+<div class="card">
+    <h3 class="page-title">最近房间</h3>
+    {% if rooms %}
+    <table>
+        <thead>
+            <tr>
+                <th>房间号</th>
+                <th>名称</th>
+                <th>状态</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for room in rooms %}
+            <tr>
+                <td><strong>{{ room.code }}</strong></td>
+                <td>{{ room.name }}</td>
+                <td>{{ room.get_status_display }}</td>
+                <td><a href="{% url 'room_host' room.pk %}">主持游戏</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-muted-block">暂无房间，<a href="{% url 'room_create' %}">创建第一个房间</a></p>
+    {% endif %}
+</div>
+{% endblock %}

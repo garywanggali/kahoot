@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}创建房间 - Kahoot{% endblock %}
+
+{% block content %}
+<div class="logo logo-sm">创建房间</div>
+<div class="nav-links">
+    <a href="{% url 'teacher_dashboard' %}" class="btn btn-outline">返回控制台</a>
+</div>
+
+<div class="card">
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="name">房间名称</label>
+            <input type="text" id="name" name="name" class="form-control" placeholder="例如：数学测验">
+        </div>
+        <div class="form-group">
+            <label>选择题目 (至少 1 道)</label>
+            {% if questions %}
+            <ul class="checkbox-list">
+                {% for q in questions %}
+                <li>
+                    <input type="checkbox" name="questions" value="{{ q.pk }}" id="q{{ q.pk }}">
+                    <label for="q{{ q.pk }}">{{ q.text|truncatechars:80 }} ({{ q.time_limit }}s)</label>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-muted-block">暂无题目，请先 <a href="{% url 'question_create' %}">添加题目</a></p>
+            {% endif %}
+        </div>
+        {% if questions %}
+        <button type="submit" class="btn btn-primary">创建房间</button>
+        {% endif %}
+    </form>
+</div>
+{% endblock %}

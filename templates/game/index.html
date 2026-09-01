@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Kahoot - 互动课堂{% endblock %}
+
+{% block content %}
+<div class="logo">Ka<span>hoo</span>t!</div>
+<div class="card text-center">
+    <h2 class="page-title">互动课堂测验平台</h2>
+    <div class="actions-row">
+        <a href="{% url 'join_room' %}" class="btn btn-primary btn-lg">加入游戏</a>
+        <a href="{% url 'teacher_login' %}" class="btn btn-secondary btn-lg">老师入口</a>
+    </div>
+</div>
+{% endblock %}

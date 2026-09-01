@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}加入游戏 - Kahoot{% endblock %}
+
+{% block content %}
+<div class="logo logo-sm">Ka<span>hoo</span>t!</div>
+<div class="card">
+    <h2 class="page-title">加入游戏</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="code">房间号</label>
+            <input type="text" id="code" name="code" class="form-control"
+                   placeholder="输入 6 位房间号" maxlength="6" pattern="[0-9]{6}"
+                   value="{{ code|default:'' }}" required autofocus>
+        </div>
+        <div class="form-group">
+            <label for="nickname">昵称</label>
+            <input type="text" id="nickname" name="nickname" class="form-control"
+                   placeholder="输入你的昵称" maxlength="50"
+                   value="{{ nickname|default:'' }}" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg">进入房间</button>
+    </form>
+    <p class="text-center text-muted-block section-gap">
+        <a href="{% url 'index' %}">返回首页</a>
+    </p>
+</div>
+{% endblock %}

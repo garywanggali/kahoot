@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}{% if action == 'edit' %}编辑题目{% else %}添加题目{% endif %} - Kahoot{% endblock %}
+
+{% block content %}
+<div class="logo logo-sm">{% if action == 'edit' %}编辑题目{% else %}添加题目{% endif %}</div>
+<div class="nav-links">
+    <a href="{% url 'question_list' %}" class="btn btn-outline">返回题库</a>
+</div>
+
+<div class="card">
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="text">题目</label>
+            <input type="text" id="text" name="text" class="form-control"
+                   value="{{ question.text|default:'' }}" required>
+        </div>
+        <div class="form-group">
+            <label for="option_a">选项 A (红色)</label>
+            <input type="text" id="option_a" name="option_a" class="form-control"
+                   value="{{ question.option_a|default:'' }}" required>
+        </div>
+        <div class="form-group">
+            <label for="option_b">选项 B (蓝色)</label>
+            <input type="text" id="option_b" name="option_b" class="form-control"
+                   value="{{ question.option_b|default:'' }}" required>
+        </div>
+        <div class="form-group">
+            <label for="option_c">选项 C (黄色)</label>
+            <input type="text" id="option_c" name="option_c" class="form-control"
+                   value="{{ question.option_c|default:'' }}" required>
+        </div>
+        <div class="form-group">
+            <label for="option_d">选项 D (绿色)</label>
+            <input type="text" id="option_d" name="option_d" class="form-control"
+                   value="{{ question.option_d|default:'' }}" required>
+        </div>
+        <div class="form-group">
+            <label for="correct_option">正确答案</label>
+            <select id="correct_option" name="correct_option" class="form-control">
+                <option value="A" {% if question.correct_option == 'A' %}selected{% endif %}>A</option>
+                <option value="B" {% if question.correct_option == 'B' %}selected{% endif %}>B</option>
+                <option value="C" {% if question.correct_option == 'C' %}selected{% endif %}>C</option>
+                <option value="D" {% if question.correct_option == 'D' %}selected{% endif %}>D</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="time_limit">答题时限 (秒)</label>
+            <input type="number" id="time_limit" name="time_limit" class="form-control"
+                   value="{{ question.time_limit|default:20 }}" min="5" max="120">
+        </div>
+        <button type="submit" class="btn btn-primary">保存</button>
+    </form>
+</div>
+{% endblock %}
