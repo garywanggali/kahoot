@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}老师工作台 - Kahoot Studio{% endblock %}
+{% block title %}老师控制台 - Kahoot Studio{% endblock %}
 
 {% block content %}
 <div class="studio-header-bar">
     <div class="studio-title-group">
-        <div class="studio-badge">Teacher Studio · 教学工作台</div>
+        <div class="studio-badge">TEACHER STUDIO · 教学工作台</div>
         <h1 class="studio-main-title">老师控制台</h1>
-        <p class="form-hint">当前账号：{{ teacher.display_name|default:teacher.username }}</p>
+        <p class="form-hint" style="margin-top: 0.25rem;">当前账号：{{ teacher.display_name|default:teacher.username }}</p>
     </div>
     <a href="{% url 'teacher_logout' %}" class="btn-exit" title="安全退出">
         <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -19,14 +19,14 @@
     </a>
 </div>
 
-<!-- 核心大头业务卡片网格 -->
+<!-- 核心三大业务玻璃框卡片网格 -->
 <div class="studio-features-grid">
 
-    <!-- 模块 1: 创建房间 -->
-    <div class="feature-card feature-card-primary">
+    <!-- 模块 1: 创建互动房间 (高对比玻璃框) -->
+    <div class="feature-card feature-card-primary feature-card-glass">
         <div class="feature-card-header">
             <div class="feature-icon-wrap icon-primary">
-                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
                     <line x1="8" y1="21" x2="16" y2="21"></line>
                     <line x1="12" y1="17" x2="12" y2="21"></line>
@@ -42,33 +42,35 @@
             </a>
         </div>
     </div>
-    <div class="feature-card">
+
+    <!-- 模块 2: 新建 Kahoot / 我的题库 (磨砂玻璃框) -->
+    <div class="feature-card feature-card-glass">
         <div class="feature-card-header">
             <div class="feature-icon-wrap icon-secondary">
-                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
                     <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
                 </svg>
             </div>
-            <span class="feature-badge">{{ quiz_set_count }} 套 Kahoot</span>
+            <span class="feature-badge">{{ quiz_set_count|default:question_count }} 套 KAHOOT</span>
         </div>
         <h2 class="feature-card-title">新建 Kahoot / 我的题库</h2>
         <p class="feature-card-desc">手动或 AI 创建一套完整题目，保存为题库中的 Kahoot 套题，随时复用。</p>
-        <div class="feature-card-footer">
-            <a href="{% url 'kahoot_new' %}" class="btn btn-secondary btn-block">
+        <div class="feature-card-footer feature-card-footer-stacked">
+            <a href="{% url 'kahoot_new' %}" class="btn btn-glass-subtle btn-block">
                 新建 Kahoot →
             </a>
-            <a href="{% url 'question_list' %}" class="btn btn-outline btn-block section-gap">
-                管理我的 {{ quiz_set_count }} 套题 →
+            <a href="{% url 'question_list' %}" class="btn btn-glass-outline btn-block">
+                管理我的 {{ quiz_set_count|default:question_count }} 套题 →
             </a>
         </div>
     </div>
 
-    <!-- 模块 3: 公共题库互助平台 (预留公共共享平台) -->
-    <div class="feature-card feature-card-community">
+    <!-- 模块 3: 公开共享套题 (磨砂玻璃框) -->
+    <div class="feature-card feature-card-glass">
         <div class="feature-card-header">
             <div class="feature-icon-wrap icon-terracotta">
-                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
                     <line x1="2" y1="12" x2="22" y2="12"></line>
                     <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
@@ -79,7 +81,7 @@
         <h2 class="feature-card-title">公开共享套题</h2>
         <p class="feature-card-desc">浏览其他老师公开的 Kahoot 套题，可在创建房间时一键选用。</p>
         <div class="feature-card-footer">
-            <a href="{% url 'question_list' %}" class="btn btn-outline btn-block">
+            <a href="{% url 'question_list' %}" class="btn btn-glass-outline btn-block">
                 浏览公开题库 →
             </a>
         </div>
@@ -87,11 +89,13 @@
 
 </div>
 
-<!-- 次要模块：历史房间记录 -->
-<div class="recent-rooms-section card">
+<!-- 历史房间记录 (大磨砂玻璃卡片) -->
+<div class="recent-rooms-section card card-glass">
     <div class="recent-header">
-        <h3 class="recent-title">最近房间记录</h3>
-        <span class="recent-hint">最多显示最近 10 场主持记录</span>
+        <div>
+            <h3 class="recent-title">最近房间记录</h3>
+            <span class="recent-hint">最多显示最近 10 场主持记录</span>
+        </div>
     </div>
     {% if rooms %}
     <table>
