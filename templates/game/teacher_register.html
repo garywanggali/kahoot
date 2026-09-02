@@ -1,41 +1,119 @@
 {% extends "base.html" %}
 
-{% block title %}老师注册 - Kahoot{% endblock %}
+{% block title %}老师注册 - Kahoot Studio{% endblock %}
 
 {% block content %}
-<div class="logo logo-sm">老师注册</div>
-<div class="card">
-    <p class="form-hint">注册需要有效邀请码。请牢记用户名与密码，用于日后登录。</p>
-    <form method="post">
-        {% csrf_token %}
-        <div class="form-group">
-            <label for="invite_code">邀请码</label>
-            <input type="text" id="invite_code" name="invite_code" class="form-control"
-                   value="{{ invite_code|default:'' }}" required autocomplete="off"
-                   placeholder="向管理员获取">
+<div class="landing-screen-viewport" style="height: auto; min-height: calc(100vh - 2.5rem); overflow: visible;">
+    
+    <!-- 空间漂浮 3D 机械键帽 -->
+    <div class="floating-keycaps-stage" id="keycaps-stage">
+        <div class="keycap keycap-orange keycap-pos-1" data-speed="0.04" title="ESC"><div class="keycap-inner"><span>ESC</span></div></div>
+        <div class="keycap keycap-dark keycap-pos-2" data-speed="-0.03"><div class="keycap-inner"><span class="key-shape key-shape-a">▲</span></div></div>
+        <div class="keycap keycap-dark keycap-pos-3" data-speed="0.05"><div class="keycap-inner"><span class="key-shape key-shape-b">◆</span></div></div>
+        <div class="keycap keycap-dark keycap-pos-4" data-speed="-0.04"><div class="keycap-inner"><span class="key-shape key-shape-c">●</span></div></div>
+        <div class="keycap keycap-dark keycap-pos-5" data-speed="0.03"><div class="keycap-inner"><span class="key-shape key-shape-d">■</span></div></div>
+    </div>
+
+    <div class="landing-main-flow" style="padding: 1.5rem 0 3rem;">
+        
+        <!-- 标题区 -->
+        <div class="hero-section" style="margin: 0.5rem auto 1.5rem;">
+            <h1 class="hero-headline" style="font-size: 3.2rem;">
+                <span class="headline-black">teacher.</span>
+                <span class="headline-orange">register.</span>
+            </h1>
         </div>
-        <div class="form-group">
-            <label for="username">用户名</label>
-            <input type="text" id="username" name="username" class="form-control"
-                   value="{{ username|default:'' }}" required autocomplete="username"
-                   minlength="3" maxlength="50" pattern="[a-zA-Z0-9_]+"
-                   title="仅字母、数字、下划线">
-            <p class="form-hint">3–50 位，仅字母、数字、下划线；登录时不区分大小写。</p>
+
+        <!-- 工业风注册卡片 -->
+        <div class="flip-wrapper" style="max-width: 480px;">
+            <div class="card-industrial">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="form-group-industrial">
+                        <label for="invite_code">邀请码</label>
+                        <input type="text" id="invite_code" name="invite_code" class="input-industrial"
+                               value="{{ invite_code|default:'' }}" required autocomplete="off"
+                               placeholder="输入管理员提供的邀请码" autofocus>
+                    </div>
+                    
+                    <div class="form-group-industrial">
+                        <label for="username">用户名</label>
+                        <input type="text" id="username" name="username" class="input-industrial"
+                               value="{{ username|default:'' }}" required autocomplete="username"
+                               minlength="3" maxlength="50" pattern="[a-zA-Z0-9_]+"
+                               placeholder="3–50 位字母、数字或下划线">
+                    </div>
+                    
+                    <div class="form-group-industrial">
+                        <label for="password">密码</label>
+                        <input type="password" id="password" name="password" class="input-industrial"
+                               placeholder="至少 6 位密码" required minlength="6" autocomplete="new-password">
+                    </div>
+                    
+                    <div class="form-group-industrial">
+                        <label for="password_confirm">确认密码</label>
+                        <input type="password" id="password_confirm" name="password_confirm" class="input-industrial"
+                               placeholder="再次输入密码" required minlength="6" autocomplete="new-password">
+                    </div>
+                    
+                    <button type="submit" class="btn-industrial-primary">
+                        <span>注册并登录</span>
+                        <span>→</span>
+                    </button>
+                </form>
+                
+                <div class="flip-footer-switch">
+                    <a href="{% url 'teacher_login' %}" class="flip-switch-action">
+                        已有老师账号？<strong>去登录 →</strong>
+                    </a>
+                </div>
+                
+                <div class="teacher-extra-links">
+                    <a href="{% url 'index' %}" class="link-mono">← 返回首页</a>
+                </div>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="password">密码</label>
-            <input type="password" id="password" name="password" class="form-control" required
-                   minlength="6" autocomplete="new-password">
-        </div>
-        <div class="form-group">
-            <label for="password_confirm">确认密码</label>
-            <input type="password" id="password_confirm" name="password_confirm" class="form-control"
-                   required minlength="6" autocomplete="new-password">
-        </div>
-        <button type="submit" class="btn btn-primary btn-block">注册并登录</button>
-    </form>
-    <p class="text-center section-gap">
-        已有账号？<a href="{% url 'teacher_login' %}">去登录</a>
-    </p>
+
+    </div>
+
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 鼠标微视差与键帽物理交互
+(function initKeycapsInteraction() {
+    const stage = document.getElementById('keycaps-stage');
+    if (!stage) return;
+    const keycaps = stage.querySelectorAll('.keycap');
+    
+    let targetX = 0, targetY = 0, currentX = 0, currentY = 0;
+    window.addEventListener('mousemove', (e) => {
+        const cx = window.innerWidth / 2;
+        const cy = window.innerHeight / 2;
+        targetX = (e.clientX - cx);
+        targetY = (e.clientY - cy);
+    }, { passive: true });
+
+    function renderParallax() {
+        currentX += (targetX - currentX) * 0.08;
+        currentY += (targetY - currentY) * 0.08;
+        keycaps.forEach(k => {
+            const speed = parseFloat(k.getAttribute('data-speed')) || 0.03;
+            k.style.setProperty('--mouse-x', `${(currentX * speed).toFixed(2)}px`);
+            k.style.setProperty('--mouse-y', `${(currentY * speed).toFixed(2)}px`);
+        });
+        requestAnimationFrame(renderParallax);
+    }
+    requestAnimationFrame(renderParallax);
+
+    keycaps.forEach(k => {
+        k.addEventListener('click', () => {
+            k.classList.add('keycap-pressed');
+            setTimeout(() => k.classList.remove('keycap-pressed'), 180);
+        });
+    });
+})();
+</script>
 {% endblock %}
