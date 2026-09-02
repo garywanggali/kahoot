@@ -4,34 +4,25 @@
 {% block title %}编辑 {{ quiz_set.title }} - Kahoot Studio{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/kahoot_editor.css' %}?v=10">
+<link rel="stylesheet" href="{% static 'css/kahoot_editor.css' %}?v=12">
 {% endblock %}
 
 {% block content %}
 <div class="kahoot-editor-app" id="kahoot-editor"
      data-quiz-id="{{ quiz_set.pk }}"
-     data-dashboard-url="{% url 'teacher_dashboard' %}">
+     data-dashboard-url="{% url 'question_list' %}">
     {% csrf_token %}
     <header class="kahoot-editor-topbar">
         <div class="kahoot-editor-topbar-left">
-            <a href="{% url 'teacher_dashboard' %}" class="btn-back kahoot-editor-back">← 返回控制台</a>
+            <a href="{% url 'question_list' %}" class="btn-back kahoot-editor-back" id="btn-top-back">← 返回题库</a>
             <input type="text" id="quiz-title-input" class="kahoot-editor-title-input"
                    value="{{ quiz_set.title }}" maxlength="200" placeholder="Kahoot 名称">
         </div>
+        
+        <!-- 右侧并列：保存键 + 退出键 -->
         <div class="kahoot-editor-topbar-right">
-            <label class="kahoot-editor-public-toggle" title="公开后其他老师可在题库中浏览并使用本套题">
-                <input type="checkbox" id="quiz-public-input" class="public-toggle-checkbox" {% if quiz_set.is_public %}checked{% endif %}>
-                <span class="public-toggle-pill">
-                    <svg class="public-toggle-icon" viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="2" y1="12" x2="22" y2="12"></line>
-                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                    </svg>
-                    <span class="public-toggle-text">公开套题</span>
-                    <span class="public-toggle-switch"><span class="toggle-slider"></span></span>
-                </span>
-            </label>
-            <button type="button" class="btn btn-primary" id="btn-save-quiz-set">保存并退出</button>
+            <button type="button" class="btn btn-outline" id="btn-save-quiz">保存</button>
+            <button type="button" class="btn btn-primary" id="btn-exit-quiz">退出</button>
         </div>
     </header>
 
@@ -129,6 +120,32 @@
             </div>
         </aside>
     </div>
+
+    <!-- 退出确认选项卡 (支持在此处勾选是否公开套题) -->
+    <div class="modal-overlay hidden" id="exit-modal">
+        <div class="modal-card modal-card-industrial">
+            <div class="modal-card-header">
+                <h3 class="modal-card-title">确定要退出吗？</h3>
+                <p class="modal-card-desc">退出前系统将为您自动保存当前的全部试题与修改内容。</p>
+            </div>
+            
+            <div class="modal-card-body">
+                <label class="modal-public-checkbox-label">
+                    <input type="checkbox" id="modal-quiz-public" class="modal-checkbox-industrial" {% if quiz_set.is_public %}checked{% endif %}>
+                    <div class="modal-checkbox-text">
+                        <strong>公开此套测验题库</strong>
+                        <p>公开后，其他老师可在公共题库中浏览并一键选用本套题。</p>
+                    </div>
+                </label>
+            </div>
+
+            <div class="modal-card-footer">
+                <button type="button" class="btn btn-outline" id="btn-cancel-exit">取消</button>
+                <button type="button" class="btn btn-primary" id="btn-confirm-exit">保存并退出</button>
+            </div>
+        </div>
+    </div>
+
 </div>
 {% endblock %}
 
@@ -137,5 +154,5 @@
 const INITIAL_QUESTIONS = {{ questions_json|safe }};
 const MAX_IMAGE_MB = {{ max_image_mb }};
 </script>
-<script src="{% static 'js/kahoot_editor.js' %}?v=5"></script>
+<script src="{% static 'js/kahoot_editor.js' %}?v=11"></script>
 {% endblock %}

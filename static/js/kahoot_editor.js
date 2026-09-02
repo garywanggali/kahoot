@@ -63,7 +63,7 @@
         saveStatus: document.getElementById('save-status'),
         typeHint: document.getElementById('type-hint'),
         quizTitle: document.getElementById('quiz-title-input'),
-        quizPublic: document.getElementById('quiz-public-input'),
+        modalQuizPublic: document.getElementById('modal-quiz-public'),
     };
 
     function csrfToken() {
@@ -346,24 +346,81 @@
         }
     }
 
-    async function saveQuizSet() {
+    async function saveOnly() {
+        if (saving) return;
+        saving = true;
+        setSaveStatus('正在保存…');
         try {
             if (dirty && currentQuestion()) {
                 await saveQuestion({ silent: true });
             }
+            const publicVal = els.modalQuizPublic ? (els.modalQuizPublic.checked ? '1' : '0') : '0';
             await apiPost(`/teacher/kahoot/${quizId}/meta/`, {
                 title: els.quizTitle.value.trim(),
-                is_public: els.quizPublic.checked ? '1' : '0',
+                is_public: publicVal,
+            });
+            setSaveStatus('✓ 已保存全部更改');
+            setTimeout(() => setSaveStatus(''), 2500);
+        } catch (e) {
+            setSaveStatus('保存失败：' + e.message);
+        } finally {
+            saving = false;
+        }
+    }
+
+    const exitModal = document.getElementById('exit-modal');
+    const btnSaveQuiz = document.getElementById('btn-save-quiz');
+    const btnExitQuiz = document.getElementById('btn-exit-quiz');
+    const btnCancelExit = document.getElementById('btn-cancel-exit');
+    const btnConfirmExit = document.getElementById('btn-confirm-exit');
+    const btnTopBack = document.getElementById('btn-top-back');
+
+    function openExitModal(e) {
+        if (e) e.preventDefault();
+        if (exitModal) exitModal.classList.remove('hidden');
+    }
+
+    function closeExitModal() {
+        if (exitModal) exitModal.classList.add('hidden');
+    }
+
+    async function confirmExit() {
+        try {
+            if (btnConfirmExit) {
+                btnConfirmExit.disabled = true;
+                btnConfirmExit.textContent = '保存中…';
+            }
+            if (dirty && currentQuestion()) {
+                await saveQuestion({ silent: true });
+            }
+            const publicVal = els.modalQuizPublic ? (els.modalQuizPublic.checked ? '1' : '0') : '0';
+            await apiPost(`/teacher/kahoot/${quizId}/meta/`, {
+                title: els.quizTitle.value.trim(),
+                is_public: publicVal,
             });
             window.location.href = dashboardUrl;
         } catch (e) {
-            alert(e.message);
+            alert('退出保存失败: ' + e.message);
+            if (btnConfirmExit) {
+                btnConfirmExit.disabled = false;
+                btnConfirmExit.textContent = '保存并退出';
+            }
         }
     }
 
     document.getElementById('btn-add-question').addEventListener('click', addQuestion);
     document.getElementById('btn-delete-question').addEventListener('click', deleteQuestion);
-    document.getElementById('btn-save-quiz-set').addEventListener('click', saveQuizSet);
+    if (btnSaveQuiz) btnSaveQuiz.addEventListener('click', saveOnly);
+    if (btnExitQuiz) btnExitQuiz.addEventListener('click', openExitModal);
+    if (btnTopBack) btnTopBack.addEventListener('click', openExitModal);
+    if (btnCancelExit) btnCancelExit.addEventListener('click', closeExitModal);
+    if (btnConfirmExit) btnConfirmExit.addEventListener('click', confirmExit);
+
+    if (exitModal) {
+        exitModal.addEventListener('click', (e) => {
+            if (e.target === exitModal) closeExitModal();
+        });
+    }
 
     const watchEls = [
         els.text, els.type, els.time,
