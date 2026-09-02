@@ -26,7 +26,4 @@ log "收集静态文件..."
 rm -rf staticfiles
 python manage.py collectstatic --noinput
 
-log "加载示例题目..."
-python manage.py load_sample_questions
-
 ./start.sh "$PORT"
