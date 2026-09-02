@@ -5,24 +5,24 @@
 {% block content %}
 <div class="landing-screen-viewport">
     
-    <!-- 空间漂浮高质感 3D 机械键帽（支持鼠标视差与物理按压反馈） -->
+    <!-- 空间漂浮高质感 3D 机械键帽（支持鼠标视差、物理按压与机械轴体音效） -->
     <div class="floating-keycaps-stage" id="keycaps-stage">
-        <div class="keycap keycap-orange keycap-pos-1" data-speed="0.04" title="ESC">
+        <div class="keycap keycap-orange keycap-pos-1" data-speed="0.04" data-freq="260" title="ESC">
             <div class="keycap-inner"><span>ESC</span></div>
         </div>
-        <div class="keycap keycap-dark keycap-pos-2" data-speed="-0.03" title="Option A">
+        <div class="keycap keycap-dark keycap-pos-2" data-speed="-0.03" data-freq="440" title="Option A">
             <div class="keycap-inner"><span class="key-shape key-shape-a">▲</span></div>
         </div>
-        <div class="keycap keycap-dark keycap-pos-3" data-speed="0.05" title="Option B">
+        <div class="keycap keycap-dark keycap-pos-3" data-speed="0.05" data-freq="554" title="Option B">
             <div class="keycap-inner"><span class="key-shape key-shape-b">◆</span></div>
         </div>
-        <div class="keycap keycap-dark keycap-pos-4" data-speed="-0.04" title="Option C">
+        <div class="keycap keycap-dark keycap-pos-4" data-speed="-0.04" data-freq="659" title="Option C">
             <div class="keycap-inner"><span class="key-shape key-shape-c">●</span></div>
         </div>
-        <div class="keycap keycap-dark keycap-pos-5" data-speed="0.03" title="Option D">
+        <div class="keycap keycap-dark keycap-pos-5" data-speed="0.03" data-freq="880" title="Option D">
             <div class="keycap-inner"><span class="key-shape key-shape-d">■</span></div>
         </div>
-        <div class="keycap keycap-dark keycap-pos-6" data-speed="-0.05" title="Command">
+        <div class="keycap keycap-dark keycap-pos-6" data-speed="-0.05" data-freq="330" title="Command">
             <div class="keycap-inner"><span>⌘</span></div>
         </div>
     </div>
@@ -43,7 +43,7 @@
                 
                 <!-- 正面：学生端 -->
                 <div class="flip-card-side flip-card-front card-industrial">
-                    <form method="post" action="{% url 'join_room' %}">
+                    <form method="post" action="{% url 'join_room' %}" id="student-join-form">
                         {% csrf_token %}
                         <div class="form-group-industrial">
                             <label for="code">房间号</label>
@@ -57,7 +57,7 @@
                                    placeholder="输入你的昵称" maxlength="50"
                                    value="{{ nickname|default:'' }}" required autocomplete="nickname">
                         </div>
-                        <button type="submit" class="btn-industrial-primary">
+                        <button type="submit" class="btn-industrial-primary" id="btn-submit-student">
                             <span>进入游戏</span>
                             <span>→</span>
                         </button>
@@ -72,7 +72,7 @@
 
                 <!-- 背面：老师端 -->
                 <div class="flip-card-side flip-card-back card-industrial">
-                    <form method="post" action="{% url 'teacher_login' %}">
+                    <form method="post" action="{% url 'teacher_login' %}" id="teacher-login-form">
                         {% csrf_token %}
                         <div class="form-group-industrial">
                             <label for="teacher_username">用户名</label>
@@ -84,7 +84,7 @@
                             <input type="password" id="password" name="password" class="input-industrial"
                                    placeholder="输入管理密码" required autocomplete="current-password">
                         </div>
-                        <button type="submit" class="btn-industrial-primary">
+                        <button type="submit" class="btn-industrial-primary" id="btn-submit-teacher">
                             <span>登录老师控制台</span>
                             <span>→</span>
                         </button>
@@ -111,7 +111,126 @@
 
 {% block extra_js %}
 <script>
+// ==========================================================================
+// Web Audio API 机械键盘物理音效合成引擎 (零网络依赖、零延迟、高质感)
+// ==========================================================================
+const SoundEngine = (function() {
+    let ctx = null;
+
+    function initCtx() {
+        if (!ctx) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (AudioCtx) {
+                ctx = new AudioCtx();
+            }
+        }
+        if (ctx && ctx.state === 'suspended') {
+            ctx.resume();
+        }
+    }
+
+    // 1. 机械键帽物理敲击音 (Attack click + Acoustic cavity resonance)
+    function playKeycapSwitch(freq = 440) {
+        initCtx();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+
+        // 弹片清脆咔哒声 (Click impulse)
+        const oscClick = ctx.createOscillator();
+        const gainClick = ctx.createGain();
+        oscClick.type = 'triangle';
+        oscClick.frequency.setValueAtTime(freq * 3.2, now);
+        oscClick.frequency.exponentialRampToValueAtTime(100, now + 0.028);
+        gainClick.gain.setValueAtTime(0.3, now);
+        gainClick.gain.exponentialRampToValueAtTime(0.001, now + 0.028);
+        oscClick.connect(gainClick);
+        gainClick.connect(ctx.destination);
+        oscClick.start(now);
+        oscClick.stop(now + 0.03);
+
+        // 键帽下沉空腔厚重共鸣 (Acoustic thock)
+        const oscThock = ctx.createOscillator();
+        const gainThock = ctx.createGain();
+        oscThock.type = 'sine';
+        oscThock.frequency.setValueAtTime(freq, now);
+        oscThock.frequency.exponentialRampToValueAtTime(freq * 0.4, now + 0.07);
+        gainThock.gain.setValueAtTime(0.38, now);
+        gainThock.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+        oscThock.connect(gainThock);
+        gainThock.connect(ctx.destination);
+        oscThock.start(now);
+        oscThock.stop(now + 0.08);
+    }
+
+    // 2. 输入框打字触感音 (Crisp mechanical typewriter tick)
+    function playTypingTick() {
+        initCtx();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const pitch = 850 + Math.random() * 250;
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(pitch, now);
+        osc.frequency.exponentialRampToValueAtTime(180, now + 0.02);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.025);
+    }
+
+    // 3. 3D 翻转卡片立体声 (Spatial swoosh & snap)
+    function playFlipWhoosh() {
+        initCtx();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(360, now);
+        osc.frequency.exponentialRampToValueAtTime(90, now + 0.18);
+        gain.gain.setValueAtTime(0.22, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.2);
+    }
+
+    // 4. 按钮点击确认音 (Tactile punch confirmation)
+    function playButtonConfirm() {
+        initCtx();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(480, now);
+        osc.frequency.exponentialRampToValueAtTime(960, now + 0.08);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.09);
+    }
+
+    return {
+        playKeycapSwitch,
+        playTypingTick,
+        playFlipWhoosh,
+        playButtonConfirm,
+        init: initCtx
+    };
+})();
+
+// ==========================================================================
+// 交互事件绑定
+// ==========================================================================
 function toggleCardFlip(flipToTeacher) {
+    SoundEngine.playFlipWhoosh();
     const card = document.getElementById('main-flip-card');
     if (flipToTeacher === undefined) {
         card.classList.toggle('is-flipped');
@@ -130,8 +249,8 @@ function toggleCardFlip(flipToTeacher) {
     }
 }
 
-// 鼠标微视差与键帽物理交互
-(function initKeycapsInteraction() {
+// 初始化键盘视差与物理按压音效
+(function initInteractions() {
     const stage = document.getElementById('keycaps-stage');
     if (!stage) return;
     const keycaps = stage.querySelectorAll('.keycap');
@@ -157,13 +276,38 @@ function toggleCardFlip(flipToTeacher) {
     }
     requestAnimationFrame(renderParallax);
 
-    // 机械按键点击反馈
+    // 机械按键点击音效 + 物理按压反馈
     keycaps.forEach(k => {
         k.addEventListener('click', () => {
+            const freq = parseFloat(k.getAttribute('data-freq')) || 440;
+            SoundEngine.playKeycapSwitch(freq);
             k.classList.add('keycap-pressed');
             setTimeout(() => k.classList.remove('keycap-pressed'), 180);
         });
     });
+
+    // 输入框打字音效
+    const inputs = document.querySelectorAll('.input-industrial');
+    inputs.forEach(input => {
+        input.addEventListener('keydown', (e) => {
+            if (e.key !== 'Tab' && e.key !== 'Shift') {
+                SoundEngine.playTypingTick();
+            }
+        });
+    });
+
+    // 按钮提交音效
+    const btnStudent = document.getElementById('btn-submit-student');
+    if (btnStudent) {
+        btnStudent.addEventListener('click', () => SoundEngine.playButtonConfirm());
+    }
+    const btnTeacher = document.getElementById('btn-submit-teacher');
+    if (btnTeacher) {
+        btnTeacher.addEventListener('click', () => SoundEngine.playButtonConfirm());
+    }
+
+    // 首次点击页面解锁 AudioContext
+    window.addEventListener('pointerdown', () => SoundEngine.init(), { once: true });
 })();
 
 if (window.location.search.includes('tab=teacher') || window.location.hash === '#teacher') {
