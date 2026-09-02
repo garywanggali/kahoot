@@ -1809,10 +1809,10 @@ button.kahoot-choice-button:focus-visible {
 }
 
 /* ==========================================================================
-   2-Step Quiz Wizard Card System (两步卡片向导 - 丰满单屏零滑动)
+   2-Step Quiz Wizard Card System (两步卡片向导 - 丰满单屏零滑动 + 撞色大方框)
    ========================================================================== */
 .wizard-screen-viewport {
-    max-width: 1040px;
+    max-width: 1080px;
     margin: 0 auto;
     width: 100%;
     height: calc(100vh - 2.5rem);
@@ -1868,15 +1868,15 @@ button.kahoot-choice-button:focus-visible {
 }
 
 .wizard-card {
-    border-radius: 28px !important;
-    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
+    border-radius: 32px !important;
+    box-shadow: 0 24px 56px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
     animation: wizardCardFade 0.25s ease-out;
 }
 
 .wizard-card-step1 {
     width: 100%;
-    min-height: 420px;
-    padding: 3.5rem 3.75rem !important;
+    min-height: 460px;
+    padding: 3.75rem 4.25rem !important;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -1884,7 +1884,7 @@ button.kahoot-choice-button:focus-visible {
 
 .wizard-card-step2 {
     width: 100%;
-    padding: 2.25rem 2.75rem !important;
+    padding: 2.25rem 3rem !important;
 }
 
 @keyframes wizardCardFade {
@@ -1893,44 +1893,56 @@ button.kahoot-choice-button:focus-visible {
 }
 
 .wizard-card-header {
-    margin-bottom: 1.75rem;
-}
-
-.wizard-badge {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    font-weight: 800;
-    color: var(--orange);
-    background: var(--orange-subtle);
-    border: 1px solid rgba(255, 79, 0, 0.2);
-    padding: 0.25rem 0.65rem;
-    border-radius: var(--radius-pill);
-    display: inline-block;
-    width: fit-content;
-    margin-bottom: 0.5rem;
+    margin-bottom: 2rem;
 }
 
 .wizard-title {
     font-family: var(--font-hero);
-    font-size: 2.2rem;
+    font-size: 2.4rem;
     font-weight: 900;
     color: var(--text-black);
     letter-spacing: -0.03em;
-    margin: 0.35rem 0 0.45rem;
+    margin: 0 0 0.5rem;
     line-height: 1.15;
 }
 
 .wizard-desc {
-    font-size: 1rem;
+    font-size: 1.05rem;
     color: var(--text-secondary);
-    line-height: 1.6;
+    line-height: 1.65;
+    margin: 0;
 }
 
-.input-wizard {
+.wizard-input-label {
+    font-family: var(--font-hero);
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--text-black);
+    margin-bottom: 0.75rem;
+    display: block;
+}
+
+.input-wizard-contrast {
     font-size: 1.35rem !important;
-    padding: 1.25rem 1.5rem !important;
+    font-weight: 700 !important;
+    padding: 1.25rem 1.6rem !important;
     border-radius: 18px !important;
-    background: rgba(255, 255, 255, 0.95) !important;
+    background: #ffffff !important;
+    border: 2px solid #111111 !important;
+    color: #111111 !important;
+    box-shadow: 0 4px 0 #111111 !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.input-wizard-contrast:focus {
+    border-color: var(--orange) !important;
+    box-shadow: 0 4px 0 var(--orange), 0 8px 24px var(--orange-glow) !important;
+    outline: none !important;
+}
+
+.input-wizard-contrast::placeholder {
+    color: rgba(0, 0, 0, 0.35);
+    font-weight: 500;
 }
 
 .input-shake {
@@ -1947,19 +1959,19 @@ button.kahoot-choice-button:focus-visible {
 .wizard-card-footer {
     display: flex;
     align-items: center;
-    margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    margin-top: 2.25rem;
+    padding-top: 1.75rem;
+    border-top: 1.5px solid rgba(0, 0, 0, 0.06);
 }
 
-.btn-wizard-next {
+.btn-wizard-next-contrast {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 1.15rem 2.25rem;
-    background: var(--text-black);
+    gap: 0.65rem;
+    padding: 1.15rem 2.5rem;
+    background: #111111;
     color: #ffffff;
-    border: 2px solid var(--text-black);
+    border: 2px solid #111111;
     border-radius: var(--radius-pill);
     font-family: var(--font-hero);
     font-size: 1.1rem;
@@ -1969,7 +1981,7 @@ button.kahoot-choice-button:focus-visible {
     transition: all 0.18s cubic-bezier(0.2, 0, 0, 1);
 }
 
-.btn-wizard-next:hover {
+.btn-wizard-next-contrast:hover {
     background: var(--orange);
     border-color: var(--orange);
     color: #ffffff;

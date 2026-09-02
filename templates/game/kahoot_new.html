@@ -36,15 +36,14 @@
         </div>
     </div>
 
-    <!-- 向导核心区域 (单屏零滑动) -->
+    <!-- 向导核心区域 (单屏零滑动 + 丰满大气方框) -->
     <div class="wizard-flow-wrapper">
 
         <!-- ========================================== -->
-        <!-- 第一步：命名这套题库 (丰满加宽布局) -->
+        <!-- 第一步：命名这套题库 (丰满撞色大方框) -->
         <!-- ========================================== -->
         <div class="wizard-card wizard-card-step1 card-glass" id="wizard-step-1">
             <div class="wizard-card-header">
-                <div class="wizard-badge">步骤 1 / 2</div>
                 <h2 class="wizard-title">第一步：命名这套测验题库</h2>
                 <p class="wizard-desc">
                     每次新建都会保存为<strong>一套独立的测验套题</strong>，可在题库中随时复用，也可直接一键发起大屏互动。
@@ -53,8 +52,8 @@
 
             <div class="wizard-form-body">
                 <div class="form-group-industrial" style="margin-bottom: 0;">
-                    <label for="quiz-title-input">题库名称</label>
-                    <input type="text" id="quiz-title-input" class="input-industrial input-wizard"
+                    <label for="quiz-title-input" class="wizard-input-label">题库名称</label>
+                    <input type="text" id="quiz-title-input" class="input-industrial input-wizard-contrast"
                            placeholder="例如：初一地理期末总复习 / 细胞生物学专题测验"
                            maxlength="200" required autofocus autocomplete="off"
                            value="{{ pending_title|default:'' }}">
@@ -62,7 +61,7 @@
             </div>
 
             <div class="wizard-card-footer" style="justify-content: flex-end;">
-                <button type="button" class="btn-wizard-next" id="btn-goto-step2" onclick="handleGoToStep2()">
+                <button type="button" class="btn-wizard-next-contrast" id="btn-goto-step2" onclick="handleGoToStep2()">
                     <span>下一步：选择出题方式</span>
                     <span>→</span>
                 </button>
@@ -74,8 +73,7 @@
         <!-- ========================================== -->
         <div class="wizard-card wizard-card-step2 card-glass" id="wizard-step-2" style="display: none;">
             
-            <div class="wizard-card-header" style="margin-bottom: 1.25rem;">
-                <div class="wizard-badge">步骤 2 / 2</div>
+            <div class="wizard-card-header" style="margin-bottom: 1.5rem;">
                 <h2 class="wizard-title">第二步：选择出题方式</h2>
                 <p class="wizard-desc">
                     选择最适合你的出题模式，选定后即可直接进入试题编辑或批量生成。
