@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}老师控制台 - Kahoot{% endblock %}
+{% block title %}老师工作台 - Kahoot Studio{% endblock %}
 
 {% block content %}
 <div class="studio-header-bar">
     <div class="studio-title-group">
-        <div class="studio-badge">Teacher Studio</div>
+        <div class="studio-badge">Teacher Studio · 教学工作台</div>
         <h1 class="studio-main-title">老师控制台</h1>
     </div>
     <a href="{% url 'teacher_logout' %}" class="btn-exit" title="安全退出">
@@ -18,27 +18,79 @@
     </a>
 </div>
 
-<div class="studio-toolbar">
-    <div class="toolbar-left">
-        <a href="{% url 'room_create' %}" class="btn btn-primary">
-            <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            创建房间
-        </a>
-        <a href="{% url 'question_list' %}" class="btn btn-secondary">
-            <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-            </svg>
-            题库管理 ({{ question_count }})
-        </a>
+<!-- 核心大头业务卡片网格 -->
+<div class="studio-features-grid">
+    
+    <!-- 模块 1: 创建房间 -->
+    <div class="feature-card feature-card-primary">
+        <div class="feature-card-header">
+            <div class="feature-icon-wrap icon-primary">
+                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                    <line x1="8" y1="21" x2="16" y2="21"></line>
+                    <line x1="12" y1="17" x2="12" y2="21"></line>
+                </svg>
+            </div>
+            <span class="feature-badge badge-primary">大屏互动</span>
+        </div>
+        <h2 class="feature-card-title">创建互动房间</h2>
+        <p class="feature-card-desc">挑选题库组合，一键生成 6 位房间号，支持实时投屏与手机极速抢答。</p>
+        <div class="feature-card-footer">
+            <a href="{% url 'room_create' %}" class="btn btn-primary btn-block">
+                + 发起新房间 →
+            </a>
+        </div>
     </div>
+
+    <!-- 模块 2: 我的题库中心 -->
+    <div class="feature-card">
+        <div class="feature-card-header">
+            <div class="feature-icon-wrap icon-secondary">
+                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg>
+            </div>
+            <span class="feature-badge">{{ question_count }} 道专属题目</span>
+        </div>
+        <h2 class="feature-card-title">题库管理中心</h2>
+        <p class="feature-card-desc">自主编排单选、多选、判断题与题目配图，沉淀你的专属教学测验资源库。</p>
+        <div class="feature-card-footer">
+            <a href="{% url 'question_list' %}" class="btn btn-secondary btn-block">
+                管理专属题库 →
+            </a>
+        </div>
+    </div>
+
+    <!-- 模块 3: 公共题库互助平台 (预留公共共享平台) -->
+    <div class="feature-card feature-card-community">
+        <div class="feature-card-header">
+            <div class="feature-icon-wrap icon-terracotta">
+                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                </svg>
+            </div>
+            <span class="feature-badge badge-terracotta">教师互助 · 即将推出</span>
+        </div>
+        <h2 class="feature-card-title">公共共享题库</h2>
+        <p class="feature-card-desc">教师间互相分享优质试卷与教学测验题，支持一键引用同行题库与协同备课。</p>
+        <div class="feature-card-footer">
+            <a href="{% url 'question_list' %}" class="btn btn-outline btn-block">
+                探索精选题库 (预览) →
+            </a>
+        </div>
+    </div>
+
 </div>
 
-<div class="card">
-    <h3 class="page-title">最近房间</h3>
+<!-- 次要模块：历史房间记录 -->
+<div class="recent-rooms-section card">
+    <div class="recent-header">
+        <h3 class="recent-title">最近房间记录</h3>
+        <span class="recent-hint">最多显示最近 10 场主持记录</span>
+    </div>
     {% if rooms %}
     <table>
         <thead>
@@ -55,13 +107,15 @@
                 <td><strong>{{ room.code }}</strong></td>
                 <td>{{ room.name }}</td>
                 <td><span class="status-chip">{{ room.get_status_display }}</span></td>
-                <td><a href="{% url 'room_host' room.pk %}" class="table-action-link">主持游戏 →</a></td>
+                <td><a href="{% url 'room_host' room.pk %}" class="table-action-link">继续主持 →</a></td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
     {% else %}
-    <p class="text-muted-block">暂无房间，<a href="{% url 'room_create' %}">创建第一个房间</a></p>
+    <p class="text-muted-block text-center" style="padding: 1.5rem 0;">
+        暂无房间记录，点击上方【创建互动房间】发起第一场测验
+    </p>
     {% endif %}
 </div>
 {% endblock %}

@@ -566,6 +566,160 @@ a:hover {
 }
 
 /* ==========================================================================
+   Studio Feature Pillar Grid (Core Big Modules)
+   ========================================================================== */
+.studio-features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.75rem;
+    margin-bottom: 3rem;
+}
+
+@media (max-width: 960px) {
+    .studio-features-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+}
+
+.feature-card {
+    background: var(--surface-container-lowest);
+    border: 1px solid var(--outline-variant);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem 2.25rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: var(--shadow-md);
+    transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-container);
+}
+
+.feature-card-primary {
+    border-color: var(--primary-container);
+    background: linear-gradient(180deg, #ffffff 0%, var(--surface-container-low) 100%);
+}
+
+.feature-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+}
+
+.feature-icon-wrap {
+    width: 52px;
+    height: 52px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface-container);
+    border: 1px solid var(--outline-variant);
+}
+
+.icon-primary {
+    background: var(--surface-container-high);
+    color: var(--primary-container);
+    border-color: var(--primary);
+}
+
+.icon-secondary {
+    background: var(--surface-container);
+    color: var(--secondary);
+}
+
+.icon-terracotta {
+    background: var(--surface-container-high);
+    color: var(--kh-option-c-dark);
+    border-color: var(--kh-option-c);
+}
+
+.feature-badge {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.3rem 0.75rem;
+    border-radius: var(--radius-pill);
+    background: var(--surface-container);
+    color: var(--secondary);
+    border: 1px solid var(--outline-variant);
+}
+
+.badge-primary {
+    background: var(--primary-container);
+    color: #ffffff;
+    border-color: var(--primary);
+}
+
+.badge-terracotta {
+    background: var(--surface-container-high);
+    color: var(--kh-option-c-dark);
+    border-color: var(--kh-option-c);
+}
+
+.feature-card-title {
+    font-family: var(--font-serif);
+    font-size: 1.85rem;
+    font-weight: 600;
+    color: var(--primary-container);
+    margin: 0.5rem 0 0.6rem;
+    line-height: 1.2;
+}
+
+.feature-card-desc {
+    font-size: 0.95rem;
+    color: var(--on-surface-variant);
+    line-height: 1.6;
+    margin-bottom: 2rem;
+    flex: 1;
+}
+
+.feature-card-footer .btn {
+    width: 100%;
+}
+
+/* ==========================================================================
+   Recent Rooms Summary Card
+   ========================================================================== */
+.recent-rooms-section {
+    padding: 2.5rem 3rem !important;
+}
+
+.recent-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--outline-variant);
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.recent-title {
+    font-family: var(--font-serif);
+    font-size: 1.85rem;
+    font-weight: 500;
+    color: var(--primary-container);
+}
+
+.recent-hint {
+    font-size: 0.85rem;
+    color: var(--outline);
+    font-family: var(--font-sans);
+}
+
+/* ==========================================================================
    Forms & Clean Inputs
    ========================================================================== */
 .form-group {
