@@ -5,28 +5,10 @@
 {% block content %}
 <div class="wizard-screen-viewport">
     
-    <!-- 顶部极简导航栏 (两页返回按键均在左上角) -->
+    <!-- 顶部状态指示条 -->
     <div class="studio-header-bar" style="margin-bottom: 1.25rem;">
         <div class="studio-title-group">
-            <!-- 第一步左上角返回 -->
-            <a href="{% url 'teacher_dashboard' %}" class="btn-back" id="top-nav-step1">
-                <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="19" y1="12" x2="5" y2="12"></line>
-                    <polyline points="12 19 5 12 12 5"></polyline>
-                </svg>
-                <span>返回控制台</span>
-            </a>
-            
-            <!-- 第二步左上角返回上一步 -->
-            <button type="button" class="btn-back" id="top-nav-step2" style="display: none; background: none; border: none; cursor: pointer; padding: 0;" onclick="handleBackToStep1()">
-                <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="19" y1="12" x2="5" y2="12"></line>
-                    <polyline points="12 19 5 12 12 5"></polyline>
-                </svg>
-                <span>返回修改名称</span>
-            </button>
-
-            <h1 class="studio-main-title" style="margin-top: 0.15rem;">新建测验题库</h1>
+            <h1 class="studio-main-title" style="margin-top: 0;">新建测验题库</h1>
         </div>
         
         <div class="wizard-step-indicator" id="wizard-step-indicator">
@@ -36,14 +18,23 @@
         </div>
     </div>
 
-    <!-- 向导核心区域 (单屏零滑动 + 丰满大气方框) -->
+    <!-- 向导核心区域 (更大、更清晰、沉稳大方框) -->
     <div class="wizard-flow-wrapper">
 
         <!-- ========================================== -->
-        <!-- 第一步：命名这套题库 (丰满撞色大方框) -->
+        <!-- 第一步：命名这套题库 (返回按键置于左上角字上方) -->
         <!-- ========================================== -->
         <div class="wizard-card wizard-card-step1 card-glass" id="wizard-step-1">
             <div class="wizard-card-header">
+                <div class="wizard-card-top-nav">
+                    <a href="{% url 'teacher_dashboard' %}" class="btn-card-back">
+                        <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                        <span>返回控制台</span>
+                    </a>
+                </div>
                 <h2 class="wizard-title">第一步：命名这套测验题库</h2>
                 <p class="wizard-desc">
                     每次新建都会保存为<strong>一套独立的测验套题</strong>，可在题库中随时复用，也可直接一键发起大屏互动。
@@ -69,11 +60,20 @@
         </div>
 
         <!-- ========================================== -->
-        <!-- 第二步：选择出题方式 (精美矢量图标 4大出题模式，零滑动) -->
+        <!-- 第二步：选择出题方式 (返回按键置于第二步字上方) -->
         <!-- ========================================== -->
         <div class="wizard-card wizard-card-step2 card-glass" id="wizard-step-2" style="display: none;">
             
             <div class="wizard-card-header" style="margin-bottom: 1.5rem;">
+                <div class="wizard-card-top-nav">
+                    <button type="button" class="btn-card-back" onclick="handleBackToStep1()">
+                        <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                        <span>返回修改名称</span>
+                    </button>
+                </div>
                 <h2 class="wizard-title">第二步：选择出题方式</h2>
                 <p class="wizard-desc">
                     选择最适合你的出题模式，选定后即可直接进入试题编辑或批量生成。
@@ -90,7 +90,7 @@
                     <button type="submit" name="action" value="manual" class="choice-box choice-box-manual">
                         <div class="choice-header-row">
                             <div class="choice-icon-wrap icon-manual">
-                                <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M12 20h9"></path>
                                     <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
                                 </svg>
@@ -107,7 +107,7 @@
                     <button type="submit" name="action" value="ai" class="choice-box choice-box-ai">
                         <div class="choice-header-row">
                             <div class="choice-icon-wrap icon-ai">
-                                <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path>
                                     <path d="M5 3v4"></path>
                                     <path d="M19 17v4"></path>
@@ -127,7 +127,7 @@
                     <button type="submit" name="action" value="excel" class="choice-box choice-box-excel">
                         <div class="choice-header-row">
                             <div class="choice-icon-wrap icon-excel">
-                                <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                                     <polyline points="14 2 14 8 20 8"></polyline>
                                     <line x1="8" y1="13" x2="16" y2="13"></line>
@@ -147,7 +147,7 @@
                     <button type="submit" name="action" value="public" class="choice-box choice-box-public">
                         <div class="choice-header-row">
                             <div class="choice-icon-wrap icon-public">
-                                <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
                                     <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
                                     <line x1="9" y1="6" x2="16" y2="6"></line>
@@ -180,8 +180,6 @@ const step1Card = document.getElementById('wizard-step-1');
 const step2Card = document.getElementById('wizard-step-2');
 const pill1 = document.getElementById('step-pill-1');
 const pill2 = document.getElementById('step-pill-2');
-const navStep1 = document.getElementById('top-nav-step1');
-const navStep2 = document.getElementById('top-nav-step2');
 
 function handleGoToStep2() {
     const titleVal = (inputEl.value || '').trim();
@@ -194,12 +192,9 @@ function handleGoToStep2() {
 
     hiddenTitleEl.value = titleVal;
 
-    // 切换卡片与顶栏返回按键
+    // 切换卡片
     step1Card.style.display = 'none';
     step2Card.style.display = 'block';
-
-    navStep1.style.display = 'none';
-    navStep2.style.display = 'inline-flex';
 
     pill1.classList.remove('active');
     pill2.classList.add('active');
@@ -208,9 +203,6 @@ function handleGoToStep2() {
 function handleBackToStep1() {
     step2Card.style.display = 'none';
     step1Card.style.display = 'block';
-
-    navStep2.style.display = 'none';
-    navStep1.style.display = 'inline-flex';
 
     pill2.classList.remove('active');
     pill1.classList.add('active');
