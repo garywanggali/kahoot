@@ -3,10 +3,17 @@
 {% block title %}AI 生成 Kahoot - Kahoot{% endblock %}
 
 {% block content %}
-<div class="logo logo-sm">AI 生成 Kahoot</div>
-<div class="nav-links">
-    <a href="{% url 'kahoot_new' %}" class="btn btn-outline">返回新建 Kahoot</a>
-    <a href="{% url 'question_list' %}" class="btn btn-outline">浏览题库</a>
+<div class="studio-header-bar">
+    <div class="studio-title-group">
+        <a href="{% url 'kahoot_new' %}" class="btn-back">
+            <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>返回新建 Kahoot</span>
+        </a>
+        <h1 class="studio-main-title">AI 智能生成 Kahoot</h1>
+    </div>
 </div>
 
 {% if not ai_configured %}
