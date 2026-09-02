@@ -2080,3 +2080,201 @@ button.kahoot-choice-button:focus-visible {
 .choice-box:hover .choice-box-action {
     color: var(--orange);
 }
+
+/* ==========================================================================
+   Question Set List Viewport & Frosted Table System (我的题库高质感列表)
+   ========================================================================== */
+.question-list-viewport {
+    max-width: 1040px;
+    margin: 0 auto;
+    width: 100%;
+    padding-bottom: 2.5rem;
+}
+
+.card-section-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.card-section-title {
+    font-family: var(--font-hero);
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text-black);
+    letter-spacing: -0.02em;
+    margin-bottom: 0.25rem;
+}
+
+.card-section-hint {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.quiz-set-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 0.5rem;
+}
+
+.quiz-set-table th {
+    padding: 0.75rem 1.25rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border: none;
+}
+
+.quiz-set-row {
+    background: rgba(255, 255, 255, 0.65);
+    border-radius: 14px;
+    transition: all 0.15s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.quiz-set-row:hover {
+    background: #ffffff;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+}
+
+.quiz-set-row td {
+    padding: 1.15rem 1.25rem;
+    border: none;
+    vertical-align: middle;
+}
+
+.quiz-set-row td:first-child {
+    border-top-left-radius: 14px;
+    border-bottom-left-radius: 14px;
+}
+
+.quiz-set-row td:last-child {
+    border-top-right-radius: 14px;
+    border-bottom-right-radius: 14px;
+}
+
+.quiz-title-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 1.05rem;
+    color: var(--text-black);
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.quiz-title-link:hover {
+    color: var(--orange);
+}
+
+.quiz-icon {
+    font-size: 1.15rem;
+    flex-shrink: 0;
+}
+
+.badge-count {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    background: rgba(0, 0, 0, 0.05);
+    padding: 0.25rem 0.65rem;
+    border-radius: var(--radius-pill);
+    display: inline-block;
+}
+
+.time-text {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.author-chip {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #0066ff;
+    background: rgba(0, 102, 255, 0.08);
+    padding: 0.25rem 0.65rem;
+    border-radius: var(--radius-pill);
+}
+
+.table-actions-inline {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.btn-table-edit {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.45rem 1rem;
+    background: var(--text-black);
+    color: #ffffff;
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 800;
+    border-radius: var(--radius-pill);
+    text-decoration: none;
+    transition: all 0.15s cubic-bezier(0.2, 0, 0, 1);
+    box-shadow: 0 2px 0 #000000;
+}
+
+.btn-table-edit:hover {
+    background: var(--orange);
+    color: #ffffff;
+    box-shadow: 0 2px 0 var(--orange-hover), 0 4px 12px var(--orange-glow);
+    transform: translateY(-1px);
+}
+
+.btn-table-delete {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.btn-table-delete:hover {
+    background: #ff3b30;
+    border-color: #ff3b30;
+    color: #ffffff;
+    transform: scale(1.05);
+}
+
+.btn-table-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 1rem;
+    background: transparent;
+    border: 1.5px solid #0066ff;
+    color: #0066ff;
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 800;
+    border-radius: var(--radius-pill);
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.btn-table-copy:hover {
+    background: #0066ff;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 102, 255, 0.25);
+    transform: translateY(-1px);
+}

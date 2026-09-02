@@ -1,82 +1,149 @@
 {% extends "base.html" %}
 
-{% block title %}题库 - Kahoot{% endblock %}
+{% block title %}我的题库 - 测验套题管理{% endblock %}
 
 {% block content %}
-<div class="studio-header-bar">
-    <div class="studio-title-group">
-        <a href="{% url 'teacher_dashboard' %}" class="btn-back">
-            <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="19" y1="12" x2="5" y2="12"></line>
-                <polyline points="12 19 5 12 12 5"></polyline>
-            </svg>
-            <span>返回控制台</span>
-        </a>
-        <h1 class="studio-main-title">我的题库</h1>
-        <p class="form-hint">按套保存的 Kahoot，每套可一键创建房间</p>
+<div class="question-list-viewport">
+
+    <!-- 顶部简洁导航 -->
+    <div class="studio-header-bar">
+        <div class="studio-title-group">
+            <a href="{% url 'teacher_dashboard' %}" class="btn-back">
+                <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                <span>返回控制台</span>
+            </a>
+            <h1 class="studio-main-title">我的题库</h1>
+            <p class="form-hint" style="margin-top: 0.2rem;">共收录 {{ my_quiz_sets|length }} 套测验题库</p>
+        </div>
     </div>
-</div>
 
-<div class="card">
-    <h3 class="page-title">我的套题</h3>
-    {% if my_quiz_sets %}
-    <table>
-        <thead>
-            <tr>
-                <th>名称</th>
-                <th>题数</th>
-                <th>公开</th>
-                <th>创建时间</th>
-                <th>操作</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for qs in my_quiz_sets %}
-            <tr>
-                <td><a href="{% url 'kahoot_editor' qs.pk %}"><strong>{{ qs.title }}</strong></a></td>
-                <td>{{ qs.question_count }}</td>
-                <td>{% if qs.is_public %}是{% else %}否{% endif %}</td>
-                <td>{{ qs.created_at|date:"Y-m-d H:i" }}</td>
-                <td>
-                    <a href="{% url 'kahoot_editor' qs.pk %}">编辑</a>
-                    &nbsp;·&nbsp;
-                    <a href="{% url 'room_create' %}?quiz_set={{ qs.pk }}">创建房间</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p class="text-muted-block">暂无套题，<a href="{% url 'kahoot_new' %}">新建 Kahoot</a> 开始</p>
+    <!-- 我的套题 (高质感磨砂玻璃列表) -->
+    <div class="card card-glass" style="margin-bottom: 2rem;">
+        <div class="card-section-header">
+            <div>
+                <h3 class="card-section-title">我的测验套题</h3>
+                <span class="card-section-hint">点击任意套题名称或操作按钮即可直接进入可视化编辑器</span>
+            </div>
+        </div>
+
+        {% if my_quiz_sets %}
+        <div class="recent-table-wrap">
+            <table class="quiz-set-table">
+                <thead>
+                    <tr>
+                        <th style="width: 38%;">套题名称</th>
+                        <th style="width: 14%;">题数</th>
+                        <th style="width: 14%;">公开状态</th>
+                        <th style="width: 18%;">创建时间</th>
+                        <th style="width: 16%; text-align: right;">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for qs in my_quiz_sets %}
+                    <tr class="quiz-set-row">
+                        <td>
+                            <a href="{% url 'kahoot_editor' qs.pk %}" class="quiz-title-link">
+                                <span class="quiz-icon">📖</span>
+                                <strong>{{ qs.title }}</strong>
+                            </a>
+                        </td>
+                        <td>
+                            <span class="badge-count">{{ qs.question_count }} 题</span>
+                        </td>
+                        <td>
+                            {% if qs.is_public %}
+                                <span class="status-chip status-chip-playing"><span class="pulse-dot"></span>公开</span>
+                            {% else %}
+                                <span class="status-chip status-chip-ended">私有</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="time-text">{{ qs.created_at|date:"Y-m-d H:i" }}</span>
+                        </td>
+                        <td style="text-align: right;">
+                            <div class="table-actions-inline">
+                                <a href="{% url 'kahoot_editor' qs.pk %}" class="btn-table-edit">
+                                    <span>编辑试题</span>
+                                    <span>→</span>
+                                </a>
+                                <a href="{% url 'kahoot_delete' qs.pk %}" class="btn-table-delete"
+                                   onclick="return confirm('确定要删除套题「{{ qs.title }}」吗？此操作不可恢复。');"
+                                   title="删除套题">✕</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state-wrap">
+            <div class="empty-state-icon">
+                <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="1.75" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg>
+            </div>
+            <h4 class="empty-state-title">暂无测验套题</h4>
+            <p class="empty-state-desc">你可以前往创建向导，使用手动、AI 或 Excel 快速创建你的第一套题库。</p>
+            <a href="{% url 'kahoot_new' %}" class="btn-dual-primary" style="max-width: 240px; margin: 0 auto;">
+                + 新建测验题库 →
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- 公开共享套题 (其他老师) -->
+    {% if public_quiz_sets %}
+    <div class="card card-glass">
+        <div class="card-section-header">
+            <div>
+                <h3 class="card-section-title">公开共享套题</h3>
+                <span class="card-section-hint">浏览其他老师公开发布的精选套题，可一键复制到你的题库中使用</span>
+            </div>
+        </div>
+
+        <div class="recent-table-wrap">
+            <table class="quiz-set-table">
+                <thead>
+                    <tr>
+                        <th style="width: 45%;">套题名称</th>
+                        <th style="width: 20%;">发布教师</th>
+                        <th style="width: 15%;">题数</th>
+                        <th style="width: 20%; text-align: right;">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for qs in public_quiz_sets %}
+                    <tr class="quiz-set-row">
+                        <td>
+                            <span class="quiz-title-link" style="cursor: default;">
+                                <span class="quiz-icon">🌐</span>
+                                <strong>{{ qs.title }}</strong>
+                            </span>
+                        </td>
+                        <td>
+                            <span class="author-chip">{{ qs.teacher.username }}</span>
+                        </td>
+                        <td>
+                            <span class="badge-count">{{ qs.question_count }} 题</span>
+                        </td>
+                        <td style="text-align: right;">
+                            <a href="{% url 'kahoot_public_clone' qs.pk %}" class="btn-table-copy" title="复制此套题到我的题库">
+                                <span>复制到我的题库</span>
+                                <span>+</span>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
     {% endif %}
-</div>
 
-{% if public_quiz_sets %}
-<div class="card section-gap">
-    <h3 class="page-title">公开套题（其他老师）</h3>
-    <p class="form-hint">可在创建房间时选用，无法编辑。</p>
-    <table>
-        <thead>
-            <tr>
-                <th>名称</th>
-                <th>作者</th>
-                <th>题数</th>
-                <th>操作</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for qs in public_quiz_sets %}
-            <tr>
-                <td>{{ qs.title }}</td>
-                <td>{{ qs.teacher.username }}</td>
-                <td>{{ qs.question_count }}</td>
-                <td>
-                    <a href="{% url 'room_create' %}?quiz_set={{ qs.pk }}">创建房间</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
 </div>
-{% endif %}
 {% endblock %}
