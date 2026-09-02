@@ -26,7 +26,7 @@
             {% for q in questions %}
             <tr>
                 <td>{{ q.text|truncatechars:60 }}</td>
-                <td>{% if q.question_type == 'multiple' %}多选{% else %}单选{% endif %}</td>
+                <td>{% if q.question_type == 'multiple' %}多选{% elif q.question_type == 'judgment' %}判断{% else %}单选{% endif %}</td>
                 <td>{% if q.image %}有{% else %}—{% endif %}</td>
                 <td>{{ q.get_correct_option_display }}</td>
                 <td>{{ q.time_limit }}s</td>

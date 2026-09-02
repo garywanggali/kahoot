@@ -108,6 +108,26 @@ class Command(BaseCommand):
                 'correct_option': 'A,C',
                 'time_limit': 25,
             },
+            {
+                'text': '地球是圆的。',
+                'question_type': Question.TYPE_JUDGMENT,
+                'option_a': '正确',
+                'option_b': '错误',
+                'option_c': Question.JUDGMENT_OPTION_PLACEHOLDER,
+                'option_d': Question.JUDGMENT_OPTION_PLACEHOLDER,
+                'correct_option': 'A',
+                'time_limit': 15,
+            },
+            {
+                'text': '太阳从西边升起。',
+                'question_type': Question.TYPE_JUDGMENT,
+                'option_a': '正确',
+                'option_b': '错误',
+                'option_c': Question.JUDGMENT_OPTION_PLACEHOLDER,
+                'option_d': Question.JUDGMENT_OPTION_PLACEHOLDER,
+                'correct_option': 'B',
+                'time_limit': 15,
+            },
         ]
 
         created = 0
@@ -121,7 +141,8 @@ class Command(BaseCommand):
 
         single_count = Question.objects.filter(question_type=Question.TYPE_SINGLE).count()
         multiple_count = Question.objects.filter(question_type=Question.TYPE_MULTIPLE).count()
+        judgment_count = Question.objects.filter(question_type=Question.TYPE_JUDGMENT).count()
         self.stdout.write(self.style.SUCCESS(
             f'已导入 {created} 道新题目，题库共 {Question.objects.count()} 道'
-            f'（单选 {single_count}，多选 {multiple_count}）'
+            f'（单选 {single_count}，多选 {multiple_count}，判断 {judgment_count}）'
         ))

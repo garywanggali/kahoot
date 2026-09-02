@@ -150,14 +150,22 @@ def _save_question(request, question=None):
         'max_image_mb': MAX_QUESTION_IMAGE_BYTES // (1024 * 1024),
     }
 
-    if not all([text, option_a, option_b, option_c, option_d]):
-        messages.error(request, '请填写所有字段')
-        return render(request, 'game/question_form.html', form_ctx)
-
-    if question_type not in (Question.TYPE_SINGLE, Question.TYPE_MULTIPLE):
+    if question_type not in (Question.TYPE_SINGLE, Question.TYPE_MULTIPLE, Question.TYPE_JUDGMENT):
         question_type = Question.TYPE_SINGLE
 
-    if question_type == Question.TYPE_MULTIPLE:
+    if question_type == Question.TYPE_JUDGMENT:
+        if not text or not option_a or not option_b:
+            messages.error(request, '判断题请填写题目和正确/错误选项')
+            return render(request, 'game/question_form.html', form_ctx)
+        option_c = Question.JUDGMENT_OPTION_PLACEHOLDER
+        option_d = Question.JUDGMENT_OPTION_PLACEHOLDER
+        correct_option = request.POST.get('judgment_correct', 'A').upper()
+        if correct_option not in ('A', 'B'):
+            correct_option = 'A'
+    elif question_type == Question.TYPE_MULTIPLE:
+        if not all([text, option_a, option_b, option_c, option_d]):
+            messages.error(request, '请填写所有字段')
+            return render(request, 'game/question_form.html', form_ctx)
         correct_options = sorted({
             opt.upper() for opt in request.POST.getlist('correct_options')
             if opt.upper() in ('A', 'B', 'C', 'D')
@@ -167,6 +175,9 @@ def _save_question(request, question=None):
             return render(request, 'game/question_form.html', form_ctx)
         correct_option = ','.join(correct_options)
     else:
+        if not all([text, option_a, option_b, option_c, option_d]):
+            messages.error(request, '请填写所有字段')
+            return render(request, 'game/question_form.html', form_ctx)
         correct_option = request.POST.get('correct_option', 'A').upper()
         if correct_option not in ('A', 'B', 'C', 'D'):
             correct_option = 'A'

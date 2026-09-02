@@ -389,6 +389,23 @@ a:hover {
     font-size: 0.95rem;
 }
 
+.judgment-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    max-width: 560px;
+    margin: 0 auto;
+}
+
+.judgment-options .option-btn {
+    min-height: 5.5rem;
+    font-size: 1.35rem;
+    text-align: center;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+}
+
 .delete-link {
     color: var(--error) !important;
 }

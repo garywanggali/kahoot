@@ -45,6 +45,11 @@ def get_room_state(room, runtime=None):
         if room.status == Room.STATUS_LEADERBOARD:
             if current_q.question_type == Question.TYPE_MULTIPLE:
                 question_data['correct_options'] = sorted(current_q.get_correct_option_set())
+            elif current_q.question_type == Question.TYPE_JUDGMENT:
+                key = current_q.correct_option.strip().upper()
+                question_data['correct_option'] = (
+                    current_q.option_a if key == 'A' else current_q.option_b
+                )
             else:
                 question_data['correct_option'] = current_q.correct_option
         if current_q.image:

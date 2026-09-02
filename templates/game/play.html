@@ -188,6 +188,7 @@ function showQuestion(state) {
     }
     currentQuestion = q;
     const isMultiple = q.question_type === 'multiple';
+    const isJudgment = q.question_type === 'judgment';
 
     document.getElementById('question-number').textContent =
         `第 ${state.current_question_index + 1} / ${state.total_questions} 题`;
@@ -196,6 +197,9 @@ function showQuestion(state) {
     const typeHint = document.getElementById('question-type-hint');
     if (isMultiple) {
         typeHint.textContent = '多选题：可选择多个答案，选完后点击提交';
+        typeHint.classList.remove('hidden');
+    } else if (isJudgment) {
+        typeHint.textContent = '判断题：选择正确或错误';
         typeHint.classList.remove('hidden');
     } else {
         typeHint.classList.add('hidden');
@@ -219,6 +223,7 @@ function showQuestion(state) {
 
     const container = document.getElementById('options-container');
     container.innerHTML = '';
+    container.classList.toggle('judgment-options', isJudgment);
     const colors = ['option-a', 'option-b', 'option-c', 'option-d'];
 
     q.options.forEach((opt, i) => {

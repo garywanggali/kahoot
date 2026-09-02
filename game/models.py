@@ -15,10 +15,13 @@ class Question(models.Model):
     ]
     TYPE_SINGLE = 'single'
     TYPE_MULTIPLE = 'multiple'
+    TYPE_JUDGMENT = 'judgment'
     TYPE_CHOICES = [
         (TYPE_SINGLE, '单选题'),
         (TYPE_MULTIPLE, '多选题'),
+        (TYPE_JUDGMENT, '判断题'),
     ]
+    JUDGMENT_OPTION_PLACEHOLDER = '—'
 
     text = models.CharField('题目', max_length=500)
     question_type = models.CharField(
@@ -46,6 +49,11 @@ class Question(models.Model):
         return self.text[:50]
 
     def get_options(self):
+        if self.question_type == self.TYPE_JUDGMENT:
+            return [
+                {'key': 'A', 'text': self.option_a},
+                {'key': 'B', 'text': self.option_b},
+            ]
         return [
             {'key': 'A', 'text': self.option_a},
             {'key': 'B', 'text': self.option_b},
@@ -57,6 +65,12 @@ class Question(models.Model):
         return {opt.strip().upper() for opt in self.correct_option.split(',') if opt.strip()}
 
     def get_correct_option_display(self):
+        if self.question_type == self.TYPE_JUDGMENT:
+            key = self.correct_option.strip().upper()
+            if key == 'A':
+                return self.option_a
+            if key == 'B':
+                return self.option_b
         return ', '.join(sorted(self.get_correct_option_set()))
 
     @property
