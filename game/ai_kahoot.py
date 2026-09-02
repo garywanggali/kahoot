@@ -1,5 +1,7 @@
 """Shared AI Kahoot prompt building, validation, and persistence."""
 
+from __future__ import annotations
+
 import json
 
 from .models import Question

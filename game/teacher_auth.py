@@ -1,5 +1,7 @@
 """Teacher session auth and question access helpers."""
 
+from __future__ import annotations
+
 from django.db.models import Q
 from django.shortcuts import redirect
 

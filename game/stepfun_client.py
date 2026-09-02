@@ -1,5 +1,7 @@
 """阶跃星辰 StepFun API client (OpenAI-compatible Chat Completions)."""
 
+from __future__ import annotations
+
 import json
 import logging
 import time
