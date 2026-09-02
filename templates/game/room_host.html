@@ -46,8 +46,12 @@
     </div>
 
     <div id="host-ended" class="card hidden">
-        <h2 class="page-title">游戏结束</h2>
-        <h3 class="page-title">最终排名</h3>
+        <div class="awards-ceremony">
+            <h2 class="awards-title">颁奖典礼</h2>
+            <p class="awards-subtitle">本场前三名</p>
+            <div id="host-podium-container"></div>
+        </div>
+        <h3 class="final-rankings-title hidden" id="host-final-rankings-title">其余排名</h3>
         <div id="host-final-leaderboard"></div>
         <div class="host-controls">
             <a href="{% url 'teacher_dashboard' %}" class="btn btn-primary">返回控制台</a>
@@ -61,6 +65,8 @@
 {% endblock %}
 
 {% block extra_js %}
+{% load static %}
+<script src="{% static 'js/awards.js' %}?v=1"></script>
 <script>
 const ROOM_CODE = '{{ room.code }}';
 const INITIAL_STATE = {{ initial_state_json|safe }};
@@ -158,7 +164,7 @@ function applyHostState(state) {
         }
     } else if (state.status === 'ended') {
         document.getElementById('host-ended').classList.remove('hidden');
-        renderLeaderboard(state.leaderboard, 'host-final-leaderboard');
+        renderAwardsCeremony(state.leaderboard, 'host-podium-container', 'host-final-leaderboard', 'host-final-rankings-title');
     }
 }
 

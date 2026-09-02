@@ -721,6 +721,166 @@ a:hover {
 }
 
 /* ==========================================================================
+   Awards Ceremony Podium
+   ========================================================================== */
+.awards-ceremony {
+    text-align: center;
+    padding: 0.5rem 0 1.5rem;
+}
+
+.awards-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 2rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.35rem;
+    background: linear-gradient(135deg, #fff 0%, var(--kh-yellow) 55%, #fff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: none;
+    animation: awards-glow 2.5s ease-in-out infinite;
+}
+
+.awards-subtitle {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 1.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+@keyframes awards-glow {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.15); }
+}
+
+.podium-stage {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 0.75rem;
+    max-width: 640px;
+    margin: 0 auto 2rem;
+    padding: 0 0.5rem;
+}
+
+.podium-slot {
+    flex: 1;
+    max-width: 180px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: podium-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.podium-rank-1 { animation-delay: 0.15s; }
+.podium-rank-2 { animation-delay: 0s; }
+.podium-rank-3 { animation-delay: 0.3s; }
+
+@keyframes podium-rise {
+    from {
+        opacity: 0;
+        transform: translateY(40px) scale(0.92);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.podium-medal {
+    font-size: 2.25rem;
+    line-height: 1;
+    margin-bottom: 0.35rem;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.45));
+}
+
+.podium-rank-1 .podium-medal {
+    font-size: 3rem;
+}
+
+.podium-name {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #fff;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-bottom: 0.2rem;
+    padding: 0 0.25rem;
+}
+
+.podium-rank-1 .podium-name {
+    font-size: 1.15rem;
+}
+
+.podium-score {
+    font-family: 'Outfit', monospace;
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--kh-yellow);
+    margin-bottom: 0.65rem;
+}
+
+.podium-stand {
+    width: 100%;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 0.65rem;
+    border: 2px solid rgba(255, 255, 255, 0.22);
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.podium-stand-1 {
+    height: 130px;
+    background: linear-gradient(180deg, rgba(255, 215, 0, 0.55) 0%, rgba(255, 166, 2, 0.25) 100%);
+    border-color: rgba(255, 215, 0, 0.45);
+}
+
+.podium-stand-2 {
+    height: 90px;
+    background: linear-gradient(180deg, rgba(224, 224, 224, 0.5) 0%, rgba(160, 160, 160, 0.22) 100%);
+    border-color: rgba(224, 224, 224, 0.4);
+}
+
+.podium-stand-3 {
+    height: 65px;
+    background: linear-gradient(180deg, rgba(205, 127, 50, 0.55) 0%, rgba(139, 90, 43, 0.25) 100%);
+    border-color: rgba(205, 127, 50, 0.45);
+}
+
+.podium-place-label {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.75rem;
+    font-weight: 900;
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.podium-slot-empty .podium-name {
+    color: var(--text-muted);
+}
+
+.final-rankings-title {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    margin: 0 0 1rem;
+    text-align: center;
+}
+
+.ended-screen,
+#host-ended {
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+/* ==========================================================================
    Danmaku Floating Stream (Right-Side Upward Float)
    ========================================================================== */
 .danmaku-rail {

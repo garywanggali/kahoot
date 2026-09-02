@@ -33,8 +33,12 @@
     </div>
 
     <div id="ended-screen" class="ended-screen hidden">
-        <h2 class="page-title">游戏结束</h2>
-        <h3 class="page-title">最终排名</h3>
+        <div class="awards-ceremony">
+            <h2 class="awards-title">颁奖典礼</h2>
+            <p class="awards-subtitle">恭喜前三名</p>
+            <div id="podium-container"></div>
+        </div>
+        <h3 class="final-rankings-title hidden" id="final-rankings-title">其余排名</h3>
         <div id="final-leaderboard"></div>
         <a href="{% url 'index' %}" class="btn btn-primary section-gap-lg">返回首页</a>
     </div>
@@ -50,6 +54,8 @@
 {% endblock %}
 
 {% block extra_js %}
+{% load static %}
+<script src="{% static 'js/awards.js' %}?v=1"></script>
 <script>
 const ROOM_CODE = '{{ room.code }}';
 const NICKNAME = '{{ nickname }}';
@@ -157,7 +163,7 @@ function applyState(state) {
         applyLeaderboardState(state);
     } else if (state.status === 'ended') {
         document.getElementById('ended-screen').classList.remove('hidden');
-        renderLeaderboard(state.leaderboard, 'final-leaderboard');
+        renderAwardsCeremony(state.leaderboard, 'podium-container', 'final-leaderboard', 'final-rankings-title');
         clearTimer();
     }
 }
