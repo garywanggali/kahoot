@@ -37,6 +37,7 @@ from .teacher_auth import (
     login_teacher,
     logout_teacher,
     normalize_username,
+    own_questions,
     own_quiz_sets,
     public_quiz_sets_excluding,
     require_teacher_or_redirect,
