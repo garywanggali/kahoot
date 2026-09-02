@@ -3,56 +3,42 @@
 {% block title %}游戏 - {{ room.code }}{% endblock %}
 
 {% block content %}
-<div id="app">
-    <div id="waiting-screen" class="waiting-screen">
+<div id="app" class="play-app">
+    <div id="waiting-screen" class="play-waiting">
         <div class="logo logo-sm">Ka<span>hoo</span>t!</div>
-        <p class="player-count">你是 <strong id="player-nickname">{{ nickname }}</strong></p>
+        <p class="player-count">你是 <strong>{{ nickname }}</strong></p>
         <p class="player-count">房间号: <strong>{{ room.code }}</strong></p>
         <h2 class="page-title section-gap-lg">等待老师开始游戏...</h2>
         <div class="player-count">已加入: <span id="player-count">0</span> 人</div>
-        <div id="waiting-leaderboard" class="section-gap-lg"></div>
     </div>
 
-    <div id="question-screen" class="question-screen hidden">
+    <div id="play-screen" class="play-screen hidden">
         <p class="question-number" id="question-number"></p>
-        <div class="timer-bar"><div class="timer-fill" id="timer-fill"></div></div>
+        <div class="timer-bar" id="timer-bar"><div class="timer-fill" id="timer-fill"></div></div>
         <div id="question-image-wrap" class="question-image-wrap hidden">
             <img id="question-image" src="" alt="题目图片">
         </div>
         <h2 class="question-text" id="question-text"></h2>
-        <p class="question-type-hint hidden" id="question-type-hint"></p>
-        <div id="options-container"></div>
+
+        <div id="options-container" class="play-options"></div>
+
         <div id="text-answer-group" class="text-answer-group hidden">
             <input type="text" id="text-answer-input" class="form-control text-answer-input"
                    maxlength="100" placeholder="输入你的答案..." autocomplete="off">
-            <button type="button" id="submit-text-btn" class="btn btn-primary submit-text-btn" onclick="submitTextAnswer()">提交答案</button>
+            <button type="button" id="submit-text-btn" class="btn btn-primary submit-text-btn"
+                    onclick="submitTextAnswer()">提交答案</button>
         </div>
-        <div id="word-cloud-wrap" class="word-cloud-wrap hidden">
-            <p class="word-cloud-title">实时词云</p>
-            <div id="word-cloud-display" class="word-cloud-display"></div>
-        </div>
-        <button type="button" id="submit-multi-btn" class="btn btn-primary submit-multi-btn hidden" onclick="submitMultiAnswer()">提交答案</button>
-        <p id="answer-feedback"></p>
+
+        <button type="button" id="submit-multi-btn" class="btn btn-primary submit-multi-btn hidden"
+                onclick="submitMultiAnswer()">提交答案</button>
+
+        <p id="answer-feedback" class="answer-feedback"></p>
+        <p id="inter-question-hint" class="inter-question-hint hidden">等待下一题...</p>
     </div>
 
-    <div id="leaderboard-screen" class="leaderboard-screen hidden">
-        <h2 class="page-title">排行榜</h2>
-        <div id="leaderboard-word-cloud-wrap" class="word-cloud-wrap hidden">
-            <p class="word-cloud-title">本题词云</p>
-            <div id="leaderboard-word-cloud" class="word-cloud-display"></div>
-        </div>
-        <div id="leaderboard-list"></div>
-        <p class="text-muted-block section-gap">等待下一题...</p>
-    </div>
-
-    <div id="ended-screen" class="ended-screen hidden">
-        <div class="awards-ceremony">
-            <h2 class="awards-title">颁奖典礼</h2>
-            <p class="awards-subtitle">恭喜前三名</p>
-            <div id="podium-container"></div>
-        </div>
-        <h3 class="final-rankings-title hidden" id="final-rankings-title">其余排名</h3>
-        <div id="final-leaderboard"></div>
+    <div id="ended-screen" class="play-ended hidden">
+        <h2 class="page-title">游戏已结束</h2>
+        <p class="text-muted-block">感谢参与本次测验</p>
         <a href="{% url 'index' %}" class="btn btn-primary section-gap-lg">返回首页</a>
     </div>
 </div>
@@ -61,32 +47,33 @@
     <div id="danmaku-layer" class="danmaku-layer"></div>
 </div>
 <div id="danmaku-bar" class="danmaku-bar hidden">
-    <input type="text" id="danmaku-input" class="danmaku-input" maxlength="40" placeholder="发弹幕..." autocomplete="off">
+    <input type="text" id="danmaku-input" class="danmaku-input" maxlength="40"
+           placeholder="发弹幕..." autocomplete="off">
     <button type="button" class="btn btn-outline danmaku-send" onclick="sendDanmaku()">发送</button>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-{% load static %}
-<script src="{% static 'js/awards.js' %}?v=1"></script>
-<script src="{% static 'js/wordcloud.js' %}?v=1"></script>
 <script>
 const ROOM_CODE = '{{ room.code }}';
 const NICKNAME = '{{ nickname }}';
 const INITIAL_STATE = {{ initial_state_json|safe }};
+
 let ws = null;
 let sessionId = localStorage.getItem('kahoot_session_' + ROOM_CODE) || '';
-let currentQuestion = null;
 let currentQuestionId = null;
 let questionStartTime = null;
 let timerInterval = null;
 let hasAnswered = false;
 let selectedOptions = new Set();
-let lastAnswerResult = { answered: false, is_correct: false, points: 0, selected_option: null };
+let lastAnswerResult = { answered: false, is_correct: false, points: 0 };
 let resultRevealTimer = null;
 let danmakuEnabled = false;
 let joinedReady = false;
 const pendingActions = [];
+
+const CHOICE_TYPES = new Set(['single', 'multiple', 'judgment']);
+const TEXT_TYPES = new Set(['short_answer', 'word_cloud']);
 
 function sendWs(data) {
     if (ws && ws.readyState === WebSocket.OPEN) {
@@ -118,9 +105,7 @@ function connect() {
         handleEvent(msg.event, msg.data);
     };
 
-    ws.onclose = () => {
-        setTimeout(connect, 2000);
-    };
+    ws.onclose = () => setTimeout(connect, 2000);
 }
 
 function handleEvent(event, data) {
@@ -134,14 +119,15 @@ function handleEvent(event, data) {
             break;
         case 'player_joined':
             document.getElementById('player-count').textContent = data.player_count;
-            renderLeaderboard(data.leaderboard, 'waiting-leaderboard');
             break;
         case 'game_started':
         case 'question_started':
+            clearResultRevealTimer();
+            document.getElementById('inter-question-hint').classList.add('hidden');
             applyState(data);
             break;
         case 'question_ended':
-            showResultThenLeaderboard(data);
+            showQuestionResult(data);
             break;
         case 'game_ended':
             applyState(data);
@@ -155,9 +141,6 @@ function handleEvent(event, data) {
         case 'danmaku_rejected':
             showDanmakuHint(data.message);
             break;
-        case 'word_cloud_updated':
-            renderWordCloud('word-cloud-display', data.words);
-            break;
         case 'error':
             alert(data.message);
             break;
@@ -167,92 +150,69 @@ function handleEvent(event, data) {
 function applyState(state) {
     document.getElementById('player-count').textContent = state.player_count;
     updateDanmakuBar(state.status);
-
     hideAllScreens();
 
     if (state.status === 'waiting') {
         document.getElementById('waiting-screen').classList.remove('hidden');
-        renderLeaderboard(state.leaderboard, 'waiting-leaderboard');
-    } else if (state.status === 'playing' && state.question) {
-        document.getElementById('question-screen').classList.remove('hidden');
-        showQuestion(state);
-    } else if (state.status === 'leaderboard') {
-        applyLeaderboardState(state);
     } else if (state.status === 'ended') {
         document.getElementById('ended-screen').classList.remove('hidden');
-        renderAwardsCeremony(state.leaderboard, 'podium-container', 'final-leaderboard', 'final-rankings-title');
         clearTimer();
+    } else if (state.status === 'playing' && state.question) {
+        document.getElementById('play-screen').classList.remove('hidden');
+        showQuestion(state);
+    } else if (state.status === 'leaderboard') {
+        document.getElementById('play-screen').classList.remove('hidden');
+        document.getElementById('inter-question-hint').classList.remove('hidden');
+        clearTimer();
+        document.getElementById('timer-bar').classList.add('hidden');
     }
 }
 
 function hideAllScreens() {
-    ['waiting-screen', 'question-screen', 'leaderboard-screen', 'ended-screen']
-        .forEach(id => document.getElementById(id).classList.add('hidden'));
+    ['waiting-screen', 'play-screen', 'ended-screen'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+    });
 }
 
 function showQuestion(state) {
     const q = state.question;
-    if (currentQuestionId === q.id && hasAnswered) {
+    if (currentQuestionId === q.id && hasAnswered && state.status === 'playing') {
         return;
     }
     if (currentQuestionId !== q.id) {
         currentQuestionId = q.id;
         hasAnswered = false;
         selectedOptions = new Set();
-        lastAnswerResult = { answered: false, is_correct: false, points: 0, selected_option: null };
+        lastAnswerResult = { answered: false, is_correct: false, points: 0 };
         questionStartTime = Date.now();
         clearResultRevealTimer();
+        document.getElementById('answer-feedback').textContent = '';
+        document.getElementById('inter-question-hint').classList.add('hidden');
     }
-    currentQuestion = q;
+
+    const isChoice = CHOICE_TYPES.has(q.question_type);
+    const isText = TEXT_TYPES.has(q.question_type);
     const isMultiple = q.question_type === 'multiple';
     const isJudgment = q.question_type === 'judgment';
-    const isShortAnswer = q.question_type === 'short_answer';
-    const isWordCloud = q.question_type === 'word_cloud';
-    const isTextType = isShortAnswer || isWordCloud;
 
     document.getElementById('question-number').textContent =
         `第 ${state.current_question_index + 1} / ${state.total_questions} 题`;
     document.getElementById('question-text').textContent = q.text;
+    document.getElementById('timer-bar').classList.remove('hidden');
 
-    const typeHint = document.getElementById('question-type-hint');
-    if (isMultiple) {
-        typeHint.textContent = '多选题：可选择多个答案，选完后点击提交';
-        typeHint.classList.remove('hidden');
-    } else if (isJudgment) {
-        typeHint.textContent = '判断题：选择正确或错误';
-        typeHint.classList.remove('hidden');
-    } else if (isShortAnswer) {
-        typeHint.textContent = '简答题：输入文字答案后提交';
-        typeHint.classList.remove('hidden');
-    } else if (isWordCloud) {
-        typeHint.textContent = '词云题：输入你的想法，实时生成词云';
-        typeHint.classList.remove('hidden');
-    } else {
-        typeHint.classList.add('hidden');
-    }
-
-    document.getElementById('answer-feedback').textContent = '';
-    document.querySelector('.timer-bar').style.visibility = 'visible';
-
-    const submitBtn = document.getElementById('submit-multi-btn');
-    submitBtn.classList.toggle('hidden', !isMultiple || hasAnswered);
+    const submitMulti = document.getElementById('submit-multi-btn');
+    submitMulti.classList.toggle('hidden', !isMultiple || hasAnswered);
 
     const textGroup = document.getElementById('text-answer-group');
     const textInput = document.getElementById('text-answer-input');
-    textGroup.classList.toggle('hidden', !isTextType || hasAnswered);
-    if (isTextType && !hasAnswered) {
+    const textBtn = document.getElementById('submit-text-btn');
+    textGroup.classList.toggle('hidden', !isText || hasAnswered);
+    if (isText && !hasAnswered) {
         textInput.value = '';
         textInput.disabled = false;
-        textInput.maxLength = isWordCloud ? 40 : 100;
-        textInput.placeholder = isWordCloud ? '例如：猫、狗、兔子...' : '输入你的答案...';
-        const textBtn = document.getElementById('submit-text-btn');
-        if (textBtn) textBtn.disabled = false;
-    }
-
-    const cloudWrap = document.getElementById('word-cloud-wrap');
-    cloudWrap.classList.toggle('hidden', !isWordCloud);
-    if (isWordCloud) {
-        renderWordCloud('word-cloud-display', q.word_cloud || []);
+        textInput.maxLength = q.question_type === 'word_cloud' ? 40 : 100;
+        textInput.placeholder = q.question_type === 'word_cloud' ? '输入一个词或短语...' : '输入你的答案...';
+        textBtn.disabled = false;
     }
 
     const imgWrap = document.getElementById('question-image-wrap');
@@ -268,29 +228,29 @@ function showQuestion(state) {
     const container = document.getElementById('options-container');
     container.innerHTML = '';
     container.classList.remove('judgment-options');
-    container.classList.toggle('hidden', isTextType);
+    container.classList.toggle('hidden', !isChoice);
 
-    if (isTextType) {
-        startTimer(q.time_limit);
-        return;
+    if (isChoice) {
+        container.classList.toggle('judgment-options', isJudgment);
+        const colors = ['option-a', 'option-b', 'option-c', 'option-d'];
+        q.options.forEach((opt, i) => {
+            const btn = document.createElement('button');
+            btn.className = `option-btn ${colors[i]}`;
+            btn.textContent = opt.text;
+            btn.dataset.key = opt.key;
+            btn.disabled = hasAnswered;
+            if (isMultiple) {
+                btn.onclick = () => toggleMultiOption(opt.key, btn);
+            } else {
+                btn.onclick = () => submitAnswer(opt.key, btn);
+            }
+            container.appendChild(btn);
+        });
     }
 
-    container.classList.toggle('judgment-options', isJudgment);
-    const colors = ['option-a', 'option-b', 'option-c', 'option-d'];
-    q.options.forEach((opt, i) => {
-        const btn = document.createElement('button');
-        btn.className = `option-btn ${colors[i]}`;
-        btn.textContent = opt.text;
-        btn.dataset.key = opt.key;
-        if (isMultiple) {
-            btn.onclick = () => toggleMultiOption(opt.key, btn);
-        } else {
-            btn.onclick = () => submitAnswer(opt.key, btn);
-        }
-        container.appendChild(btn);
-    });
-
-    startTimer(q.time_limit);
+    if (!hasAnswered) {
+        startTimer(q.time_limit);
+    }
 }
 
 function startTimer(seconds) {
@@ -301,14 +261,13 @@ function startTimer(seconds) {
 
     timerInterval = setInterval(() => {
         remaining -= 0.1;
-        const pct = (remaining / seconds) * 100;
-        fill.style.width = pct + '%';
+        fill.style.width = ((remaining / seconds) * 100) + '%';
         if (remaining <= 0) {
             clearTimer();
             if (!hasAnswered) {
                 hasAnswered = true;
                 document.getElementById('answer-feedback').textContent = '时间到';
-                disableOptions();
+                lockAnswerUi();
             }
         }
     }, 100);
@@ -337,27 +296,22 @@ function submitTextAnswer() {
     const text = document.getElementById('text-answer-input').value.trim();
     if (!text) return;
     hasAnswered = true;
-    disableOptions();
-
-    const responseTime = Date.now() - questionStartTime;
+    lockAnswerUi();
     sendWs({
         action: 'submit_answer',
         answer_text: text,
-        response_time_ms: responseTime,
+        response_time_ms: Date.now() - questionStartTime,
     });
 }
 
 function submitMultiAnswer() {
     if (hasAnswered || selectedOptions.size === 0) return;
     hasAnswered = true;
-    disableOptions();
-    document.getElementById('submit-multi-btn').classList.add('hidden');
-
-    const responseTime = Date.now() - questionStartTime;
+    lockAnswerUi();
     sendWs({
         action: 'submit_answer',
         selected_options: Array.from(selectedOptions).sort(),
-        response_time_ms: responseTime,
+        response_time_ms: Date.now() - questionStartTime,
     });
 }
 
@@ -365,21 +319,17 @@ function submitAnswer(key, btn) {
     if (hasAnswered) return;
     hasAnswered = true;
     btn.classList.add('selected');
-    disableOptions();
-
-    const responseTime = Date.now() - questionStartTime;
+    lockAnswerUi();
     sendWs({
         action: 'submit_answer',
         selected_option: key,
-        response_time_ms: responseTime,
+        response_time_ms: Date.now() - questionStartTime,
     });
 }
 
-function disableOptions() {
+function lockAnswerUi() {
     document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
     document.getElementById('submit-multi-btn').classList.add('hidden');
-    const textGroup = document.getElementById('text-answer-group');
-    if (textGroup) textGroup.classList.add('hidden');
     const textInput = document.getElementById('text-answer-input');
     const textBtn = document.getElementById('submit-text-btn');
     if (textInput) textInput.disabled = true;
@@ -391,16 +341,9 @@ function showAnswerFeedback(data) {
         answered: true,
         is_correct: data.is_correct,
         points: data.points,
-        selected_option: data.selected_option,
     };
     const fb = document.getElementById('answer-feedback');
-    if (data.is_correct) {
-        fb.textContent = `正确 +${data.points}`;
-        fb.style.color = '';
-    } else {
-        fb.textContent = '错误';
-        fb.style.color = '';
-    }
+    fb.textContent = data.is_correct ? `正确 +${data.points}` : '错误';
 }
 
 function clearResultRevealTimer() {
@@ -410,30 +353,17 @@ function clearResultRevealTimer() {
     }
 }
 
-function showResultThenLeaderboard(state) {
+function showQuestionResult(state) {
     clearResultRevealTimer();
     clearTimer();
-    document.getElementById('player-count').textContent = state.player_count;
-
-    hideAllScreens();
-    document.getElementById('question-screen').classList.remove('hidden');
-    document.querySelector('.timer-bar').style.visibility = 'hidden';
-    disableOptions();
+    document.getElementById('timer-bar').classList.add('hidden');
+    lockAnswerUi();
 
     const correctKeys = getCorrectKeys(state);
     if (correctKeys.length) {
         highlightCorrectAnswers(correctKeys);
     }
 
-    showResultMessage(state);
-
-    resultRevealTimer = setTimeout(() => {
-        resultRevealTimer = null;
-        applyLeaderboardState(state);
-    }, 3000);
-}
-
-function showResultMessage(state) {
     const fb = document.getElementById('answer-feedback');
     const q = state.question;
     const isWordCloud = q && q.question_type === 'word_cloud';
@@ -441,28 +371,20 @@ function showResultMessage(state) {
 
     if (lastAnswerResult.answered) {
         if (isWordCloud) {
-            fb.innerHTML = `
-                <div class="result-big correct">已提交</div>
-                <div class="result-points">+${lastAnswerResult.points}</div>
-            `;
+            fb.textContent = `已提交 +${lastAnswerResult.points}`;
         } else if (lastAnswerResult.is_correct) {
-            fb.innerHTML = `
-                <div class="result-big correct">回答正确</div>
-                <div class="result-points">+${lastAnswerResult.points}</div>
-            `;
+            fb.textContent = `回答正确 +${lastAnswerResult.points}`;
         } else {
-            fb.innerHTML = `
-                <div class="result-big wrong">回答错误</div>
-                <div class="result-hint">正确答案 ${correctLabel}</div>
-            `;
+            fb.textContent = correctLabel ? `回答错误，正确答案：${correctLabel}` : '回答错误';
         }
     } else {
-        fb.innerHTML = `
-            <div class="result-big wrong">时间到</div>
-            <div class="result-hint">${correctLabel ? `正确答案 ${correctLabel}` : '未作答'}</div>
-        `;
+        fb.textContent = correctLabel ? `时间到，正确答案：${correctLabel}` : '时间到';
     }
-    fb.innerHTML += '<div class="result-hint" style="margin-top:1rem;">即将显示排行榜...</div>';
+
+    resultRevealTimer = setTimeout(() => {
+        resultRevealTimer = null;
+        document.getElementById('inter-question-hint').classList.remove('hidden');
+    }, 2500);
 }
 
 function getCorrectKeys(state) {
@@ -482,11 +404,10 @@ function formatCorrectLabel(question) {
     if (question.question_type === 'short_answer' && question.correct_answer) {
         return question.correct_answer;
     }
-    if (question.question_type === 'word_cloud') {
+    if (TEXT_TYPES.has(question.question_type) && question.question_type !== 'short_answer') {
         return '';
     }
-    const keys = getCorrectKeys({ question });
-    return keys.join(', ');
+    return getCorrectKeys({ question }).join(', ');
 }
 
 function highlightCorrectAnswers(correctKeys) {
@@ -499,37 +420,6 @@ function highlightCorrectAnswers(correctKeys) {
             btn.classList.add('wrong');
         }
     });
-}
-
-function applyLeaderboardState(state) {
-    hideAllScreens();
-    document.querySelector('.timer-bar').style.visibility = 'visible';
-    document.getElementById('leaderboard-screen').classList.remove('hidden');
-    renderLeaderboard(state.leaderboard, 'leaderboard-list');
-
-    const cloudWrap = document.getElementById('leaderboard-word-cloud-wrap');
-    const q = state.question;
-    if (q && q.question_type === 'word_cloud') {
-        cloudWrap.classList.remove('hidden');
-        renderWordCloud('leaderboard-word-cloud', q.word_cloud || []);
-    } else {
-        cloudWrap.classList.add('hidden');
-    }
-}
-
-function renderLeaderboard(leaderboard, containerId) {
-    const container = document.getElementById(containerId);
-    if (!leaderboard || leaderboard.length === 0) {
-        container.innerHTML = '<p class="text-muted-block">暂无玩家</p>';
-        return;
-    }
-    container.innerHTML = leaderboard.map(p => `
-        <div class="leaderboard-item">
-            <span class="leaderboard-rank">#${p.rank}</span>
-            <span class="leaderboard-name">${p.nickname}</span>
-            <span class="leaderboard-score">${p.score}</span>
-        </div>
-    `).join('');
 }
 
 function updateDanmakuBar(status) {
@@ -573,6 +463,13 @@ document.getElementById('danmaku-input').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
         e.preventDefault();
         sendDanmaku();
+    }
+});
+
+document.getElementById('text-answer-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        submitTextAnswer();
     }
 });
 

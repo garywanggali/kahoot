@@ -82,7 +82,7 @@
                         <div class="form-group-industrial">
                             <label for="password">密码</label>
                             <input type="password" id="password" name="password" class="input-industrial"
-                                   placeholder="输入管理密码" required autocomplete="current-password">
+                                   placeholder="注册时设置的密码（不是邀请码）" required autocomplete="current-password">
                         </div>
                         <button type="submit" class="btn-industrial-primary" id="btn-submit-teacher">
                             <span>登录老师控制台</span>
@@ -91,7 +91,7 @@
                     </form>
                     
                     <div class="teacher-extra-links">
-                        <a href="{% url 'teacher_register' %}" class="link-mono">邀请码注册账号 →</a>
+                        <a href="{% url 'teacher_register' %}" class="link-mono">还没有账号？邀请码注册 →</a>
                     </div>
                     
                     <div class="flip-footer-switch">
