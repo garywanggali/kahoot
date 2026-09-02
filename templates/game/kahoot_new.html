@@ -22,152 +22,155 @@
         </div>
     </div>
 
-    <!-- 向导核心区域 (第一页与第二页返回键位置 100% 绝对一致) -->
+    <!-- 向导核心区域 (单一大方框体系：两页尺寸绝对一致，返回键完全同位绝对0偏移) -->
     <div class="wizard-flow-wrapper">
 
-        <!-- ========================================== -->
-        <!-- 第一步：命名这套题库 -->
-        <!-- ========================================== -->
-        <div class="wizard-card wizard-card-step1 card-glass" id="wizard-step-1">
-            <div class="wizard-card-header">
-                <div class="wizard-card-top-nav">
-                    <a href="{% url 'teacher_dashboard' %}" class="btn-card-back">
-                        <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="19" y1="12" x2="5" y2="12"></line>
-                            <polyline points="12 19 5 12 12 5"></polyline>
-                        </svg>
-                        <span>返回控制台</span>
-                    </a>
-                </div>
-                <h2 class="wizard-title">第一步：命名这套测验题库</h2>
-                <p class="wizard-desc">
-                    每次新建都会保存为<strong>一套独立的测验套题</strong>，可在题库中随时复用，也可直接一键发起大屏互动。
-                </p>
-            </div>
-
-            <div class="wizard-form-body">
-                <div class="form-group-industrial" style="margin-bottom: 0;">
-                    <label for="quiz-title-input" class="wizard-input-label">题库名称</label>
-                    <input type="text" id="quiz-title-input" class="input-industrial input-wizard-contrast"
-                           placeholder="例如：初一地理期末总复习 / 细胞生物学专题测验"
-                           maxlength="200" required autofocus autocomplete="off"
-                           value="{{ pending_title|default:'' }}">
-                </div>
-            </div>
-
-            <div class="wizard-card-footer" style="justify-content: flex-end;">
-                <button type="button" class="btn-wizard-next-contrast" id="btn-goto-step2" onclick="handleGoToStep2()">
-                    <span>下一步：选择出题方式</span>
-                    <span>→</span>
+        <div class="wizard-card wizard-unified-card card-glass">
+            
+            <!-- 统一左上角返回区 (Step 1 与 Step 2 完全共用同一基准位置) -->
+            <div class="wizard-card-top-nav">
+                <a href="{% url 'teacher_dashboard' %}" class="btn-card-back" id="card-back-step1">
+                    <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    <span>返回控制台</span>
+                </a>
+                
+                <button type="button" class="btn-card-back" id="card-back-step2" style="display: none;" onclick="handleBackToStep1()">
+                    <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    <span>返回修改名称</span>
                 </button>
             </div>
-        </div>
 
-        <!-- ========================================== -->
-        <!-- 第二步：选择出题方式 (返回键位置与第一步完全同位) -->
-        <!-- ========================================== -->
-        <div class="wizard-card wizard-card-step2 card-glass" id="wizard-step-2" style="display: none;">
-            
-            <div class="wizard-card-header">
-                <div class="wizard-card-top-nav">
-                    <button type="button" class="btn-card-back" onclick="handleBackToStep1()">
-                        <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="19" y1="12" x2="5" y2="12"></line>
-                            <polyline points="12 19 5 12 12 5"></polyline>
-                        </svg>
-                        <span>返回修改名称</span>
+            <!-- ========================================== -->
+            <!-- 第一步内容：命名这套题库 -->
+            <!-- ========================================== -->
+            <div class="wizard-step-content" id="step-content-1">
+                <div class="wizard-card-header">
+                    <h2 class="wizard-title">第一步：命名这套测验题库</h2>
+                    <p class="wizard-desc">
+                        每次新建都会保存为<strong>一套独立的测验套题</strong>，可在题库中随时复用，也可直接一键发起大屏互动。
+                    </p>
+                </div>
+
+                <div class="wizard-form-body">
+                    <div class="form-group-industrial" style="margin-bottom: 0;">
+                        <label for="quiz-title-input" class="wizard-input-label">题库名称</label>
+                        <input type="text" id="quiz-title-input" class="input-industrial input-wizard-contrast"
+                               placeholder="例如：初一地理期末总复习 / 细胞生物学专题测验"
+                               maxlength="200" required autofocus autocomplete="off"
+                               value="{{ pending_title|default:'' }}">
+                    </div>
+                </div>
+
+                <div class="wizard-card-footer" style="justify-content: flex-end;">
+                    <button type="button" class="btn-wizard-next-contrast" id="btn-goto-step2" onclick="handleGoToStep2()">
+                        <span>下一步：选择出题方式</span>
+                        <span>→</span>
                     </button>
                 </div>
-                <h2 class="wizard-title">第二步：选择出题方式</h2>
-                <p class="wizard-desc">
-                    选择最适合你的出题模式，选定后即可直接进入试题编辑或批量生成。
-                </p>
             </div>
 
-            <form method="post" action="{% url 'kahoot_start' %}" id="wizard-submit-form">
-                {% csrf_token %}
-                <input type="hidden" name="title" id="hidden-quiz-title" value="{{ pending_title|default:'' }}">
-                
-                <div class="wizard-choices-grid">
-                    
-                    <!-- 模式 1: 手动编辑出题 -->
-                    <button type="submit" name="action" value="manual" class="choice-box choice-box-manual">
-                        <div class="choice-header-row">
-                            <div class="choice-icon-wrap icon-manual">
-                                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M12 20h9"></path>
-                                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                                </svg>
-                            </div>
-                            <span class="choice-box-action">开始手动出题 →</span>
-                        </div>
-                        <div class="choice-box-content">
-                            <h3 class="choice-box-title">手动编辑出题</h3>
-                            <p class="choice-box-desc">逐题编写题干与选项，自由配置单选、多选、判断、简答与配图。</p>
-                        </div>
-                    </button>
-
-                    <!-- 模式 2: AI 智能生成 -->
-                    <button type="submit" name="action" value="ai" class="choice-box choice-box-ai">
-                        <div class="choice-header-row">
-                            <div class="choice-icon-wrap icon-ai">
-                                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path>
-                                    <path d="M5 3v4"></path>
-                                    <path d="M19 17v4"></path>
-                                    <path d="M3 5h4"></path>
-                                    <path d="M17 19h4"></path>
-                                </svg>
-                            </div>
-                            <span class="choice-box-action">使用 AI 生成 →</span>
-                        </div>
-                        <div class="choice-box-content">
-                            <h3 class="choice-box-title">AI 智能生成</h3>
-                            <p class="choice-box-desc">输入学科主题、年级与题型配比，由大模型自动出题并填入。</p>
-                        </div>
-                    </button>
-
-                    <!-- 模式 3: Excel 批量导入 -->
-                    <button type="submit" name="action" value="excel" class="choice-box choice-box-excel">
-                        <div class="choice-header-row">
-                            <div class="choice-icon-wrap icon-excel">
-                                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                    <polyline points="14 2 14 8 20 8"></polyline>
-                                    <line x1="8" y1="13" x2="16" y2="13"></line>
-                                    <line x1="8" y1="17" x2="16" y2="17"></line>
-                                    <polyline points="10 9 9 9 8 9"></polyline>
-                                </svg>
-                            </div>
-                            <span class="choice-box-action">上传 Excel 导入 →</span>
-                        </div>
-                        <div class="choice-box-content">
-                            <h3 class="choice-box-title">Excel 批量导入</h3>
-                            <p class="choice-box-desc">下载标准表格模板，按固定格式批量上传 .xlsx 文件快速导入试题。</p>
-                        </div>
-                    </button>
-
-                    <!-- 模式 4: 公共题库选用 -->
-                    <button type="submit" name="action" value="public" class="choice-box choice-box-public">
-                        <div class="choice-header-row">
-                            <div class="choice-icon-wrap icon-public">
-                                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                                    <line x1="9" y1="6" x2="16" y2="6"></line>
-                                    <line x1="9" y1="10" x2="14" y2="10"></line>
-                                </svg>
-                            </div>
-                            <span class="choice-box-action">浏览公共题库 →</span>
-                        </div>
-                        <div class="choice-box-content">
-                            <h3 class="choice-box-title">从公共题库选用</h3>
-                            <p class="choice-box-desc">浏览其他老师公开的精选套题，一键选用或二次编辑修改。</p>
-                        </div>
-                    </button>
-
+            <!-- ========================================== -->
+            <!-- 第二步内容：选择出题方式 (与第一步共用外框，严格同尺寸) -->
+            <!-- ========================================== -->
+            <div class="wizard-step-content" id="step-content-2" style="display: none;">
+                <div class="wizard-card-header" style="margin-bottom: 1.25rem;">
+                    <h2 class="wizard-title">第二步：选择出题方式</h2>
+                    <p class="wizard-desc">
+                        选择最适合你的出题模式，选定后即可直接进入试题编辑或批量生成。
+                    </p>
                 </div>
-            </form>
+
+                <form method="post" action="{% url 'kahoot_start' %}" id="wizard-submit-form" style="margin: 0;">
+                    {% csrf_token %}
+                    <input type="hidden" name="title" id="hidden-quiz-title" value="{{ pending_title|default:'' }}">
+                    
+                    <div class="wizard-choices-grid">
+                        
+                        <!-- 模式 1: 手动编辑出题 -->
+                        <button type="submit" name="action" value="manual" class="choice-box choice-box-manual">
+                            <div class="choice-header-row">
+                                <div class="choice-icon-wrap icon-manual">
+                                    <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 20h9"></path>
+                                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                                    </svg>
+                                </div>
+                                <span class="choice-box-action">开始手动出题 →</span>
+                            </div>
+                            <div class="choice-box-content">
+                                <h3 class="choice-box-title">手动编辑出题</h3>
+                                <p class="choice-box-desc">逐题编写题干与选项，自由配置单选、多选、判断、简答与配图。</p>
+                            </div>
+                        </button>
+
+                        <!-- 模式 2: AI 智能生成 -->
+                        <button type="submit" name="action" value="ai" class="choice-box choice-box-ai">
+                            <div class="choice-header-row">
+                                <div class="choice-icon-wrap icon-ai">
+                                    <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path>
+                                        <path d="M5 3v4"></path>
+                                        <path d="M19 17v4"></path>
+                                        <path d="M3 5h4"></path>
+                                        <path d="M17 19h4"></path>
+                                    </svg>
+                                </div>
+                                <span class="choice-box-action">使用 AI 生成 →</span>
+                            </div>
+                            <div class="choice-box-content">
+                                <h3 class="choice-box-title">AI 智能生成</h3>
+                                <p class="choice-box-desc">输入学科主题、年级与题型配比，由大模型自动出题并填入。</p>
+                            </div>
+                        </button>
+
+                        <!-- 模式 3: Excel 批量导入 -->
+                        <button type="submit" name="action" value="excel" class="choice-box choice-box-excel">
+                            <div class="choice-header-row">
+                                <div class="choice-icon-wrap icon-excel">
+                                    <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                        <line x1="8" y1="13" x2="16" y2="13"></line>
+                                        <line x1="8" y1="17" x2="16" y2="17"></line>
+                                        <polyline points="10 9 9 9 8 9"></polyline>
+                                    </svg>
+                                </div>
+                                <span class="choice-box-action">上传 Excel 导入 →</span>
+                            </div>
+                            <div class="choice-box-content">
+                                <h3 class="choice-box-title">Excel 批量导入</h3>
+                                <p class="choice-box-desc">下载标准表格模板，按固定格式批量上传 .xlsx 文件快速导入试题。</p>
+                            </div>
+                        </button>
+
+                        <!-- 模式 4: 公共题库选用 -->
+                        <button type="submit" name="action" value="public" class="choice-box choice-box-public">
+                            <div class="choice-header-row">
+                                <div class="choice-icon-wrap icon-public">
+                                    <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                                        <line x1="9" y1="6" x2="16" y2="6"></line>
+                                        <line x1="9" y1="10" x2="14" y2="10"></line>
+                                    </svg>
+                                </div>
+                                <span class="choice-box-action">浏览公共题库 →</span>
+                            </div>
+                            <div class="choice-box-content">
+                                <h3 class="choice-box-title">从公共题库选用</h3>
+                                <p class="choice-box-desc">浏览其他老师公开的精选套题，一键选用或二次编辑修改。</p>
+                            </div>
+                        </button>
+
+                    </div>
+                </form>
+            </div>
 
         </div>
 
@@ -180,8 +183,10 @@
 <script>
 const inputEl = document.getElementById('quiz-title-input');
 const hiddenTitleEl = document.getElementById('hidden-quiz-title');
-const step1Card = document.getElementById('wizard-step-1');
-const step2Card = document.getElementById('wizard-step-2');
+const stepContent1 = document.getElementById('step-content-1');
+const stepContent2 = document.getElementById('step-content-2');
+const cardBack1 = document.getElementById('card-back-step1');
+const cardBack2 = document.getElementById('card-back-step2');
 const pill1 = document.getElementById('step-pill-1');
 const pill2 = document.getElementById('step-pill-2');
 
@@ -196,17 +201,23 @@ function handleGoToStep2() {
 
     hiddenTitleEl.value = titleVal;
 
-    // 切换卡片
-    step1Card.style.display = 'none';
-    step2Card.style.display = 'block';
+    // 切换内容区域与返回按键
+    stepContent1.style.display = 'none';
+    stepContent2.style.display = 'block';
+
+    cardBack1.style.display = 'none';
+    cardBack2.style.display = 'inline-flex';
 
     pill1.classList.remove('active');
     pill2.classList.add('active');
 }
 
 function handleBackToStep1() {
-    step2Card.style.display = 'none';
-    step1Card.style.display = 'block';
+    stepContent2.style.display = 'none';
+    stepContent1.style.display = 'block';
+
+    cardBack2.style.display = 'none';
+    cardBack1.style.display = 'inline-flex';
 
     pill2.classList.remove('active');
     pill1.classList.add('active');
