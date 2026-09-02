@@ -2036,7 +2036,3 @@ button.kahoot-choice-button:focus-visible {
 .choice-box:hover .choice-box-action {
     color: var(--orange);
 }
-
-.action-orange {
-    color: var(--orange);
-}
