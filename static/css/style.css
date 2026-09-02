@@ -399,8 +399,11 @@ a:hover {
 }
 
 .input-pin::placeholder {
-    letter-spacing: 0.22em;
-    color: #c4c4be !important;
+    letter-spacing: normal !important;
+    font-size: 1.15rem !important;
+    font-family: var(--font-body) !important;
+    font-weight: 500 !important;
+    color: #b8b8b2 !important;
 }
 
 /* High-Impact 撞色 CTA Button (Safety Orange + Bold Black Shadow) */
