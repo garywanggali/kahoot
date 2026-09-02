@@ -22,7 +22,7 @@ def get_leaderboard(room):
     ]
 
 
-def get_room_state(room):
+def get_room_state(room, runtime=None):
     questions = room.get_questions()
     current_q = room.current_question()
     state = {
@@ -50,6 +50,9 @@ def get_room_state(room):
         if current_q.image:
             question_data['image_url'] = current_q.image.url
         state['question'] = question_data
+    if runtime is not None:
+        from .room_cache import overlay_room_state
+        state = overlay_room_state(state, runtime)
     return state
 
 

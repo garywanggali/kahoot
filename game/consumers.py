@@ -1,3 +1,4 @@
+import asyncio
 import json
 import time
 import uuid
@@ -9,6 +10,16 @@ from channels.layers import get_channel_layer
 from django.utils import timezone
 
 from .models import Answer, Player, Question, Room
+from .room_cache import (
+    answer_exists as cache_answer_exists,
+    flush_runtime_force,
+    get_answer_count as cache_get_answer_count,
+    get_player_nickname,
+    get_runtime,
+    join_player,
+    maybe_flush,
+    record_answer,
+)
 from .utils import calculate_points, get_room_state
 
 DANMAKU_MAX_LENGTH = 40
@@ -81,8 +92,12 @@ class RoomConsumer(AsyncWebsocketConsumer):
         if not session_id:
             session_id = str(uuid.uuid4())
 
-        player, created = await self.get_or_create_player(nickname, session_id)
-        if not created and player.session_id != session_id:
+        room = await self.get_room()
+        runtime = await database_sync_to_async(get_runtime)(room)
+        player, _created, error = await database_sync_to_async(join_player)(
+            runtime, nickname, session_id,
+        )
+        if error == 'nickname_taken':
             await self.send(text_data=json.dumps({
                 'event': 'error',
                 'data': {'message': '该昵称已被使用'},
@@ -90,25 +105,30 @@ class RoomConsumer(AsyncWebsocketConsumer):
             return
 
         self.session_id = session_id
-        self.player_id = player.id
+        self.player_id = player.db_id
+        self.runtime = runtime
 
         state = await self.get_room_state_async()
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                'type': 'room_message',
-                'event': 'player_joined',
-                'data': {
-                    'player_count': state['player_count'],
-                    'leaderboard': state['leaderboard'],
+        asyncio.create_task(self._flush_runtime_async(runtime))
+
+        if runtime.should_broadcast_join():
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'room_message',
+                    'event': 'player_joined',
+                    'data': {
+                        'player_count': state['player_count'],
+                        'leaderboard': state['leaderboard'],
+                    },
                 },
-            },
-        )
+            )
+
         await self.send(text_data=json.dumps({
             'event': 'joined',
             'data': {
                 'session_id': session_id,
-                'player_id': player.id,
+                'player_id': player.db_id,
                 'nickname': player.nickname,
                 'state': state,
             },
@@ -121,6 +141,9 @@ class RoomConsumer(AsyncWebsocketConsumer):
         questions = await self.get_questions_count()
         if questions == 0:
             return
+
+        runtime = await database_sync_to_async(get_runtime)(room)
+        await self._flush_runtime_async(runtime, force=True)
 
         await self.update_room(
             status=Room.STATUS_PLAYING,
@@ -136,6 +159,9 @@ class RoomConsumer(AsyncWebsocketConsumer):
     async def handle_next_question(self):
         room = await self.get_room()
         questions_count = await self.get_questions_count()
+
+        runtime = await database_sync_to_async(get_runtime)(room)
+        await self._flush_runtime_async(runtime, force=True)
 
         if room.current_question_index + 1 >= questions_count:
             await self.update_room(status=Room.STATUS_ENDED)
@@ -158,7 +184,7 @@ class RoomConsumer(AsyncWebsocketConsumer):
         )
 
     async def handle_submit_answer(self, data):
-        if not hasattr(self, 'player_id'):
+        if not hasattr(self, 'session_id'):
             return
 
         room = await self.get_room()
@@ -173,7 +199,10 @@ class RoomConsumer(AsyncWebsocketConsumer):
         if selected is None:
             return
 
-        exists = await self.answer_exists(self.player_id, question.id)
+        runtime = await database_sync_to_async(get_runtime)(room)
+        exists = await database_sync_to_async(cache_answer_exists)(
+            runtime, self.session_id, question.id,
+        )
         if exists:
             return
 
@@ -181,13 +210,19 @@ class RoomConsumer(AsyncWebsocketConsumer):
         is_correct = question.is_answer_correct(selected)
         points = calculate_points(question.time_limit, response_time_ms, is_correct)
 
-        await self.create_answer(
-            self.player_id, room.id, question.id,
-            selected, is_correct, points, response_time_ms,
+        recorded = await database_sync_to_async(record_answer)(
+            runtime,
+            self.session_id,
+            question.id,
+            selected,
+            is_correct,
+            points,
+            response_time_ms,
         )
+        if not recorded:
+            return
 
-        if is_correct:
-            await self.add_player_score(self.player_id, points)
+        asyncio.create_task(self._flush_runtime_async(runtime))
 
         await self.send(text_data=json.dumps({
             'event': 'answer_received',
@@ -198,8 +233,8 @@ class RoomConsumer(AsyncWebsocketConsumer):
             },
         }))
 
-        answer_count = await self.get_answer_count(room.id, question.id)
-        player_count = await self.get_player_count(room.id)
+        answer_count = await database_sync_to_async(cache_get_answer_count)(runtime, question.id)
+        player_count = (await self.get_room_state_async())['player_count']
         if answer_count >= player_count and player_count > 0:
             await self.handle_end_question()
 
@@ -207,6 +242,9 @@ class RoomConsumer(AsyncWebsocketConsumer):
         room = await self.get_room()
         if room.status != Room.STATUS_PLAYING:
             return
+
+        runtime = await database_sync_to_async(get_runtime)(room)
+        await self._flush_runtime_async(runtime, force=True)
 
         await self.update_room(status=Room.STATUS_LEADERBOARD)
         state = await self.get_room_state_async()
@@ -216,7 +254,7 @@ class RoomConsumer(AsyncWebsocketConsumer):
         )
 
     async def handle_send_danmaku(self, data):
-        if not hasattr(self, 'player_id'):
+        if not hasattr(self, 'session_id'):
             return
 
         room = await self.get_room()
@@ -229,22 +267,29 @@ class RoomConsumer(AsyncWebsocketConsumer):
         text = text[:DANMAKU_MAX_LENGTH]
 
         now = time.monotonic()
-        last = _danmaku_cooldown.get(self.player_id, 0)
+        last = _danmaku_cooldown.get(self.session_id, 0)
         if now - last < DANMAKU_COOLDOWN_SEC:
             await self.send(text_data=json.dumps({
                 'event': 'danmaku_rejected',
                 'data': {'message': f'发送太频繁，请 {DANMAKU_COOLDOWN_SEC} 秒后再试'},
             }))
             return
-        _danmaku_cooldown[self.player_id] = now
+        _danmaku_cooldown[self.session_id] = now
 
-        player = await Player.objects.aget(id=self.player_id)
+        runtime = await database_sync_to_async(get_runtime)(room)
+        nickname = await database_sync_to_async(get_player_nickname)(runtime, self.session_id)
+        if not nickname and self.player_id:
+            player = await Player.objects.aget(id=self.player_id)
+            nickname = player.nickname
+        if not nickname:
+            return
+
         await self.channel_layer.group_send(
             self.room_group_name,
             {
                 'type': 'room_message',
                 'event': 'danmaku',
-                'data': {'nickname': player.nickname, 'text': text},
+                'data': {'nickname': nickname, 'text': text},
             },
         )
 
@@ -252,23 +297,14 @@ class RoomConsumer(AsyncWebsocketConsumer):
         state = await self.get_room_state_async()
         await self.send(text_data=json.dumps({'event': 'state', 'data': state}))
 
-    @staticmethod
-    def _sync_get_room(room_code):
-        return Room.objects.get(code=room_code)
+    async def _flush_runtime_async(self, runtime, force=False):
+        if force:
+            await database_sync_to_async(flush_runtime_force)(runtime)
+        else:
+            await database_sync_to_async(maybe_flush)(runtime)
 
     async def get_room(self):
         return await Room.objects.aget(code=self.room_code)
-
-    async def get_or_create_player(self, nickname, session_id):
-        room = await self.get_room()
-        try:
-            player = await Player.objects.aget(room=room, nickname=nickname)
-            return player, False
-        except Player.DoesNotExist:
-            player = await Player.objects.acreate(
-                room=room, nickname=nickname, session_id=session_id,
-            )
-            return player, True
 
     async def get_questions_count(self):
         room = await self.get_room()
@@ -289,31 +325,6 @@ class RoomConsumer(AsyncWebsocketConsumer):
 
     async def get_room_state_async(self):
         return await database_sync_to_async(get_room_state_by_code)(self.room_code)
-
-    async def answer_exists(self, player_id, question_id):
-        return await Answer.objects.filter(player_id=player_id, question_id=question_id).aexists()
-
-    async def create_answer(self, player_id, room_id, question_id, selected, is_correct, points, response_time_ms):
-        await Answer.objects.acreate(
-            player_id=player_id,
-            room_id=room_id,
-            question_id=question_id,
-            selected_option=selected,
-            is_correct=is_correct,
-            points=points,
-            response_time_ms=response_time_ms,
-        )
-
-    async def add_player_score(self, player_id, points):
-        player = await Player.objects.aget(id=player_id)
-        player.score += points
-        await player.asave(update_fields=['score'])
-
-    async def get_answer_count(self, room_id, question_id):
-        return await Answer.objects.filter(room_id=room_id, question_id=question_id).acount()
-
-    async def get_player_count(self, room_id):
-        return await Player.objects.filter(room_id=room_id).acount()
 
     @staticmethod
     def normalize_answer_selection(question, data):
@@ -337,4 +348,5 @@ class RoomConsumer(AsyncWebsocketConsumer):
 
 def get_room_state_by_code(room_code):
     room = Room.objects.get(code=room_code)
-    return get_room_state(room)
+    runtime = get_runtime(room)
+    return get_room_state(room, runtime=runtime)

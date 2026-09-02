@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .models import Answer, Player, Question, Room, RoomQuestion
+from .room_cache import drop_runtime, flush_runtime_force, get_runtime
 from .utils import get_room_state
 from .validators import MAX_QUESTION_IMAGE_BYTES, validate_question_image
 
@@ -54,7 +55,7 @@ def play(request, room_code):
     return render(request, 'game/play.html', {
         'room': room,
         'nickname': nickname,
-        'initial_state_json': json.dumps(get_room_state(room)),
+        'initial_state_json': json.dumps(get_room_state(room, runtime=get_runtime(room))),
     })
 
 
@@ -246,6 +247,9 @@ def room_reset(request, pk):
         return _require_teacher(request)
     room = get_object_or_404(Room, pk=pk)
     if request.method == 'POST':
+        runtime = get_runtime(room)
+        flush_runtime_force(runtime)
+        drop_runtime(room.code)
         room.status = Room.STATUS_WAITING
         room.current_question_index = -1
         room.question_started_at = None
@@ -264,7 +268,7 @@ def room_host(request, pk):
     return render(request, 'game/room_host.html', {
         'room': room,
         'questions': questions,
-        'initial_state_json': json.dumps(get_room_state(room)),
+        'initial_state_json': json.dumps(get_room_state(room, runtime=get_runtime(room))),
     })
 
 
@@ -273,4 +277,5 @@ def room_state_api(request, room_code):
         room = Room.objects.get(code=room_code)
     except Room.DoesNotExist:
         return JsonResponse({'error': '房间不存在'}, status=404)
-    return JsonResponse(get_room_state(room))
+    runtime = get_runtime(room)
+    return JsonResponse(get_room_state(room, runtime=runtime))

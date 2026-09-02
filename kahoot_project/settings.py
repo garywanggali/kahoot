@@ -67,8 +67,16 @@ DATABASES = {
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        'CONFIG': {
+            'capacity': 2000,
+        },
     },
 }
+
+# Room runtime cache: batch writes to SQLite under load
+ROOM_CACHE_FLUSH_BATCH = int(os.environ.get('ROOM_CACHE_FLUSH_BATCH', '30'))
+ROOM_CACHE_FLUSH_INTERVAL = float(os.environ.get('ROOM_CACHE_FLUSH_INTERVAL', '0.5'))
+ROOM_CACHE_JOIN_BROADCAST_INTERVAL = float(os.environ.get('ROOM_CACHE_JOIN_BROADCAST_INTERVAL', '0.25'))
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
