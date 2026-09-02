@@ -235,6 +235,12 @@ body:has(.kahoot-editor-app) .container {
     min-height: 3.5rem;
 }
 
+/* 编辑器自带图标 span，禁用 play 页 .option-a::before 等伪元素 */
+.kahoot-editor-options .kahoot-editor-option::before {
+    content: none;
+    display: none;
+}
+
 .kahoot-editor-option.option-a { background: var(--kh-option-a); }
 .kahoot-editor-option.option-b { background: var(--kh-option-b); }
 .kahoot-editor-option.option-c { background: var(--kh-option-c); color: #111; }
