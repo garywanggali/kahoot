@@ -447,16 +447,22 @@ def kahoot_start(request):
         return redirect('kahoot_new')
 
     title = request.POST.get('title', '').strip()
-    action = request.POST.get('action', '')
+    action = request.POST.get('action', 'manual')
     if not title:
-        messages.error(request, '请填写 Kahoot 名称')
+        messages.error(request, '请填写题库名称')
         request.session['kahoot_pending_title'] = title
         return redirect('kahoot_new')
 
-    if action == 'ai':
-        request.session['kahoot_pending_title'] = title
-        return redirect('kahoot_ai')
+    request.session['kahoot_pending_title'] = title
 
+    if action == 'ai':
+        return redirect('kahoot_ai')
+    elif action == 'excel':
+        return redirect('kahoot_import')
+    elif action == 'public':
+        return redirect('question_list')
+
+    # manual action
     quiz_set = QuizSet.objects.create(title=title[:200], teacher=teacher)
     messages.success(request, f'已创建「{quiz_set.title}」，请添加题目')
     return redirect('kahoot_editor', pk=quiz_set.pk)

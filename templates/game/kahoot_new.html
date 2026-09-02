@@ -1,114 +1,204 @@
 {% extends "base.html" %}
 
-{% block title %}新建 Kahoot - Kahoot Studio{% endblock %}
-
-{% block extra_css %}
-{% load static %}
-<link rel="stylesheet" href="{% static 'css/kahoot_editor.css' %}?v=2">
-{% endblock %}
+{% block title %}新建测验题库 - 题库创建向导{% endblock %}
 
 {% block content %}
-<div class="studio-header-bar">
-    <div class="studio-title-group">
-        <a href="{% url 'teacher_dashboard' %}" class="btn-back">
-            <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="19" y1="12" x2="5" y2="12"></line>
-                <polyline points="12 19 5 12 12 5"></polyline>
-            </svg>
-            <span>返回控制台</span>
-        </a>
-        <h1 class="studio-main-title">创建题库</h1>
-        <p class="form-hint">选择一种方式创建整套 Kahoot 题目</p>
-    </div>
-    <a href="{% url 'question_list' %}" class="btn btn-outline">
-        我的题库 ({{ quiz_set_count }}) →
-    </a>
-</div>
-
-<div class="card">
-    <div class="form-group">
-        <label for="title">Kahoot 名称</label>
-        <input type="text" id="title" name="title" class="form-control"
-               value="{{ pending_title }}" placeholder="例如：七年级地理期中复习">
-        <p class="form-hint">手动编写、AI 生成、复制公共题库时需要名称；Excel 导入页也可单独填写。</p>
+<div class="wizard-screen-viewport">
+    
+    <!-- 顶部简洁导航 -->
+    <div class="studio-header-bar" style="margin-bottom: 1.5rem;">
+        <div class="studio-title-group">
+            <a href="{% url 'teacher_dashboard' %}" class="btn-back">
+                <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                <span>返回控制台</span>
+            </a>
+            <h1 class="studio-main-title">新建测验题库</h1>
+        </div>
+        <div class="wizard-step-indicator" id="wizard-step-indicator">
+            <span class="step-pill active" id="step-pill-1">1. 命名题库</span>
+            <span class="step-divider">→</span>
+            <span class="step-pill" id="step-pill-2">2. 选择出题方式</span>
+        </div>
     </div>
 
-    <div class="kahoot-create-grid">
-        <form method="post" action="{% url 'kahoot_start' %}" class="kahoot-create-form" data-needs-title="1">
-            {% csrf_token %}
-            <input type="hidden" name="title" class="title-sync">
-            <input type="hidden" name="action" value="manual">
-            <button type="submit" class="kahoot-create-card">
-                <div class="kahoot-create-icon">✏️</div>
-                <h3 class="kahoot-create-title">手动编写</h3>
-                <p class="kahoot-create-desc">可视化编辑器：左侧切换题号，中间模拟答题界面编辑题干与选项。</p>
-                <span class="kahoot-create-cta">进入编辑器 →</span>
-            </button>
-        </form>
+    <!-- 弹出的向导核心卡片 -->
+    <div class="wizard-flow-wrapper">
 
-        <form method="post" action="{% url 'kahoot_start' %}" class="kahoot-create-form" data-needs-title="1">
-            {% csrf_token %}
-            <input type="hidden" name="title" class="title-sync">
-            <input type="hidden" name="action" value="ai">
-            <button type="submit" class="kahoot-create-card kahoot-create-card-ai">
-                <div class="kahoot-create-icon">✨</div>
-                <h3 class="kahoot-create-title">AI 创建</h3>
-                <p class="kahoot-create-desc">指定主题与题型数量，由大模型批量生成题目。</p>
-                <span class="kahoot-create-cta">AI 生成 →</span>
-            </button>
-        </form>
+        <!-- ========================================== -->
+        <!-- 第一步：命名这套题库 -->
+        <!-- ========================================== -->
+        <div class="wizard-card wizard-card-step1 card-glass" id="wizard-step-1">
+            <div class="wizard-card-header">
+                <div class="wizard-badge">步骤 1 / 2</div>
+                <h2 class="wizard-title">第一步：命名这套测验题库</h2>
+                <p class="wizard-desc">
+                    每次新建都会保存为<strong>一套独立的测验套题</strong>，可在题库中随时复用，也可直接一键发起大屏互动。
+                </p>
+            </div>
 
-        <a href="{% url 'kahoot_import' %}" class="kahoot-create-card" id="link-excel">
-            <div class="kahoot-create-icon">📊</div>
-            <h3 class="kahoot-create-title">导入 Excel</h3>
-            <p class="kahoot-create-desc">按固定表头上传 .xlsx，严格格式批量导入题目。</p>
-            <span class="kahoot-create-cta">下载模板并导入 →</span>
-        </a>
+            <div class="wizard-form-body">
+                <div class="form-group-industrial">
+                    <label for="quiz-title-input">题库名称</label>
+                    <input type="text" id="quiz-title-input" class="input-industrial input-wizard"
+                           placeholder="例如：初一地理期末总复习 / 细胞生物学专题测验"
+                           maxlength="200" required autofocus autocomplete="off"
+                           value="{{ pending_title|default:'' }}">
+                </div>
+            </div>
 
-        <a href="{% url 'kahoot_public_list' %}" class="kahoot-create-card">
-            <div class="kahoot-create-icon">🌐</div>
-            <h3 class="kahoot-create-title">使用公共题库</h3>
-            <p class="kahoot-create-desc">浏览其他老师公开的套题，复制到我的题库后编辑。</p>
-            <span class="kahoot-create-cta">浏览公共套题 →</span>
-        </a>
+            <div class="wizard-card-footer">
+                <a href="{% url 'teacher_dashboard' %}" class="btn-wizard-back">
+                    ← 取消并返回
+                </a>
+                <button type="button" class="btn-wizard-next" id="btn-goto-step2" onclick="handleGoToStep2()">
+                    <span>下一步：选择出题方式</span>
+                    <span>→</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- 第二步：选择出题方式 (4大出题模式) -->
+        <!-- ========================================== -->
+        <div class="wizard-card wizard-card-step2 card-glass" id="wizard-step-2" style="display: none;">
+            
+            <div class="wizard-card-header">
+                <div class="wizard-header-meta">
+                    <div class="wizard-badge">步骤 2 / 2</div>
+                    <div class="current-title-chip" onclick="handleBackToStep1()" title="点击修改名称">
+                        <span>测验名称：</span>
+                        <strong id="display-quiz-title">-</strong>
+                        <span class="chip-edit-icon">✎ 修改</span>
+                    </div>
+                </div>
+                <h2 class="wizard-title">第二步：选择出题方式</h2>
+                <p class="wizard-desc">
+                    选择最适合你的出题模式，选定后即可直接进入试题编辑或批量生成。
+                </p>
+            </div>
+
+            <form method="post" action="{% url 'kahoot_start' %}" id="wizard-submit-form">
+                {% csrf_token %}
+                <input type="hidden" name="title" id="hidden-quiz-title" value="{{ pending_title|default:'' }}">
+                
+                <div class="wizard-choices-grid">
+                    
+                    <!-- 模式 1: 手动编辑出题 -->
+                    <button type="submit" name="action" value="manual" class="choice-box choice-box-manual">
+                        <div class="choice-box-icon">✍️</div>
+                        <div class="choice-box-content">
+                            <h3 class="choice-box-title">手动编辑出题</h3>
+                            <p class="choice-box-desc">逐题编写题干与选项，自由配置单选、多选、判断、简答与配图。</p>
+                        </div>
+                        <span class="choice-box-action">开始手动出题 →</span>
+                    </button>
+
+                    <!-- 模式 2: AI 智能生成 -->
+                    <button type="submit" name="action" value="ai" class="choice-box choice-box-ai">
+                        <div class="choice-box-icon">✨</div>
+                        <div class="choice-box-content">
+                            <h3 class="choice-box-title">AI 智能生成</h3>
+                            <p class="choice-box-desc">输入学科主题、年级与题型配比，由大模型自动出题并填入。</p>
+                        </div>
+                        <span class="choice-box-action action-orange">使用 AI 生成 →</span>
+                    </button>
+
+                    <!-- 模式 3: Excel 批量导入 -->
+                    <button type="submit" name="action" value="excel" class="choice-box choice-box-excel">
+                        <div class="choice-box-icon">📊</div>
+                        <div class="choice-box-content">
+                            <h3 class="choice-box-title">Excel 批量导入</h3>
+                            <p class="choice-box-desc">下载标准表格模板，按固定格式批量上传 .xlsx 文件快速导入试题。</p>
+                        </div>
+                        <span class="choice-box-action">上传 Excel 导入 →</span>
+                    </button>
+
+                    <!-- 模式 4: 公共题库选用 -->
+                    <button type="submit" name="action" value="public" class="choice-box choice-box-public">
+                        <div class="choice-box-icon">📚</div>
+                        <div class="choice-box-content">
+                            <h3 class="choice-box-title">从公共题库选用</h3>
+                            <p class="choice-box-desc">浏览其他老师公开的精选套题，一键选用或二次编辑修改。</p>
+                        </div>
+                        <span class="choice-box-action">浏览公共题库 →</span>
+                    </button>
+
+                </div>
+            </form>
+
+            <div class="wizard-card-footer" style="margin-top: 1.5rem; justify-content: flex-start;">
+                <button type="button" class="btn-wizard-back" onclick="handleBackToStep1()">
+                    ← 返回上一步（修改名称）
+                </button>
+            </div>
+
+        </div>
+
     </div>
+
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-(function () {
-    const titleInput = document.getElementById('title');
-    const linkExcel = document.getElementById('link-excel');
-    const importBase = linkExcel.getAttribute('href');
+const inputEl = document.getElementById('quiz-title-input');
+const hiddenTitleEl = document.getElementById('hidden-quiz-title');
+const displayTitleEl = document.getElementById('display-quiz-title');
+const step1Card = document.getElementById('wizard-step-1');
+const step2Card = document.getElementById('wizard-step-2');
+const pill1 = document.getElementById('step-pill-1');
+const pill2 = document.getElementById('step-pill-2');
 
-    function syncTitles() {
-        const v = titleInput.value.trim();
-        document.querySelectorAll('.title-sync').forEach(el => { el.value = v; });
+function handleGoToStep2() {
+    const titleVal = (inputEl.value || '').trim();
+    if (!titleVal) {
+        inputEl.focus();
+        inputEl.classList.add('input-shake');
+        setTimeout(() => inputEl.classList.remove('input-shake'), 400);
+        return;
     }
 
-    titleInput.addEventListener('input', syncTitles);
-    syncTitles();
+    hiddenTitleEl.value = titleVal;
+    displayTitleEl.textContent = titleVal;
 
-    document.querySelectorAll('.kahoot-create-form[data-needs-title]').forEach(form => {
-        form.addEventListener('submit', (e) => {
-            syncTitles();
-            if (!titleInput.value.trim()) {
-                e.preventDefault();
-                titleInput.focus();
-                titleInput.reportValidity?.();
-                alert('请先填写 Kahoot 名称');
-            }
-        });
-    });
+    // 动画切换
+    step1Card.style.display = 'none';
+    step2Card.style.display = 'block';
 
-    linkExcel.addEventListener('click', (e) => {
-        const t = titleInput.value.trim();
-        if (t) {
-            e.preventDefault();
-            window.location.href = importBase + (importBase.includes('?') ? '&' : '?') + 'title=' + encodeURIComponent(t);
-        }
-    });
-})();
+    pill1.classList.remove('active');
+    pill2.classList.add('active');
+}
+
+function handleBackToStep1() {
+    step2Card.style.display = 'none';
+    step1Card.style.display = 'block';
+
+    pill2.classList.remove('active');
+    pill1.classList.add('active');
+
+    setTimeout(() => {
+        inputEl.focus();
+        inputEl.select();
+    }, 100);
+}
+
+// 支持在第一步回车直接进入第二步
+inputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        handleGoToStep2();
+    }
+});
+
+// 如果 session 中已有 pending_title，且用户直接带着名称进来，可自适应
+{% if pending_title %}
+if (inputEl.value.trim().length > 0) {
+    hiddenTitleEl.value = inputEl.value.trim();
+    displayTitleEl.textContent = inputEl.value.trim();
+}
+{% endif %}
 </script>
 {% endblock %}
