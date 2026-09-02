@@ -216,6 +216,8 @@ class RoomConsumer(AsyncWebsocketConsumer):
             is_correct = True
         elif question.question_type == Question.TYPE_SHORT_ANSWER:
             is_correct = question.is_text_answer_correct(selected)
+        elif question.question_type == Question.TYPE_MULTIPLE:
+            is_correct = question.is_multiple_choice_correct(selected)
         else:
             is_correct = question.is_answer_correct(selected)
         points = calculate_points(question.time_limit, response_time_ms, is_correct)

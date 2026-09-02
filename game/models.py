@@ -120,8 +120,45 @@ class Question(models.Model):
             {'key': 'D', 'text': self.option_d},
         ]
 
+    def _parse_option_key_set(self, value: str) -> set[str]:
+        raw = (value or '').strip().upper()
+        if not raw:
+            return set()
+        if ',' in raw:
+            return {
+                part for part in raw.split(',')
+                if part.strip() in ('A', 'B', 'C', 'D')
+            }
+        if raw in ('A', 'B', 'C', 'D'):
+            return {raw}
+        return {ch for ch in raw if ch in ('A', 'B', 'C', 'D')}
+
     def get_correct_option_set(self):
-        return {opt.strip().upper() for opt in self.correct_option.split(',') if opt.strip()}
+        if self.question_type == self.TYPE_MULTIPLE:
+            return self._parse_option_key_set(self.correct_option)
+        raw = (self.correct_option or '').strip().upper()
+        if not raw:
+            return set()
+        if ',' in raw:
+            return {
+                part.strip() for part in raw.split(',')
+                if part.strip() in ('A', 'B', 'C', 'D')
+            }
+        return {raw} if raw in ('A', 'B', 'C', 'D') else set()
+
+    def is_multiple_choice_correct(self, selected: str) -> bool:
+        """多选题：选项集合须与正确答案完全一致，漏选、多选、错选均不得分。"""
+        correct = self.get_correct_option_set()
+        if len(correct) < 2:
+            return False
+        if not selected:
+            return False
+        selected_set = {
+            part.strip().upper()
+            for part in selected.split(',')
+            if part.strip().upper() in ('A', 'B', 'C', 'D')
+        }
+        return selected_set == correct
 
     def get_correct_option_display(self):
         if self.question_type == self.TYPE_SHORT_ANSWER:
@@ -145,8 +182,11 @@ class Question(models.Model):
             return self.is_text_answer_correct(selected)
         if self.question_type == self.TYPE_WORD_CLOUD:
             return bool(selected and selected.strip())
-        selected_set = {opt.strip().upper() for opt in selected.split(',') if opt.strip()}
-        return selected_set == self.get_correct_option_set()
+        if self.question_type == self.TYPE_MULTIPLE:
+            return self.is_multiple_choice_correct(selected)
+        selected_set = self._parse_option_key_set(selected)
+        correct = self.get_correct_option_set()
+        return selected_set == correct and len(selected_set) == 1
 
     def is_text_answer_correct(self, text: str) -> bool:
         normalized = normalize_answer_text(text)
