@@ -54,6 +54,10 @@
         </div>
     </div>
 </div>
+
+<div class="danmaku-rail danmaku-rail-host">
+    <div id="host-danmaku-layer" class="danmaku-layer"></div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -123,6 +127,9 @@ function handleHostEvent(event, data) {
         case 'question_ended':
         case 'game_ended':
             applyHostState(data);
+            break;
+        case 'danmaku':
+            showHostDanmaku(data);
             break;
     }
 }
@@ -230,6 +237,16 @@ function renderLeaderboard(leaderboard, containerId) {
 function startGame() { sendWs({ action: 'start_game' }); }
 function endQuestion() { sendWs({ action: 'end_question' }); }
 function nextQuestion() { sendWs({ action: 'next_question' }); }
+
+function showHostDanmaku(data) {
+    const layer = document.getElementById('host-danmaku-layer');
+    const el = document.createElement('div');
+    el.className = 'danmaku-item';
+    el.textContent = `${data.nickname}: ${data.text}`;
+    el.style.right = `${Math.floor(Math.random() * 16)}px`;
+    layer.appendChild(el);
+    el.addEventListener('animationend', () => el.remove());
+}
 
 applyHostState(INITIAL_STATE);
 connect();

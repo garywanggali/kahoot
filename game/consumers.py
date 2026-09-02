@@ -1,4 +1,5 @@
 import json
+import time
 import uuid
 
 from asgiref.sync import async_to_sync
@@ -9,6 +10,10 @@ from django.utils import timezone
 
 from .models import Answer, Player, Room
 from .utils import calculate_points, get_room_state
+
+DANMAKU_MAX_LENGTH = 40
+DANMAKU_COOLDOWN_SEC = 2
+_danmaku_cooldown = {}
 
 
 def broadcast_room(room_code, event_type, data):
@@ -53,6 +58,8 @@ class RoomConsumer(AsyncWebsocketConsumer):
             await self.handle_end_question()
         elif action == 'get_state':
             await self.send_state()
+        elif action == 'send_danmaku':
+            await self.handle_send_danmaku(data)
 
     async def room_message(self, event):
         await self.send(text_data=json.dumps({
@@ -206,6 +213,39 @@ class RoomConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_send(
             self.room_group_name,
             {'type': 'room_message', 'event': 'question_ended', 'data': state},
+        )
+
+    async def handle_send_danmaku(self, data):
+        if not hasattr(self, 'player_id'):
+            return
+
+        room = await self.get_room()
+        if room.status == Room.STATUS_ENDED:
+            return
+
+        text = data.get('text', '').strip()
+        if not text:
+            return
+        text = text[:DANMAKU_MAX_LENGTH]
+
+        now = time.monotonic()
+        last = _danmaku_cooldown.get(self.player_id, 0)
+        if now - last < DANMAKU_COOLDOWN_SEC:
+            await self.send(text_data=json.dumps({
+                'event': 'danmaku_rejected',
+                'data': {'message': f'发送太频繁，请 {DANMAKU_COOLDOWN_SEC} 秒后再试'},
+            }))
+            return
+        _danmaku_cooldown[self.player_id] = now
+
+        player = await Player.objects.aget(id=self.player_id)
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'room_message',
+                'event': 'danmaku',
+                'data': {'nickname': player.nickname, 'text': text},
+            },
         )
 
     async def send_state(self):

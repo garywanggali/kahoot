@@ -37,6 +37,14 @@
         <a href="{% url 'index' %}" class="btn btn-primary section-gap-lg">返回首页</a>
     </div>
 </div>
+
+<div class="danmaku-rail">
+    <div id="danmaku-layer" class="danmaku-layer"></div>
+</div>
+<div id="danmaku-bar" class="danmaku-bar hidden">
+    <input type="text" id="danmaku-input" class="danmaku-input" maxlength="40" placeholder="发弹幕..." autocomplete="off">
+    <button type="button" class="btn btn-outline danmaku-send" onclick="sendDanmaku()">发送</button>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -53,6 +61,8 @@ let timerInterval = null;
 let hasAnswered = false;
 let lastAnswerResult = { answered: false, is_correct: false, points: 0, selected_option: null };
 let resultRevealTimer = null;
+let danmakuEnabled = false;
+let joinedReady = false;
 const pendingActions = [];
 
 function sendWs(data) {
@@ -94,8 +104,10 @@ function handleEvent(event, data) {
     switch (event) {
         case 'joined':
             sessionId = data.session_id;
+            joinedReady = true;
             localStorage.setItem('kahoot_session_' + ROOM_CODE, sessionId);
             applyState(data.state);
+            updateDanmakuBar(data.state.status);
             break;
         case 'player_joined':
             document.getElementById('player-count').textContent = data.player_count;
@@ -114,6 +126,12 @@ function handleEvent(event, data) {
         case 'answer_received':
             showAnswerFeedback(data);
             break;
+        case 'danmaku':
+            showDanmaku(data);
+            break;
+        case 'danmaku_rejected':
+            showDanmakuHint(data.message);
+            break;
         case 'error':
             alert(data.message);
             break;
@@ -122,6 +140,7 @@ function handleEvent(event, data) {
 
 function applyState(state) {
     document.getElementById('player-count').textContent = state.player_count;
+    updateDanmakuBar(state.status);
 
     hideAllScreens();
 
@@ -340,6 +359,50 @@ function renderLeaderboard(leaderboard, containerId) {
         </div>
     `).join('');
 }
+
+function updateDanmakuBar(status) {
+    const bar = document.getElementById('danmaku-bar');
+    if (!joinedReady || status === 'ended') {
+        bar.classList.add('hidden');
+        danmakuEnabled = false;
+    } else {
+        bar.classList.remove('hidden');
+        danmakuEnabled = true;
+    }
+}
+
+function showDanmaku(data) {
+    const layer = document.getElementById('danmaku-layer');
+    const el = document.createElement('div');
+    el.className = 'danmaku-item';
+    el.textContent = `${data.nickname}: ${data.text}`;
+    el.style.right = `${Math.floor(Math.random() * 16)}px`;
+    layer.appendChild(el);
+    el.addEventListener('animationend', () => el.remove());
+}
+
+function showDanmakuHint(message) {
+    const input = document.getElementById('danmaku-input');
+    const old = input.placeholder;
+    input.placeholder = message;
+    setTimeout(() => { input.placeholder = old; }, 2000);
+}
+
+function sendDanmaku() {
+    if (!danmakuEnabled) return;
+    const input = document.getElementById('danmaku-input');
+    const text = input.value.trim();
+    if (!text) return;
+    sendWs({ action: 'send_danmaku', text });
+    input.value = '';
+}
+
+document.getElementById('danmaku-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        sendDanmaku();
+    }
+});
 
 applyState(INITIAL_STATE);
 connect();

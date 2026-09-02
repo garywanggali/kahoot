@@ -41,6 +41,7 @@ a:hover {
     max-width: 900px;
     margin: 0 auto;
     padding: 2rem;
+    padding-bottom: 5rem;
 }
 
 .btn {
@@ -500,6 +501,99 @@ th {
     display: none !important;
 }
 
+.danmaku-rail {
+    position: fixed;
+    right: 0;
+    bottom: 3.5rem;
+    width: min(300px, 40vw);
+    height: min(50vh, 420px);
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 300;
+}
+
+.danmaku-rail-host {
+    bottom: 1rem;
+    height: min(45vh, 360px);
+}
+
+.danmaku-layer {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.danmaku-item {
+    position: absolute;
+    bottom: 0;
+    right: 0.5rem;
+    max-width: calc(100% - 1rem);
+    white-space: normal;
+    word-break: break-word;
+    color: var(--text);
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: 0.02em;
+    padding: 0.35rem 0.5rem;
+    border: var(--border-width) solid var(--border);
+    background: #000;
+    box-shadow: 0 0 0 1px #000;
+    animation: danmaku-rise 6s ease-out forwards;
+}
+
+@keyframes danmaku-rise {
+    0% {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    8% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    75% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-42vh);
+    }
+}
+
+.danmaku-bar {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    z-index: 310;
+    display: flex;
+    gap: 0.5rem;
+    width: min(300px, 40vw);
+    padding: 0.65rem 0.75rem;
+    background: var(--bg);
+    border-top: var(--border-width) solid var(--border);
+    border-left: var(--border-width) solid var(--border);
+}
+
+.danmaku-input {
+    flex: 1;
+    padding: 0.6rem 0.75rem;
+    border: var(--border-width) solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+
+.danmaku-input:focus {
+    outline: none;
+    box-shadow: inset 0 0 0 1px var(--text);
+}
+
+.danmaku-send {
+    padding: 0.6rem 1rem;
+    flex-shrink: 0;
+}
+
 #answer-feedback {
     margin-top: 1rem;
     font-weight: 700;
@@ -508,5 +602,7 @@ th {
 @media (max-width: 600px) {
     .logo { font-size: 2rem; }
     .room-code-display { font-size: 2.5rem; letter-spacing: 0.3rem; }
-    .container { padding: 1rem; }
+    .container { padding: 1rem; padding-bottom: 5rem; }
+    .danmaku-rail { width: min(260px, 55vw); }
+    .danmaku-bar { width: min(260px, 55vw); }
 }
