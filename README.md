@@ -1,6 +1,6 @@
 # Kahoot
 
-基于 Django + SQLite 的 Kahoot 风格互动课堂测验平台。几把
+基于 Django + SQLite 的 Kahoot 风格互动课堂测验平台。
 
 ## 功能
 
