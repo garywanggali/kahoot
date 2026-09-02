@@ -35,7 +35,7 @@
             <span class="feature-badge badge-primary">大屏互动</span>
         </div>
         <h2 class="feature-card-title">创建互动房间</h2>
-        <p class="feature-card-desc">挑选我的题库或公开题目，一键生成 6 位房间号，支持实时投屏与手机抢答。</p>
+        <p class="feature-card-desc">从题库选择一套 Kahoot，整组题目一键导入房间，生成 6 位房间号。</p>
         <div class="feature-card-footer">
             <a href="{% url 'room_create' %}" class="btn btn-primary btn-block">
                 + 发起新房间 →
@@ -50,16 +50,16 @@
                     <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
                 </svg>
             </div>
-            <span class="feature-badge">{{ question_count }} 道专属题目</span>
+            <span class="feature-badge">{{ quiz_set_count }} 套 Kahoot</span>
         </div>
         <h2 class="feature-card-title">新建 Kahoot / 我的题库</h2>
-        <p class="feature-card-desc">手动出题或 AI 批量生成，支持单选、多选、判断、简答与词云题。</p>
+        <p class="feature-card-desc">手动或 AI 创建一套完整题目，保存为题库中的 Kahoot 套题，随时复用。</p>
         <div class="feature-card-footer">
             <a href="{% url 'kahoot_new' %}" class="btn btn-secondary btn-block">
                 新建 Kahoot →
             </a>
             <a href="{% url 'question_list' %}" class="btn btn-outline btn-block section-gap">
-                管理我的 {{ question_count }} 道题 →
+                管理我的 {{ quiz_set_count }} 套题 →
             </a>
         </div>
     </div>
@@ -76,8 +76,8 @@
             </div>
             <span class="feature-badge badge-terracotta">教师互助</span>
         </div>
-        <h2 class="feature-card-title">公开共享题库</h2>
-        <p class="feature-card-desc">浏览其他老师公开的优质题目，可在创建房间时一键选用（无法编辑他人题目）。</p>
+        <h2 class="feature-card-title">公开共享套题</h2>
+        <p class="feature-card-desc">浏览其他老师公开的 Kahoot 套题，可在创建房间时一键选用。</p>
         <div class="feature-card-footer">
             <a href="{% url 'question_list' %}" class="btn btn-outline btn-block">
                 浏览公开题库 →

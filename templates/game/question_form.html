@@ -5,24 +5,24 @@
 {% block content %}
 <div class="studio-header-bar">
     <div class="studio-title-group">
-        <a href="{% url 'question_list' %}" class="btn-back">
+        <a href="{% if quiz_set %}{% url 'kahoot_detail' quiz_set.pk %}{% else %}{% url 'question_list' %}{% endif %}" class="btn-back">
             <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="19" y1="12" x2="5" y2="12"></line>
                 <polyline points="12 19 5 12 12 5"></polyline>
             </svg>
-            <span>返回题库</span>
+            <span>{% if quiz_set %}返回套题{% else %}返回题库{% endif %}</span>
         </a>
         <h1 class="studio-main-title">{% if action == 'edit' %}编辑题目{% else %}添加题目{% endif %}</h1>
     </div>
-    {% if from_kahoot %}
-    <a href="{% url 'kahoot_new' %}" class="btn btn-outline">新建 Kahoot</a>
+    {% if quiz_set %}
+    <span class="form-hint">正在编辑：{{ quiz_set.title }}</span>
     {% endif %}
 </div>
 
 <div class="card">
     <form method="post" enctype="multipart/form-data" id="question-form">
         {% csrf_token %}
-        {% if from_kahoot %}<input type="hidden" name="from_kahoot" value="1">{% endif %}
+        {% if quiz_set %}<input type="hidden" name="quiz_set_id" value="{{ quiz_set.pk }}">{% endif %}
         <div class="form-group">
             <label>题型</label>
             <div class="type-toggle">
@@ -151,8 +151,8 @@
             </label>
         </div>
         <button type="submit" class="btn btn-primary btn-lg">保存题目</button>
-        {% if from_kahoot and action == 'create' %}
-        <p class="form-hint section-gap">保存后可继续添加下一题，或返回 <a href="{% url 'kahoot_new' %}">新建 Kahoot</a>。</p>
+        {% if quiz_set and action == 'create' %}
+        <p class="form-hint section-gap">保存后返回套题页，可继续添加下一题。</p>
         {% endif %}
     </form>
 </div>

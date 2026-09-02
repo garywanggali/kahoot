@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}删除套题 - Kahoot{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h3>确认删除整套 Kahoot？</h3>
+    <p class="section-gap"><strong>{{ quiz_set.title }}</strong>（{{ quiz_set.question_count }} 道题）</p>
+    <p class="form-hint">将同时删除套题内的所有题目，此操作不可恢复。</p>
+    <form method="post" class="actions-row section-gap">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">确认删除</button>
+        <a href="{% url 'kahoot_detail' quiz_set.pk %}" class="btn btn-outline">取消</a>
+    </form>
+</div>
+{% endblock %}

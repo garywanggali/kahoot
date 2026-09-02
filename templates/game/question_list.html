@@ -13,66 +13,69 @@
             <span>返回控制台</span>
         </a>
         <h1 class="studio-main-title">我的题库</h1>
+        <p class="form-hint">按套保存的 Kahoot，每套可一键创建房间</p>
     </div>
     <a href="{% url 'kahoot_new' %}" class="btn btn-primary">新建 Kahoot</a>
 </div>
 
 <div class="card">
-    <h3 class="page-title">我的题目</h3>
-    {% if my_questions %}
+    <h3 class="page-title">我的套题</h3>
+    {% if my_quiz_sets %}
     <table>
         <thead>
             <tr>
-                <th>题目</th>
-                <th>题型</th>
+                <th>名称</th>
+                <th>题数</th>
                 <th>公开</th>
-                <th>正确答案</th>
-                <th>时限</th>
+                <th>创建时间</th>
                 <th>操作</th>
             </tr>
         </thead>
         <tbody>
-            {% for q in my_questions %}
+            {% for qs in my_quiz_sets %}
             <tr>
-                <td>{{ q.text|truncatechars:60 }}</td>
-                <td><span class="type-chip">{% if q.question_type == 'multiple' %}多选{% elif q.question_type == 'judgment' %}判断{% elif q.question_type == 'short_answer' %}简答{% elif q.question_type == 'word_cloud' %}词云{% else %}单选{% endif %}</span></td>
-                <td>{% if q.is_public %}是{% else %}否{% endif %}</td>
-                <td>{{ q.get_correct_option_display }}</td>
-                <td>{{ q.time_limit }}s</td>
+                <td><a href="{% url 'kahoot_detail' qs.pk %}"><strong>{{ qs.title }}</strong></a></td>
+                <td>{{ qs.question_count }}</td>
+                <td>{% if qs.is_public %}是{% else %}否{% endif %}</td>
+                <td>{{ qs.created_at|date:"Y-m-d H:i" }}</td>
                 <td>
-                    <a href="{% url 'question_edit' q.pk %}">编辑</a>
-                    &nbsp;&nbsp;
-                    <a href="{% url 'question_delete' q.pk %}" class="delete-link">删除</a>
+                    <a href="{% url 'kahoot_detail' qs.pk %}">管理</a>
+                    &nbsp;·&nbsp;
+                    <a href="{% url 'room_create' %}?quiz_set={{ qs.pk }}">创建房间</a>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
     {% else %}
-    <p class="text-muted-block">暂无题目，<a href="{% url 'kahoot_new' %}">新建 Kahoot</a> 开始添加</p>
+    <p class="text-muted-block">暂无套题，<a href="{% url 'kahoot_new' %}">新建 Kahoot</a> 开始</p>
     {% endif %}
 </div>
 
-{% if public_questions %}
+{% if public_quiz_sets %}
 <div class="card section-gap">
-    <h3 class="page-title">公开题库（其他老师）</h3>
-    <p class="form-hint">以下题目由其他老师公开分享，可在创建房间时选用，但无法编辑。</p>
+    <h3 class="page-title">公开套题（其他老师）</h3>
+    <p class="form-hint">可在创建房间时选用，无法编辑。</p>
     <table>
         <thead>
             <tr>
-                <th>题目</th>
+                <th>名称</th>
                 <th>作者</th>
-                <th>题型</th>
-                <th>时限</th>
+                <th>题数</th>
+                <th>操作</th>
             </tr>
         </thead>
         <tbody>
-            {% for q in public_questions %}
+            {% for qs in public_quiz_sets %}
             <tr>
-                <td>{{ q.text|truncatechars:60 }}</td>
-                <td>{{ q.teacher.username }}</td>
-                <td><span class="type-chip">{% if q.question_type == 'multiple' %}多选{% elif q.question_type == 'judgment' %}判断{% elif q.question_type == 'short_answer' %}简答{% elif q.question_type == 'word_cloud' %}词云{% else %}单选{% endif %}</span></td>
-                <td>{{ q.time_limit }}s</td>
+                <td>{{ qs.title }}</td>
+                <td>{{ qs.teacher.username }}</td>
+                <td>{{ qs.question_count }}</td>
+                <td>
+                    <a href="{% url 'kahoot_detail' qs.pk %}">查看</a>
+                    &nbsp;·&nbsp;
+                    <a href="{% url 'room_create' %}?quiz_set={{ qs.pk }}">创建房间</a>
+                </td>
             </tr>
             {% endfor %}
         </tbody>

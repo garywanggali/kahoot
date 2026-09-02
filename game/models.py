@@ -156,6 +156,50 @@ class Question(models.Model):
         return normalized in acceptable
 
 
+class QuizSet(models.Model):
+    """一组 Kahoot 题目（套题），创建房间时整组选用。"""
+
+    title = models.CharField('名称', max_length=200)
+    teacher = models.ForeignKey(
+        Teacher,
+        on_delete=models.CASCADE,
+        related_name='quiz_sets',
+    )
+    is_public = models.BooleanField('公开套题', default=False, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Kahoot 套题'
+        verbose_name_plural = 'Kahoot 套题'
+
+    def __str__(self):
+        return self.title
+
+    def get_questions(self):
+        return [
+            qsq.question
+            for qsq in self.quiz_set_questions.select_related('question').order_by('order')
+        ]
+
+    def question_count(self) -> int:
+        return self.quiz_set_questions.count()
+
+
+class QuizSetQuestion(models.Model):
+    quiz_set = models.ForeignKey(
+        QuizSet,
+        on_delete=models.CASCADE,
+        related_name='quiz_set_questions',
+    )
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
+        unique_together = ['quiz_set', 'question']
+
+
 class Room(models.Model):
     STATUS_WAITING = 'waiting'
     STATUS_PLAYING = 'playing'
@@ -177,6 +221,13 @@ class Room(models.Model):
     teacher = models.ForeignKey(
         Teacher,
         on_delete=models.CASCADE,
+        related_name='rooms',
+        null=True,
+        blank=True,
+    )
+    source_quiz_set = models.ForeignKey(
+        QuizSet,
+        on_delete=models.SET_NULL,
         related_name='rooms',
         null=True,
         blank=True,

@@ -28,6 +28,15 @@
     <h3 class="page-title">生成设置</h3>
     <form method="post" id="kahoot-ai-form">
         {% csrf_token %}
+        {% if kahoot_title %}
+        <input type="hidden" name="kahoot_title" value="{{ kahoot_title }}">
+        {% endif %}
+        {% if kahoot_title %}
+        <div class="form-group">
+            <label>Kahoot 名称</label>
+            <p class="form-hint"><strong>{{ kahoot_title }}</strong>（在新建页已设定，保存后将作为套题名称）</p>
+        </div>
+        {% endif %}
         <div class="form-group">
             <label for="topic">主题 / 方向</label>
             <input type="text" id="topic" name="topic" class="form-control" required
@@ -73,7 +82,7 @@
 {% if preview %}
 <div class="card section-gap">
     <h3 class="page-title">预览（{{ preview|length }} 道）</h3>
-    <p class="form-hint">确认无误后保存到题库；不满意可放弃后重新生成。</p>
+    <p class="form-hint">确认无误后保存为套题「{{ kahoot_title|default:topic }}」，并可直接创建房间。</p>
     <div class="kahoot-preview-list">
         {% for q in preview %}
         <div class="kahoot-preview-item">
@@ -104,7 +113,7 @@
         <form method="post" class="inline-form">
             {% csrf_token %}
             <input type="hidden" name="action" value="save">
-            <button type="submit" class="btn btn-primary">保存到题库</button>
+            <button type="submit" class="btn btn-primary">保存为套题</button>
         </form>
         <form method="post" action="{% url 'kahoot_ai_discard' %}" class="inline-form">
             {% csrf_token %}

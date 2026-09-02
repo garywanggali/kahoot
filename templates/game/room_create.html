@@ -13,6 +13,7 @@
             <span>返回控制台</span>
         </a>
         <h1 class="studio-main-title">创建新房间</h1>
+        <p class="form-hint">选择一套 Kahoot，整组题目导入房间</p>
     </div>
 </div>
 
@@ -21,32 +22,45 @@
         {% csrf_token %}
         <div class="form-group">
             <label for="name">房间名称</label>
-            <input type="text" id="name" name="name" class="form-control" placeholder="例如：期中知识竞赛" required autofocus>
+            <input type="text" id="name" name="name" class="form-control" placeholder="例如：期中知识竞赛" autofocus>
         </div>
 
-        {% if my_questions or public_questions %}
+        {% if my_quiz_sets or public_quiz_sets %}
         <div class="form-group">
-            <label>选择题目 (至少 1 道)</label>
+            <label>选择 Kahoot 套题</label>
 
-            {% if my_questions %}
-            <p class="form-hint"><strong>我的题目</strong></p>
-            <ul class="checkbox-list">
-                {% for q in my_questions %}
+            {% if my_quiz_sets %}
+            <p class="form-hint"><strong>我的套题</strong></p>
+            <ul class="radio-list quiz-set-radio-list">
+                {% for qs in my_quiz_sets %}
                 <li>
-                    <input type="checkbox" name="questions" value="{{ q.pk }}" id="q{{ q.pk }}">
-                    <label for="q{{ q.pk }}">{{ q.text|truncatechars:80 }} ({{ q.time_limit }}s)</label>
+                    <label class="quiz-set-radio-item">
+                        <input type="radio" name="quiz_set_id" value="{{ qs.pk }}"
+                               {% if preselect_id == qs.pk|stringformat:"s" %}checked{% endif %}
+                               {% if not preselect_id and forloop.first %}checked{% endif %}>
+                        <span class="quiz-set-radio-body">
+                            <strong>{{ qs.title }}</strong>
+                            <span class="quiz-set-radio-meta">{{ qs.question_count }} 道题</span>
+                        </span>
+                    </label>
                 </li>
                 {% endfor %}
             </ul>
             {% endif %}
 
-            {% if public_questions %}
-            <p class="form-hint section-gap"><strong>公开题库（其他老师）</strong></p>
-            <ul class="checkbox-list">
-                {% for q in public_questions %}
+            {% if public_quiz_sets %}
+            <p class="form-hint section-gap"><strong>公开套题（其他老师）</strong></p>
+            <ul class="radio-list quiz-set-radio-list">
+                {% for qs in public_quiz_sets %}
                 <li>
-                    <input type="checkbox" name="questions" value="{{ q.pk }}" id="q{{ q.pk }}">
-                    <label for="q{{ q.pk }}">{{ q.text|truncatechars:70 }} · {{ q.teacher.username }} ({{ q.time_limit }}s)</label>
+                    <label class="quiz-set-radio-item">
+                        <input type="radio" name="quiz_set_id" value="{{ qs.pk }}"
+                               {% if preselect_id == qs.pk|stringformat:"s" %}checked{% endif %}>
+                        <span class="quiz-set-radio-body">
+                            <strong>{{ qs.title }}</strong>
+                            <span class="quiz-set-radio-meta">{{ qs.teacher.username }} · {{ qs.question_count }} 道题</span>
+                        </span>
+                    </label>
                 </li>
                 {% endfor %}
             </ul>
@@ -54,7 +68,7 @@
         </div>
         <button type="submit" class="btn btn-primary btn-lg">创建并启动房间 →</button>
         {% else %}
-        <p class="text-muted-block">暂无可用题目，请先 <a href="{% url 'kahoot_new' %}">新建 Kahoot</a></p>
+        <p class="text-muted-block">暂无可用套题，请先 <a href="{% url 'kahoot_new' %}">新建 Kahoot</a></p>
         {% endif %}
     </form>
 </div>

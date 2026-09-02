@@ -15,24 +15,34 @@
         <h1 class="studio-main-title">新建 Kahoot 测验</h1>
     </div>
     <a href="{% url 'question_list' %}" class="btn btn-outline">
-        题库中心 ({{ question_count }}) →
+        我的题库 ({{ quiz_set_count }}) →
     </a>
 </div>
 
-<div class="kahoot-choice-grid">
-    <a href="{% url 'question_create' %}?from=kahoot" class="kahoot-choice-card">
-        <div class="kahoot-choice-icon">✏️</div>
-        <h3 class="kahoot-choice-title">手动编辑出题</h3>
-        <p class="kahoot-choice-desc">逐题填写题干、选项与答案，支持图片及单选、多选、判断、词云题型。</p>
-        <span class="kahoot-choice-cta">开始手动出题 →</span>
-    </a>
-    <a href="{% url 'kahoot_ai' %}" class="kahoot-choice-card kahoot-choice-card-ai">
-        <div class="kahoot-choice-icon">✨</div>
-        <h3 class="kahoot-choice-title">AI 智能生成 Kahoot</h3>
-        <p class="kahoot-choice-desc">指定学科主题与题型配比，由大模型批量生成高契合度教学题目与选项。</p>
-        <span class="kahoot-choice-cta">使用 AI 批量生成 →</span>
-    </a>
+<div class="card">
+    <h3 class="page-title">第一步：命名这套 Kahoot</h3>
+    <p class="form-hint">每次新建都会保存为<strong>一套完整题目</strong>，可在题库中复用，也可一键创建房间。</p>
+    <form method="post" action="{% url 'kahoot_start' %}" class="section-gap">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="title">Kahoot 名称</label>
+            <input type="text" id="title" name="title" class="form-control" required
+                   value="{{ pending_title }}" placeholder="例如：七年级地理期中复习">
+        </div>
+        <div class="kahoot-choice-grid">
+            <button type="submit" name="action" value="manual" class="kahoot-choice-card kahoot-choice-button">
+                <div class="kahoot-choice-icon">✏️</div>
+                <h3 class="kahoot-choice-title">手动编辑出题</h3>
+                <p class="kahoot-choice-desc">逐题填写题干与选项，支持单选、多选、判断、简答、词云。</p>
+                <span class="kahoot-choice-cta">开始手动出题 →</span>
+            </button>
+            <button type="submit" name="action" value="ai" class="kahoot-choice-card kahoot-choice-card-ai kahoot-choice-button">
+                <div class="kahoot-choice-icon">✨</div>
+                <h3 class="kahoot-choice-title">AI 智能生成</h3>
+                <p class="kahoot-choice-desc">指定主题与题型配比，由大模型批量生成题目。</p>
+                <span class="kahoot-choice-cta">使用 AI 生成 →</span>
+            </button>
+        </div>
+    </form>
 </div>
-
-<p class="text-muted-block text-center section-gap">题目创建完成后，可在「创建互动房间」中自由勾选，开启课堂即时互动。</p>
 {% endblock %}

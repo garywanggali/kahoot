@@ -5,7 +5,7 @@ from __future__ import annotations
 from django.db.models import Q
 from django.shortcuts import redirect
 
-from .models import Question, Room, Teacher
+from .models import Question, QuizSet, Room, Teacher
 
 
 SESSION_TEACHER_KEY = 'teacher_id'
@@ -71,3 +71,30 @@ def can_host_room(teacher: Teacher, room: Room) -> bool:
     if room.teacher_id is None:
         return True
     return room.teacher_id == teacher.pk
+
+
+def own_quiz_sets(teacher: Teacher):
+    return QuizSet.objects.filter(teacher=teacher)
+
+
+def accessible_quiz_sets(teacher: Teacher):
+    """Own quiz sets + public sets from other teachers."""
+    return QuizSet.objects.filter(
+        Q(teacher=teacher) | Q(is_public=True),
+    ).select_related('teacher').order_by('-created_at')
+
+
+def public_quiz_sets_excluding(teacher: Teacher):
+    return QuizSet.objects.filter(is_public=True).exclude(
+        teacher=teacher,
+    ).select_related('teacher').order_by('-created_at')
+
+
+def can_edit_quiz_set(teacher: Teacher, quiz_set: QuizSet) -> bool:
+    return quiz_set.teacher_id == teacher.pk
+
+
+def can_use_quiz_set(teacher: Teacher, quiz_set: QuizSet) -> bool:
+    if quiz_set.teacher_id == teacher.pk:
+        return True
+    return quiz_set.is_public

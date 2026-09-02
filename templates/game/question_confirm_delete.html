@@ -8,8 +8,9 @@
     <p class="section-gap">{{ question.text }}</p>
     <form method="post" class="actions-row">
         {% csrf_token %}
+        {% if quiz_set_id %}<input type="hidden" name="quiz_set_id" value="{{ quiz_set_id }}">{% endif %}
         <button type="submit" class="btn btn-primary">确认删除</button>
-        <a href="{% url 'question_list' %}" class="btn btn-outline">取消</a>
+        <a href="{% if quiz_set_id %}{% url 'kahoot_detail' quiz_set_id %}{% else %}{% url 'question_list' %}{% endif %}" class="btn btn-outline">取消</a>
     </form>
 </div>
 {% endblock %}

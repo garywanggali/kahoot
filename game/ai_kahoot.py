@@ -4,10 +4,15 @@ from __future__ import annotations
 
 import json
 
-from .models import Question
+from django.db import transaction
+
+from .models import Question, QuizSet
+from .quiz_set_utils import add_question_to_quiz_set
 
 MAX_TOTAL_QUESTIONS = 30
 MAX_PER_TYPE = 20
+MAX_AI_SHORT_ANSWER_LEN = 20
+_SHORT_ANSWER_MULTI_ITEM_MARKERS = ('和', '与', '及', '、')
 
 QUESTION_JSON_SCHEMA = {
     'type': 'object',
@@ -173,6 +178,31 @@ def create_questions_from_ai_data(items: list[dict], teacher) -> list[Question]:
         )
         created.append(q)
     return created
+
+
+@transaction.atomic
+def create_quiz_set_from_ai_data(title: str, items: list[dict], teacher) -> QuizSet:
+    title = (title or '').strip() or 'AI 生成测验'
+    quiz_set = QuizSet.objects.create(
+        title=title[:200],
+        teacher=teacher,
+        is_public=False,
+    )
+    for order, item in enumerate(items):
+        question = Question.objects.create(
+            text=item['text'],
+            question_type=item['question_type'],
+            option_a=item['option_a'],
+            option_b=item['option_b'],
+            option_c=item['option_c'],
+            option_d=item['option_d'],
+            correct_option=item['correct_option'],
+            time_limit=item['time_limit'],
+            teacher=teacher,
+            is_public=False,
+        )
+        add_question_to_quiz_set(quiz_set, question, order=order)
+    return quiz_set
 
 
 def question_type_label(qtype: str) -> str:
