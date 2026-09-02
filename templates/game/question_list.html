@@ -6,7 +6,7 @@
 <div class="question-list-viewport">
 
     <!-- 顶部简洁导航 -->
-    <div class="studio-header-bar">
+    <div class="studio-header-bar" style="margin-bottom: 1.25rem;">
         <div class="studio-title-group">
             <a href="{% url 'teacher_dashboard' %}" class="btn-back">
                 <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -15,38 +15,37 @@
                 </svg>
                 <span>返回控制台</span>
             </a>
-            <h1 class="studio-main-title">我的题库</h1>
-            <p class="form-hint" style="margin-top: 0.2rem;">共收录 {{ my_quiz_sets|length }} 套测验题库</p>
+            <h1 class="studio-main-title" style="margin-top: 0.15rem;">我的题库</h1>
+            <p class="form-hint" style="margin-top: 0.15rem;">共收录 {{ my_quiz_sets|length }} 套测验题库</p>
         </div>
     </div>
 
-    <!-- 我的套题 (高质感磨砂玻璃列表) -->
-    <div class="card card-glass" style="margin-bottom: 2rem;">
+    <!-- 我的套题 (高质感磨砂玻璃列表，单屏零滑动 + 分页) -->
+    <div class="card card-glass quiz-list-card" style="margin-bottom: 0;">
         <div class="card-section-header">
             <div>
                 <h3 class="card-section-title">我的测验套题</h3>
-                <span class="card-section-hint">点击任意套题名称或操作按钮即可直接进入可视化编辑器</span>
+                <span class="card-section-hint">点击任意套题名称或操作按钮即可直接进入编辑</span>
             </div>
         </div>
 
         {% if my_quiz_sets %}
         <div class="recent-table-wrap">
-            <table class="quiz-set-table">
+            <table class="quiz-set-table" id="my-quiz-table">
                 <thead>
                     <tr>
-                        <th style="width: 38%;">套题名称</th>
+                        <th style="width: 36%;">套题名称</th>
                         <th style="width: 14%;">题数</th>
                         <th style="width: 14%;">公开状态</th>
-                        <th style="width: 18%;">创建时间</th>
+                        <th style="width: 20%;">创建时间</th>
                         <th style="width: 16%; text-align: right;">操作</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="quiz-rows-container">
                     {% for qs in my_quiz_sets %}
-                    <tr class="quiz-set-row">
+                    <tr class="quiz-set-row" data-index="{{ forloop.counter0 }}">
                         <td>
                             <a href="{% url 'kahoot_editor' qs.pk %}" class="quiz-title-link">
-                                <span class="quiz-icon">📖</span>
                                 <strong>{{ qs.title }}</strong>
                             </a>
                         </td>
@@ -55,9 +54,9 @@
                         </td>
                         <td>
                             {% if qs.is_public %}
-                                <span class="status-chip status-chip-playing"><span class="pulse-dot"></span>公开</span>
+                                <span class="status-chip chip-public">公开</span>
                             {% else %}
-                                <span class="status-chip status-chip-ended">私有</span>
+                                <span class="status-chip chip-private">私有</span>
                             {% endif %}
                         </td>
                         <td>
@@ -65,13 +64,18 @@
                         </td>
                         <td style="text-align: right;">
                             <div class="table-actions-inline">
-                                <a href="{% url 'kahoot_editor' qs.pk %}" class="btn-table-edit">
-                                    <span>编辑试题</span>
+                                <a href="{% url 'kahoot_editor' qs.pk %}" class="btn-action-edit">
+                                    <span>编辑</span>
                                     <span>→</span>
                                 </a>
-                                <a href="{% url 'kahoot_delete' qs.pk %}" class="btn-table-delete"
+                                <a href="{% url 'kahoot_delete' qs.pk %}" class="btn-action-delete"
                                    onclick="return confirm('确定要删除套题「{{ qs.title }}」吗？此操作不可恢复。');"
-                                   title="删除套题">✕</a>
+                                   title="删除套题">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    </svg>
+                                </a>
                             </div>
                         </td>
                     </tr>
@@ -79,6 +83,18 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- 分页控制栏 (保证零滚动单屏) -->
+        <div class="pagination-bar" id="pagination-bar">
+            <button type="button" class="btn-page" id="btn-prev-page" onclick="changePage(-1)">
+                ← 上一页
+            </button>
+            <span class="page-indicator" id="page-indicator">第 1 / 1 页</span>
+            <button type="button" class="btn-page" id="btn-next-page" onclick="changePage(1)">
+                下一页 →
+            </button>
+        </div>
+
         {% else %}
         <div class="empty-state-wrap">
             <div class="empty-state-icon">
@@ -96,54 +112,65 @@
         {% endif %}
     </div>
 
-    <!-- 公开共享套题 (其他老师) -->
-    {% if public_quiz_sets %}
-    <div class="card card-glass">
-        <div class="card-section-header">
-            <div>
-                <h3 class="card-section-title">公开共享套题</h3>
-                <span class="card-section-hint">浏览其他老师公开发布的精选套题，可一键复制到你的题库中使用</span>
-            </div>
-        </div>
-
-        <div class="recent-table-wrap">
-            <table class="quiz-set-table">
-                <thead>
-                    <tr>
-                        <th style="width: 45%;">套题名称</th>
-                        <th style="width: 20%;">发布教师</th>
-                        <th style="width: 15%;">题数</th>
-                        <th style="width: 20%; text-align: right;">操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for qs in public_quiz_sets %}
-                    <tr class="quiz-set-row">
-                        <td>
-                            <span class="quiz-title-link" style="cursor: default;">
-                                <span class="quiz-icon">🌐</span>
-                                <strong>{{ qs.title }}</strong>
-                            </span>
-                        </td>
-                        <td>
-                            <span class="author-chip">{{ qs.teacher.username }}</span>
-                        </td>
-                        <td>
-                            <span class="badge-count">{{ qs.question_count }} 题</span>
-                        </td>
-                        <td style="text-align: right;">
-                            <a href="{% url 'kahoot_public_clone' qs.pk %}" class="btn-table-copy" title="复制此套题到我的题库">
-                                <span>复制到我的题库</span>
-                                <span>+</span>
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-    {% endif %}
-
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 纯前端极速分页逻辑 (每页 6 条，严格保持 100vh 单屏不滚动)
+const PAGE_SIZE = 6;
+let currentPage = 1;
+const rows = Array.from(document.querySelectorAll('#quiz-rows-container .quiz-set-row'));
+const totalItems = rows.length;
+const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+
+const prevBtn = document.getElementById('btn-prev-page');
+const nextBtn = document.getElementById('btn-next-page');
+const indicator = document.getElementById('page-indicator');
+const paginationBar = document.getElementById('pagination-bar');
+
+function renderPage() {
+    if (!rows.length) {
+        if (paginationBar) paginationBar.style.display = 'none';
+        return;
+    }
+
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const end = start + PAGE_SIZE;
+
+    rows.forEach((row, idx) => {
+        if (idx >= start && idx < end) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    if (indicator) {
+        indicator.textContent = `第 ${currentPage} / ${totalPages} 页 (共 ${totalItems} 套)`;
+    }
+
+    if (prevBtn) {
+        prevBtn.disabled = (currentPage <= 1);
+    }
+    if (nextBtn) {
+        nextBtn.disabled = (currentPage >= totalPages);
+    }
+
+    if (totalPages <= 1 && paginationBar) {
+        paginationBar.style.opacity = '0.6';
+    }
+}
+
+function changePage(delta) {
+    const next = currentPage + delta;
+    if (next >= 1 && next <= totalPages) {
+        currentPage = next;
+        renderPage();
+    }
+}
+
+// 初始化渲染
+renderPage();
+</script>
 {% endblock %}

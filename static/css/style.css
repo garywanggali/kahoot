@@ -2092,87 +2092,117 @@ button.kahoot-choice-button:focus-visible {
 }
 
 /* ==========================================================================
-   Question Set List Viewport & Frosted Table System (我的题库高质感列表)
+   Question Set List Viewport & Frosted Table System (我的题库高质感列表 - 零滚动+分页)
    ========================================================================== */
 .question-list-viewport {
     max-width: 1040px;
     margin: 0 auto;
     width: 100%;
-    padding-bottom: 2.5rem;
+    height: calc(100vh - 2.5rem);
+    max-height: calc(100vh - 2.5rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+}
+
+@media (max-width: 860px) {
+    .question-list-viewport {
+        height: auto;
+        max-height: none;
+        overflow: visible;
+    }
+}
+
+.quiz-list-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 2rem 2.5rem !important;
+    border-radius: 28px !important;
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
+    overflow: hidden;
+    min-height: 0;
 }
 
 .card-section-header {
-    margin-bottom: 1.5rem;
-    padding-bottom: 1.25rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.85rem;
     border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .card-section-title {
     font-family: var(--font-hero);
-    font-size: 1.6rem;
+    font-size: 1.5rem;
     font-weight: 800;
     color: var(--text-black);
     letter-spacing: -0.02em;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.2rem;
 }
 
 .card-section-hint {
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     color: var(--text-muted);
     font-weight: 500;
+}
+
+.recent-table-wrap {
+    flex: 1;
+    min-height: 0;
 }
 
 .quiz-set-table {
     width: 100%;
     border-collapse: separate;
-    border-spacing: 0 0.5rem;
+    border-spacing: 0 0.35rem;
 }
 
 .quiz-set-table th {
-    padding: 0.75rem 1.25rem;
+    padding: 0.45rem 1rem;
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 700;
     color: var(--text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     border: none;
 }
 
 .quiz-set-row {
-    background: rgba(255, 255, 255, 0.65);
-    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 12px;
     transition: all 0.15s cubic-bezier(0.2, 0, 0, 1);
 }
 
 .quiz-set-row:hover {
     background: #ffffff;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
 }
 
 .quiz-set-row td {
-    padding: 1.15rem 1.25rem;
+    padding: 0.7rem 1rem;
     border: none;
     vertical-align: middle;
+    font-size: 0.92rem;
 }
 
 .quiz-set-row td:first-child {
-    border-top-left-radius: 14px;
-    border-bottom-left-radius: 14px;
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
 }
 
 .quiz-set-row td:last-child {
-    border-top-right-radius: 14px;
-    border-bottom-right-radius: 14px;
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
 }
 
 .quiz-title-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-    font-size: 1.05rem;
+    display: inline-block;
+    font-size: 0.98rem;
     color: var(--text-black);
     text-decoration: none;
+    font-weight: 700;
     transition: color 0.15s ease;
 }
 
@@ -2180,111 +2210,145 @@ button.kahoot-choice-button:focus-visible {
     color: var(--orange);
 }
 
-.quiz-icon {
-    font-size: 1.15rem;
-    flex-shrink: 0;
-}
-
 .badge-count {
     font-family: var(--font-mono);
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     font-weight: 700;
     color: var(--text-secondary);
     background: rgba(0, 0, 0, 0.05);
-    padding: 0.25rem 0.65rem;
+    padding: 0.2rem 0.6rem;
     border-radius: var(--radius-pill);
     display: inline-block;
 }
 
-.time-text {
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-    color: var(--text-muted);
+.chip-public {
+    display: inline-block;
+    background: #111111;
+    color: #ffffff;
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 0.2rem 0.65rem;
+    border-radius: var(--radius-pill);
+    letter-spacing: 0.02em;
 }
 
-.author-chip {
+.chip-private {
+    display: inline-block;
+    background: #f0f0ed;
+    color: #666666;
     font-family: var(--font-body);
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: #0066ff;
-    background: rgba(0, 102, 255, 0.08);
-    padding: 0.25rem 0.65rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.2rem 0.65rem;
     border-radius: var(--radius-pill);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    letter-spacing: 0.02em;
+}
+
+.time-text {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--text-muted);
 }
 
 .table-actions-inline {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 0.5rem;
+    gap: 0.4rem;
 }
 
-.btn-table-edit {
+.btn-action-edit {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0.45rem 1rem;
-    background: var(--text-black);
+    justify-content: center;
+    gap: 0.3rem;
+    height: 32px;
+    padding: 0 0.85rem;
+    background: #111111;
     color: #ffffff;
     font-family: var(--font-body);
-    font-size: 0.85rem;
-    font-weight: 800;
+    font-size: 0.82rem;
+    font-weight: 700;
     border-radius: var(--radius-pill);
     text-decoration: none;
+    border: 1.5px solid #111111;
     transition: all 0.15s cubic-bezier(0.2, 0, 0, 1);
-    box-shadow: 0 2px 0 #000000;
+    box-sizing: border-box;
 }
 
-.btn-table-edit:hover {
+.btn-action-edit:hover {
     background: var(--orange);
+    border-color: var(--orange);
     color: #ffffff;
-    box-shadow: 0 2px 0 var(--orange-hover), 0 4px 12px var(--orange-glow);
+    box-shadow: 0 3px 10px var(--orange-glow);
     transform: translateY(-1px);
 }
 
-.btn-table-delete {
+.btn-action-delete {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 32px;
     height: 32px;
-    border-radius: 50%;
-    background: transparent;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1.5px solid rgba(0, 0, 0, 0.15);
     color: var(--text-muted);
-    font-size: 0.85rem;
-    font-weight: 700;
     cursor: pointer;
     text-decoration: none;
     transition: all 0.15s ease;
+    box-sizing: border-box;
+    flex-shrink: 0;
 }
 
-.btn-table-delete:hover {
+.btn-action-delete:hover {
     background: #ff3b30;
     border-color: #ff3b30;
     color: #ffffff;
-    transform: scale(1.05);
+    transform: scale(1.04);
 }
 
-.btn-table-copy {
+.pagination-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.btn-page {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.45rem 1rem;
-    background: transparent;
-    border: 1.5px solid #0066ff;
-    color: #0066ff;
-    font-family: var(--font-body);
-    font-size: 0.85rem;
-    font-weight: 800;
+    height: 32px;
+    padding: 0 0.85rem;
     border-radius: var(--radius-pill);
-    text-decoration: none;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1.5px solid rgba(0, 0, 0, 0.12);
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-black);
+    cursor: pointer;
     transition: all 0.15s ease;
 }
 
-.btn-table-copy:hover {
-    background: #0066ff;
+.btn-page:hover:not(:disabled) {
+    background: #111111;
+    border-color: #111111;
     color: #ffffff;
-    box-shadow: 0 4px 12px rgba(0, 102, 255, 0.25);
-    transform: translateY(-1px);
+}
+
+.btn-page:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.page-indicator {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-secondary);
 }
