@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 from .ai_kahoot import (
@@ -299,7 +300,7 @@ def question_delete(request, pk):
         question.delete()
         messages.success(request, '题目已删除')
         if quiz_set_id:
-            return redirect('kahoot_detail', pk=quiz_set_id)
+            return redirect('kahoot_editor', pk=quiz_set_id)
         return redirect('question_list')
     return render(request, 'game/question_confirm_delete.html', {
         'question': question,
@@ -676,6 +677,7 @@ def kahoot_public_clone(request, pk):
 
 
 def kahoot_detail(request, pk):
+    """Legacy URL: redirect to editor or room creation (detail page removed)."""
     teacher, redirect_resp = require_teacher_or_redirect(request)
     if redirect_resp:
         return redirect_resp
@@ -686,23 +688,10 @@ def kahoot_detail(request, pk):
         messages.error(request, '无权查看该套题')
         return redirect('question_list')
 
-    if request.method == 'POST' and can_edit:
-        title = request.POST.get('title', '').strip()
-        is_public = request.POST.get('is_public') == '1'
-        if title:
-            quiz_set.title = title[:200]
-        quiz_set.is_public = is_public
-        quiz_set.save(update_fields=['title', 'is_public'])
-        messages.success(request, '套题信息已更新')
+    if can_edit:
         return redirect('kahoot_editor', pk=quiz_set.pk)
 
-    questions = quiz_set.get_questions()
-    return render(request, 'game/kahoot_detail.html', {
-        'quiz_set': quiz_set,
-        'questions': questions,
-        'can_edit': can_edit,
-        'teacher': teacher,
-    })
+    return redirect(f'{reverse("room_create")}?quiz_set={quiz_set.pk}')
 
 
 def kahoot_delete(request, pk):
@@ -734,14 +723,14 @@ def kahoot_create_room(request, pk):
         messages.error(request, '无权使用该套题')
         return redirect('question_list')
     if request.method != 'POST':
-        return redirect('kahoot_detail', pk=pk)
+        return redirect('kahoot_editor', pk=pk)
 
     room_name = request.POST.get('name', '').strip()
     try:
         room = create_room_from_quiz_set(quiz_set, teacher, name=room_name)
     except ValueError:
         messages.error(request, '套题中还没有题目，请先添加题目')
-        return redirect('kahoot_detail', pk=pk)
+        return redirect('kahoot_editor', pk=pk)
 
     messages.success(request, f'房间已创建，房间号: {room.code}')
     return redirect('room_host', pk=room.pk)
@@ -825,9 +814,9 @@ def kahoot_ai(request):
         request.session.pop('kahoot_pending_title', None)
         messages.success(
             request,
-            f'已保存 {quiz_set.question_count()} 道题到「{quiz_set.title}」，请审核题目后创建房间或进入编辑',
+            f'已保存 {quiz_set.question_count()} 道题到「{quiz_set.title}」，可在可视化编辑器中审核修改',
         )
-        return redirect('kahoot_detail', pk=quiz_set.pk)
+        return redirect('kahoot_editor', pk=quiz_set.pk)
 
     if request.method == 'POST':
         topic = request.POST.get('topic', '').strip()
@@ -866,7 +855,7 @@ def kahoot_ai(request):
 
         request.session['ai_kahoot_preview'] = questions
         preview_labels = _preview_labels_from(questions)
-        messages.success(request, f'已生成 {len(questions)} 道题目，请预览后查看详情')
+        messages.success(request, f'已生成 {len(questions)} 道题目，请预览后保存并进入编辑')
         return render(request, 'game/kahoot_ai.html', _ai_form_context(
             request,
             counts=counts,

@@ -10,7 +10,7 @@
     <form method="post" class="actions-row section-gap">
         {% csrf_token %}
         <button type="submit" class="btn btn-primary">确认删除</button>
-        <a href="{% url 'kahoot_detail' quiz_set.pk %}" class="btn btn-outline">取消</a>
+        <a href="{% url 'question_list' %}" class="btn btn-outline">取消</a>
     </form>
 </div>
 {% endblock %}

@@ -3,12 +3,44 @@
     if (!root) return;
 
     const quizId = root.dataset.quizId;
+    const dashboardUrl = root.dataset.dashboardUrl || '/teacher/';
     let questions = Array.isArray(INITIAL_QUESTIONS) ? INITIAL_QUESTIONS.slice() : [];
     let activeIndex = questions.length > 0 ? 0 : -1;
     let correctKeys = new Set();
     let dirty = false;
     let autoSaveTimer = null;
     let saving = false;
+    let localImagePreviewUrl = null;
+
+    function normalizeImageUrl(url) {
+        if (!url) return '';
+        if (url.startsWith('blob:') || url.startsWith('http://') || url.startsWith('https://') || url.startsWith('/')) {
+            return url;
+        }
+        return '/' + url.replace(/^\/+/, '');
+    }
+
+    function revokeLocalImagePreview() {
+        if (localImagePreviewUrl) {
+            URL.revokeObjectURL(localImagePreviewUrl);
+            localImagePreviewUrl = null;
+        }
+    }
+
+    function showQuestionImage(url) {
+        const src = normalizeImageUrl(url);
+        if (!src) {
+            els.previewImage.removeAttribute('src');
+            els.previewImage.classList.add('hidden');
+            els.mediaPlaceholder.classList.remove('hidden');
+            els.removeImage.classList.add('hidden');
+            return;
+        }
+        els.previewImage.src = src;
+        els.previewImage.classList.remove('hidden');
+        els.mediaPlaceholder.classList.add('hidden');
+        els.removeImage.classList.remove('hidden');
+    }
 
     const els = {
         list: document.getElementById('question-list'),
@@ -72,7 +104,9 @@
     function scheduleAutoSave() {
         if (autoSaveTimer) clearTimeout(autoSaveTimer);
         autoSaveTimer = setTimeout(() => {
-            if (dirty && currentQuestion()) saveQuestion({ silent: true });
+            if (dirty && currentQuestion() && canAutoSaveCurrentQuestion()) {
+                saveQuestion({ silent: true });
+            }
         }, 900);
     }
 
@@ -153,16 +187,11 @@
         applyTypeUi(els.type.value);
         loadCorrectFromQuestion(q);
 
+        revokeLocalImagePreview();
         if (q.image_url) {
-            els.previewImage.src = q.image_url;
-            els.previewImage.classList.remove('hidden');
-            els.mediaPlaceholder.classList.add('hidden');
-            els.removeImage.classList.remove('hidden');
+            showQuestionImage(q.image_url);
         } else {
-            els.previewImage.removeAttribute('src');
-            els.previewImage.classList.add('hidden');
-            els.mediaPlaceholder.classList.remove('hidden');
-            els.removeImage.classList.add('hidden');
+            showQuestionImage('');
         }
         els.previewNumber.textContent = questions.length
             ? `第 ${activeIndex + 1} / ${questions.length} 题（预览）`
@@ -258,7 +287,14 @@
             els.imageInput.value = '';
             els.removeImage.dataset.pendingRemove = '0';
             dirty = false;
-            fillForm(data.question);
+            if (data.question.image_url) {
+                revokeLocalImagePreview();
+                fillForm(data.question);
+            } else if (localImagePreviewUrl) {
+                showQuestionImage(localImagePreviewUrl);
+            } else {
+                fillForm(data.question);
+            }
             renderList();
             if (silent) {
                 els.saveStatus.textContent = '已自动保存';
@@ -319,7 +355,7 @@
                 title: els.quizTitle.value.trim(),
                 is_public: els.quizPublic.checked ? '1' : '0',
             });
-            els.saveStatus.textContent = '套题已保存';
+            window.location.href = dashboardUrl;
         } catch (e) {
             alert(e.message);
         }
@@ -373,23 +409,42 @@
             alert(`图片不能超过 ${MAX_IMAGE_MB}MB`);
             return;
         }
-        els.previewImage.src = URL.createObjectURL(file);
-        els.previewImage.classList.remove('hidden');
-        els.mediaPlaceholder.classList.add('hidden');
-        els.removeImage.classList.remove('hidden');
+        revokeLocalImagePreview();
+        localImagePreviewUrl = URL.createObjectURL(file);
+        showQuestionImage(localImagePreviewUrl);
         els.removeImage.dataset.pendingRemove = '0';
         markDirty();
+        if (canAutoSaveCurrentQuestion()) {
+            void saveQuestion({ silent: true });
+        }
     });
     els.removeImage.addEventListener('click', (e) => {
         e.stopPropagation();
         els.imageInput.value = '';
-        els.previewImage.removeAttribute('src');
-        els.previewImage.classList.add('hidden');
-        els.mediaPlaceholder.classList.remove('hidden');
-        els.removeImage.classList.add('hidden');
+        revokeLocalImagePreview();
+        showQuestionImage('');
         els.removeImage.dataset.pendingRemove = '1';
         markDirty();
     });
+
+    function canAutoSaveCurrentQuestion() {
+        const type = els.type.value;
+        const text = els.text.value.trim();
+        if (!text) return false;
+        if (type === 'short_answer') {
+            return els.shortCorrect.value.trim().length > 0;
+        }
+        if (type === 'word_cloud') return true;
+        if (type === 'judgment') {
+            return els.optionA.value.trim() && els.optionB.value.trim();
+        }
+        return (
+            els.optionA.value.trim()
+            && els.optionB.value.trim()
+            && els.optionC.value.trim()
+            && els.optionD.value.trim()
+        );
+    }
 
     renderList();
     if (questions.length) {

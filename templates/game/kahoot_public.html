@@ -35,8 +35,6 @@
                 <td>{{ qs.teacher.username }}</td>
                 <td>{{ qs.question_count }}</td>
                 <td>
-                    <a href="{% url 'kahoot_detail' qs.pk %}">预览</a>
-                    &nbsp;·&nbsp;
                     <form method="post" action="{% url 'kahoot_public_clone' qs.pk %}" class="inline-form">
                         {% csrf_token %}
                         <input type="hidden" name="title" value="{{ qs.title }}（副本）">

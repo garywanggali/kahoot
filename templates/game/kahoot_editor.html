@@ -8,11 +8,13 @@
 {% endblock %}
 
 {% block content %}
-<div class="kahoot-editor-app" id="kahoot-editor" data-quiz-id="{{ quiz_set.pk }}">
+<div class="kahoot-editor-app" id="kahoot-editor"
+     data-quiz-id="{{ quiz_set.pk }}"
+     data-dashboard-url="{% url 'teacher_dashboard' %}">
     {% csrf_token %}
     <header class="kahoot-editor-topbar">
         <div class="kahoot-editor-topbar-left">
-            <a href="{% url 'kahoot_new' %}" class="btn-back kahoot-editor-back">← 返回</a>
+            <a href="{% url 'teacher_dashboard' %}" class="btn-back kahoot-editor-back">← 返回控制台</a>
             <input type="text" id="quiz-title-input" class="kahoot-editor-title-input"
                    value="{{ quiz_set.title }}" maxlength="200" placeholder="Kahoot 名称">
         </div>
@@ -21,8 +23,7 @@
                 <input type="checkbox" id="quiz-public-input" {% if quiz_set.is_public %}checked{% endif %}>
                 公开套题
             </label>
-            <a href="{% url 'kahoot_detail' quiz_set.pk %}" class="btn btn-outline">套题详情</a>
-            <button type="button" class="btn btn-primary" id="btn-save-quiz-set">保存套题</button>
+            <button type="button" class="btn btn-primary" id="btn-save-quiz-set">保存并退出</button>
         </div>
     </header>
 
@@ -128,5 +129,5 @@
 const INITIAL_QUESTIONS = {{ questions_json|safe }};
 const MAX_IMAGE_MB = {{ max_image_mb }};
 </script>
-<script src="{% static 'js/kahoot_editor.js' %}?v=3"></script>
+<script src="{% static 'js/kahoot_editor.js' %}?v=5"></script>
 {% endblock %}

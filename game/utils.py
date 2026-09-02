@@ -1,6 +1,7 @@
 from django.utils import timezone
 
 from .models import Answer, Player, Question, Room
+from .question_save import _question_image_url
 from .validators import MAX_QUESTION_IMAGE_BYTES
 
 
@@ -55,7 +56,7 @@ def get_room_state(room, runtime=None):
             elif current_q.question_type != Question.TYPE_WORD_CLOUD:
                 question_data['correct_option'] = current_q.correct_option
         if current_q.image:
-            question_data['image_url'] = current_q.image.url
+            question_data['image_url'] = _question_image_url(current_q)
         state['question'] = question_data
     if runtime is not None:
         from .room_cache import overlay_room_state

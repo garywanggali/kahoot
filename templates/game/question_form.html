@@ -5,7 +5,7 @@
 {% block content %}
 <div class="studio-header-bar">
     <div class="studio-title-group">
-        <a href="{% if quiz_set %}{% url 'kahoot_detail' quiz_set.pk %}{% else %}{% url 'question_list' %}{% endif %}" class="btn-back">
+        <a href="{% if quiz_set %}{% url 'kahoot_editor' quiz_set.pk %}{% else %}{% url 'question_list' %}{% endif %}" class="btn-back">
             <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="19" y1="12" x2="5" y2="12"></line>
                 <polyline points="12 19 5 12 12 5"></polyline>

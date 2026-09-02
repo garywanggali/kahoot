@@ -35,12 +35,12 @@
         <tbody>
             {% for qs in my_quiz_sets %}
             <tr>
-                <td><a href="{% url 'kahoot_detail' qs.pk %}"><strong>{{ qs.title }}</strong></a></td>
+                <td><a href="{% url 'kahoot_editor' qs.pk %}"><strong>{{ qs.title }}</strong></a></td>
                 <td>{{ qs.question_count }}</td>
                 <td>{% if qs.is_public %}是{% else %}否{% endif %}</td>
                 <td>{{ qs.created_at|date:"Y-m-d H:i" }}</td>
                 <td>
-                    <a href="{% url 'kahoot_detail' qs.pk %}">管理</a>
+                    <a href="{% url 'kahoot_editor' qs.pk %}">编辑</a>
                     &nbsp;·&nbsp;
                     <a href="{% url 'room_create' %}?quiz_set={{ qs.pk }}">创建房间</a>
                 </td>
@@ -73,8 +73,6 @@
                 <td>{{ qs.teacher.username }}</td>
                 <td>{{ qs.question_count }}</td>
                 <td>
-                    <a href="{% url 'kahoot_detail' qs.pk %}">查看</a>
-                    &nbsp;·&nbsp;
                     <a href="{% url 'room_create' %}?quiz_set={{ qs.pk }}">创建房间</a>
                 </td>
             </tr>

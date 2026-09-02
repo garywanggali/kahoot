@@ -8,6 +8,15 @@ from .models import Question
 from .validators import MAX_QUESTION_IMAGE_BYTES, validate_question_image
 
 
+def _question_image_url(question: Question) -> str:
+    if not question.image:
+        return ''
+    url = question.image.url
+    if url.startswith(('http://', 'https://', '/')):
+        return url
+    return '/' + url.lstrip('/')
+
+
 class QuestionFormError(Exception):
     def __init__(self, message: str):
         self.message = message
@@ -131,7 +140,7 @@ def question_to_editor_dict(question: Question) -> dict:
         'correct_option_keys': question.correct_option_keys,
         'time_limit': question.time_limit,
         'is_public': question.is_public,
-        'image_url': question.image.url if question.image else '',
+        'image_url': _question_image_url(question),
     }
     if question.question_type == Question.TYPE_SHORT_ANSWER:
         data['short_correct'] = question.option_a
