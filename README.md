@@ -1,6 +1,6 @@
 # Kahoot
 
-基于 Django + SQLite 的 Kahoot 风格互动课堂测验平台。
+基于 Django + SQLite 的 Kahoot 风格互动课堂测验平台。几把
 
 ## 功能
 
@@ -27,7 +27,7 @@ python manage.py load_sample_questions
 python manage.py runserver
 ```
 
-浏览器访问 http://127.0.0.1:8000
+浏览器访问 <http://127.0.0.1:8000>
 
 ## 使用流程
 
@@ -119,4 +119,3 @@ git clone https://github.com/garywanggali/kahoot.git kahoot-new
 cd kahoot-new
 ./run.sh 5002
 ```
-
