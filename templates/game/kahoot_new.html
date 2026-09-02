@@ -5,24 +5,28 @@
 {% block content %}
 <div class="wizard-screen-viewport">
     
-    <!-- 顶部状态指示条 -->
+    <!-- 顶部状态指示条 (可点击切换，未填写名称时无法跳至第二步) -->
     <div class="studio-header-bar" style="margin-bottom: 1.25rem;">
         <div class="studio-title-group">
             <h1 class="studio-main-title" style="margin-top: 0;">新建测验题库</h1>
         </div>
         
         <div class="wizard-step-indicator" id="wizard-step-indicator">
-            <span class="step-pill active" id="step-pill-1">1. 命名题库</span>
+            <button type="button" class="step-pill active" id="step-pill-1" onclick="handleStepPillClick(1)" title="点击切换至第一步（命名）">
+                1. 命名题库
+            </button>
             <span class="step-divider">→</span>
-            <span class="step-pill" id="step-pill-2">2. 选择出题方式</span>
+            <button type="button" class="step-pill" id="step-pill-2" onclick="handleStepPillClick(2)" title="点击切换至第二步（需先填写名称）">
+                2. 选择出题方式
+            </button>
         </div>
     </div>
 
-    <!-- 向导核心区域 (更大、更清晰、沉稳大方框) -->
+    <!-- 向导核心区域 (第一页与第二页返回键位置 100% 绝对一致) -->
     <div class="wizard-flow-wrapper">
 
         <!-- ========================================== -->
-        <!-- 第一步：命名这套题库 (返回按键置于左上角字上方) -->
+        <!-- 第一步：命名这套题库 -->
         <!-- ========================================== -->
         <div class="wizard-card wizard-card-step1 card-glass" id="wizard-step-1">
             <div class="wizard-card-header">
@@ -60,11 +64,11 @@
         </div>
 
         <!-- ========================================== -->
-        <!-- 第二步：选择出题方式 (返回按键置于第二步字上方) -->
+        <!-- 第二步：选择出题方式 (返回键位置与第一步完全同位) -->
         <!-- ========================================== -->
         <div class="wizard-card wizard-card-step2 card-glass" id="wizard-step-2" style="display: none;">
             
-            <div class="wizard-card-header" style="margin-bottom: 1.5rem;">
+            <div class="wizard-card-header">
                 <div class="wizard-card-top-nav">
                     <button type="button" class="btn-card-back" onclick="handleBackToStep1()">
                         <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -211,6 +215,14 @@ function handleBackToStep1() {
         inputEl.focus();
         inputEl.select();
     }, 100);
+}
+
+function handleStepPillClick(targetStep) {
+    if (targetStep === 1) {
+        handleBackToStep1();
+    } else if (targetStep === 2) {
+        handleGoToStep2();
+    }
 }
 
 // 支持在第一步回车直接进入第二步

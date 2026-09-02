@@ -1843,14 +1843,25 @@ button.kahoot-choice-button:focus-visible {
     font-weight: 700;
     color: var(--text-muted);
     background: rgba(0, 0, 0, 0.05);
-    padding: 0.35rem 0.85rem;
+    padding: 0.4rem 0.95rem;
     border-radius: var(--radius-pill);
-    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+    outline: none;
+}
+
+.step-pill:hover:not(.active) {
+    background: rgba(0, 0, 0, 0.1);
+    color: var(--text-black);
+    transform: translateY(-1px);
 }
 
 .step-pill.active {
     background: var(--text-black);
     color: #ffffff;
+    cursor: pointer;
 }
 
 .step-divider {
@@ -1874,6 +1885,9 @@ button.kahoot-choice-button:focus-visible {
 }
 
 .wizard-card-top-nav {
+    height: 28px;
+    display: flex;
+    align-items: center;
     margin-bottom: 0.85rem;
 }
 
@@ -1900,8 +1914,8 @@ button.kahoot-choice-button:focus-visible {
 
 .wizard-card-step1 {
     width: 100%;
-    min-height: 500px;
-    padding: 4.25rem 4.75rem !important;
+    min-height: 520px;
+    padding: 3.5rem 4.5rem !important;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -1909,7 +1923,11 @@ button.kahoot-choice-button:focus-visible {
 
 .wizard-card-step2 {
     width: 100%;
-    padding: 2.25rem 3rem !important;
+    min-height: 520px;
+    padding: 3.5rem 4.5rem !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 @keyframes wizardCardFade {
