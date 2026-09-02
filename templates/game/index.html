@@ -5,31 +5,29 @@
 {% block content %}
 <div class="landing-screen-viewport">
     
-    <!-- 顶部极简导航 -->
-    <div class="mk-topbar">
-        <div class="mk-brand">
-            <span class="mk-dot"></span>
-            <span class="mk-label">KAHOOT</span>
+    <!-- 空间漂浮高质感 3D 机械键帽（支持鼠标视差与物理按压反馈） -->
+    <div class="floating-keycaps-stage" id="keycaps-stage">
+        <div class="keycap keycap-orange keycap-pos-1" data-speed="0.04" title="ESC">
+            <div class="keycap-inner"><span>ESC</span></div>
         </div>
-        <div class="mk-actions">
-            <button type="button" class="btn-mk-pill" onclick="toggleCardFlip(true)">
-                <span>老师端入口</span>
-                <span style="color: var(--orange); font-weight: bold;">↻</span>
-            </button>
+        <div class="keycap keycap-dark keycap-pos-2" data-speed="-0.03" title="Option A">
+            <div class="keycap-inner"><span class="key-shape key-shape-a">▲</span></div>
+        </div>
+        <div class="keycap keycap-dark keycap-pos-3" data-speed="0.05" title="Option B">
+            <div class="keycap-inner"><span class="key-shape key-shape-b">◆</span></div>
+        </div>
+        <div class="keycap keycap-dark keycap-pos-4" data-speed="-0.04" title="Option C">
+            <div class="keycap-inner"><span class="key-shape key-shape-c">●</span></div>
+        </div>
+        <div class="keycap keycap-dark keycap-pos-5" data-speed="0.03" title="Option D">
+            <div class="keycap-inner"><span class="key-shape key-shape-d">■</span></div>
+        </div>
+        <div class="keycap keycap-dark keycap-pos-6" data-speed="-0.05" title="Command">
+            <div class="keycap-inner"><span>⌘</span></div>
         </div>
     </div>
 
-    <!-- 空间漂浮几何键帽 -->
-    <div class="floating-keycaps-stage">
-        <div class="keycap keycap-orange keycap-pos-1"><span>ESC</span></div>
-        <div class="keycap keycap-dark keycap-pos-2"><span>▲</span></div>
-        <div class="keycap keycap-dark keycap-pos-3"><span>◆</span></div>
-        <div class="keycap keycap-dark keycap-pos-4"><span>●</span></div>
-        <div class="keycap keycap-dark keycap-pos-5"><span>■</span></div>
-        <div class="keycap keycap-dark keycap-pos-6"><span>⌘</span></div>
-    </div>
-
-    <!-- 核心视觉区：标题 + 撞色输入卡片 (紧凑无滚动 100vh 单屏) -->
+    <!-- 核心视觉区：标语 + 撞色输入卡片 (完全单屏零滚动) -->
     <div class="landing-main-flow">
         
         <div class="hero-section">
@@ -131,6 +129,42 @@ function toggleCardFlip(flipToTeacher) {
         }, 350);
     }
 }
+
+// 鼠标微视差与键帽物理交互
+(function initKeycapsInteraction() {
+    const stage = document.getElementById('keycaps-stage');
+    if (!stage) return;
+    const keycaps = stage.querySelectorAll('.keycap');
+    
+    // 鼠标轻量视差
+    let targetX = 0, targetY = 0, currentX = 0, currentY = 0;
+    window.addEventListener('mousemove', (e) => {
+        const cx = window.innerWidth / 2;
+        const cy = window.innerHeight / 2;
+        targetX = (e.clientX - cx);
+        targetY = (e.clientY - cy);
+    }, { passive: true });
+
+    function renderParallax() {
+        currentX += (targetX - currentX) * 0.08;
+        currentY += (targetY - currentY) * 0.08;
+        keycaps.forEach(k => {
+            const speed = parseFloat(k.getAttribute('data-speed')) || 0.03;
+            k.style.setProperty('--mouse-x', `${(currentX * speed).toFixed(2)}px`);
+            k.style.setProperty('--mouse-y', `${(currentY * speed).toFixed(2)}px`);
+        });
+        requestAnimationFrame(renderParallax);
+    }
+    requestAnimationFrame(renderParallax);
+
+    // 机械按键点击反馈
+    keycaps.forEach(k => {
+        k.addEventListener('click', () => {
+            k.classList.add('keycap-pressed');
+            setTimeout(() => k.classList.remove('keycap-pressed'), 180);
+        });
+    });
+})();
 
 if (window.location.search.includes('tab=teacher') || window.location.hash === '#teacher') {
     toggleCardFlip(true);
