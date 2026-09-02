@@ -4,7 +4,7 @@
 {% block title %}编辑 {{ quiz_set.title }} - Kahoot Studio{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/kahoot_editor.css' %}?v=3">
+<link rel="stylesheet" href="{% static 'css/kahoot_editor.css' %}?v=10">
 {% endblock %}
 
 {% block content %}
@@ -19,9 +19,17 @@
                    value="{{ quiz_set.title }}" maxlength="200" placeholder="Kahoot 名称">
         </div>
         <div class="kahoot-editor-topbar-right">
-            <label class="kahoot-editor-public-toggle">
-                <input type="checkbox" id="quiz-public-input" {% if quiz_set.is_public %}checked{% endif %}>
-                公开套题
+            <label class="kahoot-editor-public-toggle" title="公开后其他老师可在题库中浏览并使用本套题">
+                <input type="checkbox" id="quiz-public-input" class="public-toggle-checkbox" {% if quiz_set.is_public %}checked{% endif %}>
+                <span class="public-toggle-pill">
+                    <svg class="public-toggle-icon" viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                    </svg>
+                    <span class="public-toggle-text">公开套题</span>
+                    <span class="public-toggle-switch"><span class="toggle-slider"></span></span>
+                </span>
             </label>
             <button type="button" class="btn btn-primary" id="btn-save-quiz-set">保存并退出</button>
         </div>

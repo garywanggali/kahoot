@@ -58,10 +58,87 @@ body:has(.kahoot-editor-app) .container {
 }
 
 .kahoot-editor-public-toggle {
-    font-size: 0.9rem;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
+    cursor: pointer;
+    user-select: none;
+    margin: 0;
+}
+
+.public-toggle-checkbox {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+.public-toggle-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.85rem;
+    background: #ffffff;
+    border: 1.5px solid var(--border-light);
+    border-radius: var(--radius-pill);
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.public-toggle-icon {
+    color: var(--text-muted);
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.public-toggle-switch {
+    width: 28px;
+    height: 16px;
+    background: #e4e4df;
+    border-radius: 10px;
+    position: relative;
+    transition: background-color 0.2s ease;
+}
+
+.toggle-slider {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), background-color 0.2s ease;
+}
+
+/* Checked state */
+.public-toggle-checkbox:checked + .public-toggle-pill {
+    background: #ffffff;
+    border-color: var(--orange);
+    color: var(--text-black);
+    box-shadow: 0 2px 10px rgba(255, 79, 0, 0.15);
+}
+
+.public-toggle-checkbox:checked + .public-toggle-pill .public-toggle-icon {
+    color: var(--orange);
+    transform: rotate(15deg);
+}
+
+.public-toggle-checkbox:checked + .public-toggle-pill .public-toggle-switch {
+    background: var(--orange);
+}
+
+.public-toggle-checkbox:checked + .public-toggle-pill .toggle-slider {
+    transform: translateX(12px);
+}
+
+.public-toggle-pill:hover {
+    border-color: var(--text-black);
+    transform: translateY(-1px);
 }
 
 .kahoot-editor-body {
@@ -194,21 +271,34 @@ body:has(.kahoot-editor-app) .container {
 
 .kahoot-editor-stem-input {
     width: 100%;
+    min-height: 84px;
     font-family: var(--font-hero);
-    font-size: 2rem;
+    font-size: 1.85rem;
     font-weight: 800;
-    line-height: 1.25;
+    line-height: 1.35;
     text-align: center;
-    border: none;
-    background: transparent;
-    resize: vertical;
+    border: 2px solid var(--orange);
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
     margin-bottom: 1.5rem;
     color: var(--text-black);
+    box-shadow: 0 4px 14px var(--orange-subtle);
+    box-sizing: border-box;
+    display: block;
+    resize: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .kahoot-editor-stem-input:focus {
-    outline: 2px solid var(--orange);
-    border-radius: var(--radius-md);
+    outline: none;
+    border-color: var(--orange);
+    box-shadow: 0 0 0 4px rgba(255, 79, 0, 0.2), 0 6px 20px rgba(255, 79, 0, 0.25);
+}
+
+.kahoot-editor-stem-input::placeholder {
+    color: rgba(0, 0, 0, 0.35);
+    text-align: center;
 }
 
 .kahoot-editor-options {
