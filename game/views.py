@@ -197,9 +197,11 @@ def teacher_dashboard(request):
         return redirect_resp
     rooms = teacher_rooms(teacher)[:10]
     quiz_set_count = own_quiz_sets(teacher).count()
+    question_count = own_questions(teacher).count()
     return render(request, 'game/teacher_dashboard.html', {
         'rooms': rooms,
         'quiz_set_count': quiz_set_count,
+        'question_count': question_count,
         'teacher': teacher,
     })
 
