@@ -20,7 +20,12 @@ from .room_cache import (
     maybe_flush,
     record_answer,
 )
+from .text_utils import (
+    SHORT_ANSWER_MAX_LENGTH,
+    normalize_word_cloud_text,
+)
 from .utils import calculate_points, get_room_state
+from .word_cloud import aggregate_word_cloud
 
 DANMAKU_MAX_LENGTH = 40
 DANMAKU_COOLDOWN_SEC = 2
@@ -207,7 +212,12 @@ class RoomConsumer(AsyncWebsocketConsumer):
             return
 
         response_time_ms = data.get('response_time_ms', 0)
-        is_correct = question.is_answer_correct(selected)
+        if question.question_type == Question.TYPE_WORD_CLOUD:
+            is_correct = True
+        elif question.question_type == Question.TYPE_SHORT_ANSWER:
+            is_correct = question.is_text_answer_correct(selected)
+        else:
+            is_correct = question.is_answer_correct(selected)
         points = calculate_points(question.time_limit, response_time_ms, is_correct)
 
         recorded = await database_sync_to_async(record_answer)(
@@ -230,8 +240,22 @@ class RoomConsumer(AsyncWebsocketConsumer):
                 'is_correct': is_correct,
                 'points': points,
                 'selected_option': selected,
+                'answer_text': selected,
             },
         }))
+
+        if question.question_type == Question.TYPE_WORD_CLOUD:
+            cloud = await database_sync_to_async(aggregate_word_cloud)(
+                room, question.id, runtime,
+            )
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'room_message',
+                    'event': 'word_cloud_updated',
+                    'data': {'words': cloud},
+                },
+            )
 
         answer_count = await database_sync_to_async(cache_get_answer_count)(runtime, question.id)
         player_count = (await self.get_room_state_async())['player_count']
@@ -328,6 +352,14 @@ class RoomConsumer(AsyncWebsocketConsumer):
 
     @staticmethod
     def normalize_answer_selection(question, data):
+        if question.question_type in (Question.TYPE_SHORT_ANSWER, Question.TYPE_WORD_CLOUD):
+            text = data.get('answer_text', '').strip()
+            if not text:
+                return None
+            if question.question_type == Question.TYPE_WORD_CLOUD:
+                return normalize_word_cloud_text(text)
+            return text[:SHORT_ANSWER_MAX_LENGTH]
+
         if question.question_type == Question.TYPE_MULTIPLE:
             options = data.get('selected_options', [])
             if not isinstance(options, list) or not options:

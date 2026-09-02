@@ -50,7 +50,9 @@ def get_room_state(room, runtime=None):
                 question_data['correct_option'] = (
                     current_q.option_a if key == 'A' else current_q.option_b
                 )
-            else:
+            elif current_q.question_type == Question.TYPE_SHORT_ANSWER:
+                question_data['correct_answer'] = current_q.option_a.replace('|', ' / ')
+            elif current_q.question_type != Question.TYPE_WORD_CLOUD:
                 question_data['correct_option'] = current_q.correct_option
         if current_q.image:
             question_data['image_url'] = current_q.image.url
@@ -58,6 +60,8 @@ def get_room_state(room, runtime=None):
     if runtime is not None:
         from .room_cache import overlay_room_state
         state = overlay_room_state(state, runtime)
+    from .word_cloud import attach_word_cloud
+    state = attach_word_cloud(state, room)
     return state
 
 

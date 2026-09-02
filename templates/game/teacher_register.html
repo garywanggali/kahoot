@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}老师注册 - Kahoot{% endblock %}
+
+{% block content %}
+<div class="logo logo-sm">老师注册</div>
+<div class="card">
+    <p class="form-hint">注册需要有效邀请码。请牢记用户名与密码，用于日后登录。</p>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="invite_code">邀请码</label>
+            <input type="text" id="invite_code" name="invite_code" class="form-control"
+                   value="{{ invite_code|default:'' }}" required autocomplete="off"
+                   placeholder="向管理员获取">
+        </div>
+        <div class="form-group">
+            <label for="username">用户名</label>
+            <input type="text" id="username" name="username" class="form-control"
+                   value="{{ username|default:'' }}" required autocomplete="username"
+                   minlength="3" maxlength="50" pattern="[a-zA-Z0-9_]+"
+                   title="仅字母、数字、下划线">
+            <p class="form-hint">3–50 位，仅字母、数字、下划线；登录时不区分大小写。</p>
+        </div>
+        <div class="form-group">
+            <label for="password">密码</label>
+            <input type="password" id="password" name="password" class="form-control" required
+                   minlength="6" autocomplete="new-password">
+        </div>
+        <div class="form-group">
+            <label for="password_confirm">确认密码</label>
+            <input type="password" id="password_confirm" name="password_confirm" class="form-control"
+                   required minlength="6" autocomplete="new-password">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">注册并登录</button>
+    </form>
+    <p class="text-center section-gap">
+        已有账号？<a href="{% url 'teacher_login' %}">去登录</a>
+    </p>
+</div>
+{% endblock %}

@@ -128,6 +128,26 @@ class Command(BaseCommand):
                 'correct_option': 'B',
                 'time_limit': 15,
             },
+            {
+                'text': '中国的首都是哪里？（简答）',
+                'question_type': Question.TYPE_SHORT_ANSWER,
+                'option_a': '北京|北京市',
+                'option_b': Question.TEXT_OPTION_PLACEHOLDER,
+                'option_c': Question.TEXT_OPTION_PLACEHOLDER,
+                'option_d': Question.TEXT_OPTION_PLACEHOLDER,
+                'correct_option': 'A',
+                'time_limit': 25,
+            },
+            {
+                'text': '你最喜欢什么动物？',
+                'question_type': Question.TYPE_WORD_CLOUD,
+                'option_a': Question.TEXT_OPTION_PLACEHOLDER,
+                'option_b': Question.TEXT_OPTION_PLACEHOLDER,
+                'option_c': Question.TEXT_OPTION_PLACEHOLDER,
+                'option_d': Question.TEXT_OPTION_PLACEHOLDER,
+                'correct_option': '',
+                'time_limit': 30,
+            },
         ]
 
         created = 0
@@ -142,7 +162,10 @@ class Command(BaseCommand):
         single_count = Question.objects.filter(question_type=Question.TYPE_SINGLE).count()
         multiple_count = Question.objects.filter(question_type=Question.TYPE_MULTIPLE).count()
         judgment_count = Question.objects.filter(question_type=Question.TYPE_JUDGMENT).count()
+        short_count = Question.objects.filter(question_type=Question.TYPE_SHORT_ANSWER).count()
+        word_cloud_count = Question.objects.filter(question_type=Question.TYPE_WORD_CLOUD).count()
         self.stdout.write(self.style.SUCCESS(
             f'已导入 {created} 道新题目，题库共 {Question.objects.count()} 道'
-            f'（单选 {single_count}，多选 {multiple_count}，判断 {judgment_count}）'
+            f'（单选 {single_count}，多选 {multiple_count}，判断 {judgment_count}，'
+            f'简答 {short_count}，词云 {word_cloud_count}）'
         ))

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}题库管理 - Kahoot{% endblock %}
+{% block title %}题库 - Kahoot{% endblock %}
 
 {% block content %}
 <div class="studio-header-bar">
@@ -12,36 +12,31 @@
             </svg>
             <span>返回控制台</span>
         </a>
-        <h1 class="studio-main-title">题库管理</h1>
+        <h1 class="studio-main-title">我的题库</h1>
     </div>
-    <a href="{% url 'question_create' %}" class="btn btn-primary">
-        <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-        添加题目
-    </a>
+    <a href="{% url 'kahoot_new' %}" class="btn btn-primary">新建 Kahoot</a>
 </div>
 
 <div class="card">
-    {% if questions %}
+    <h3 class="page-title">我的题目</h3>
+    {% if my_questions %}
     <table>
         <thead>
             <tr>
                 <th>题目</th>
                 <th>题型</th>
-                <th>图片</th>
+                <th>公开</th>
                 <th>正确答案</th>
                 <th>时限</th>
                 <th>操作</th>
             </tr>
         </thead>
         <tbody>
-            {% for q in questions %}
+            {% for q in my_questions %}
             <tr>
                 <td>{{ q.text|truncatechars:60 }}</td>
-                <td><span class="type-chip">{% if q.question_type == 'multiple' %}多选{% elif q.question_type == 'judgment' %}判断{% else %}单选{% endif %}</span></td>
-                <td>{% if q.image %}有{% else %}—{% endif %}</td>
+                <td><span class="type-chip">{% if q.question_type == 'multiple' %}多选{% elif q.question_type == 'judgment' %}判断{% elif q.question_type == 'short_answer' %}简答{% elif q.question_type == 'word_cloud' %}词云{% else %}单选{% endif %}</span></td>
+                <td>{% if q.is_public %}是{% else %}否{% endif %}</td>
                 <td>{{ q.get_correct_option_display }}</td>
                 <td>{{ q.time_limit }}s</td>
                 <td>
@@ -54,7 +49,34 @@
         </tbody>
     </table>
     {% else %}
-    <p class="text-muted-block">暂无题目，<a href="{% url 'question_create' %}">添加第一道题目</a></p>
+    <p class="text-muted-block">暂无题目，<a href="{% url 'kahoot_new' %}">新建 Kahoot</a> 开始添加</p>
     {% endif %}
 </div>
+
+{% if public_questions %}
+<div class="card section-gap">
+    <h3 class="page-title">公开题库（其他老师）</h3>
+    <p class="form-hint">以下题目由其他老师公开分享，可在创建房间时选用，但无法编辑。</p>
+    <table>
+        <thead>
+            <tr>
+                <th>题目</th>
+                <th>作者</th>
+                <th>题型</th>
+                <th>时限</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for q in public_questions %}
+            <tr>
+                <td>{{ q.text|truncatechars:60 }}</td>
+                <td>{{ q.teacher.username }}</td>
+                <td><span class="type-chip">{% if q.question_type == 'multiple' %}多选{% elif q.question_type == 'judgment' %}判断{% elif q.question_type == 'short_answer' %}简答{% elif q.question_type == 'word_cloud' %}词云{% else %}单选{% endif %}</span></td>
+                <td>{{ q.time_limit }}s</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
 {% endblock %}

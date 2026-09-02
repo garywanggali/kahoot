@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}AI 生成 Kahoot - Kahoot{% endblock %}
+
+{% block content %}
+<div class="logo logo-sm">AI 生成 Kahoot</div>
+<div class="nav-links">
+    <a href="{% url 'kahoot_new' %}" class="btn btn-outline">返回新建 Kahoot</a>
+    <a href="{% url 'question_list' %}" class="btn btn-outline">浏览题库</a>
+</div>
+
+{% if not ai_configured %}
+<div class="alert alert-warning section-gap">
+    未检测到 <code>STEPFUN_API_KEY</code>。请在阶跃星辰开放平台创建 API Key 后设置环境变量并重启服务。
+    本地示例：<code>export STEPFUN_API_KEY=你的密钥</code>
+    · <a href="https://platform.stepfun.com/docs/zh/quickstart/overview" target="_blank" rel="noopener">接入文档</a>
+</div>
+{% endif %}
+
+<div class="card">
+    <h3 class="page-title">生成设置</h3>
+    <form method="post" id="kahoot-ai-form">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="topic">主题 / 方向</label>
+            <input type="text" id="topic" name="topic" class="form-control" required
+                   value="{{ topic }}" placeholder="例如：地理、中国古代史、英语词汇">
+        </div>
+        <div class="form-group">
+            <label for="description">详细要求（可选）</label>
+            <textarea id="description" name="description" class="form-control kahoot-ai-description" rows="5"
+                      placeholder="可写任意长度的限制说明，例如：着重中国地理，考查学生如何把中国地理特点跟政权更迭联系起来的能力；题目难度中等，避免过于偏门的知识点。">{{ description }}</textarea>
+        </div>
+        <div class="form-group">
+            <label>各题型数量（总计不超过 {{ max_total }} 道）</label>
+            <div class="kahoot-count-grid">
+                <div class="kahoot-count-item">
+                    <span class="kahoot-count-label">单选题</span>
+                    <input type="number" name="count_single" class="form-control kahoot-count-input"
+                           min="0" max="{{ max_per_type }}" value="{{ counts.single }}">
+                </div>
+                <div class="kahoot-count-item">
+                    <span class="kahoot-count-label">多选题</span>
+                    <input type="number" name="count_multiple" class="form-control kahoot-count-input"
+                           min="0" max="{{ max_per_type }}" value="{{ counts.multiple }}">
+                </div>
+                <div class="kahoot-count-item">
+                    <span class="kahoot-count-label">判断题</span>
+                    <input type="number" name="count_judgment" class="form-control kahoot-count-input"
+                           min="0" max="{{ max_per_type }}" value="{{ counts.judgment }}">
+                </div>
+                <div class="kahoot-count-item">
+                    <span class="kahoot-count-label">简答题</span>
+                    <input type="number" name="count_short_answer" class="form-control kahoot-count-input"
+                           min="0" max="{{ max_per_type }}" value="{{ counts.short_answer }}">
+                </div>
+            </div>
+            <p class="form-hint">AI 仅生成以上四种题型，不含词云题。</p>
+        </div>
+        <button type="submit" class="btn btn-primary" {% if not ai_configured %}disabled data-ai-missing{% endif %}>
+            生成题目
+        </button>
+    </form>
+</div>
+
+{% if preview %}
+<div class="card section-gap">
+    <h3 class="page-title">预览（{{ preview|length }} 道）</h3>
+    <p class="form-hint">确认无误后保存到题库；不满意可放弃后重新生成。</p>
+    <div class="kahoot-preview-list">
+        {% for q in preview %}
+        <div class="kahoot-preview-item">
+            <div class="kahoot-preview-meta">
+                <span class="kahoot-preview-type">{{ q.type_label }}</span>
+                <span class="kahoot-preview-time">{{ q.time_limit }}s</span>
+            </div>
+            <p class="kahoot-preview-text">{{ q.text }}</p>
+            {% if q.question_type == 'short_answer' %}
+            <p class="kahoot-preview-answer">参考答案：{{ q.option_a }}</p>
+            {% elif q.question_type == 'judgment' %}
+            <p class="kahoot-preview-options">正确 / 错误 · 答案：{% if q.correct_option == 'A' %}{{ q.option_a }}{% else %}{{ q.option_b }}{% endif %}</p>
+            {% elif q.question_type == 'multiple' %}
+            <p class="kahoot-preview-options">
+                A. {{ q.option_a }} · B. {{ q.option_b }} · C. {{ q.option_c }} · D. {{ q.option_d }}
+                <br>正确答案：{{ q.correct_option }}
+            </p>
+            {% else %}
+            <p class="kahoot-preview-options">
+                A. {{ q.option_a }} · B. {{ q.option_b }} · C. {{ q.option_c }} · D. {{ q.option_d }}
+                <br>正确答案：{{ q.correct_option }}
+            </p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    <div class="kahoot-preview-actions">
+        <form method="post" class="inline-form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="save">
+            <button type="submit" class="btn btn-primary">保存到题库</button>
+        </form>
+        <form method="post" action="{% url 'kahoot_ai_discard' %}" class="inline-form">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline">放弃并重新生成</button>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const inputs = document.querySelectorAll('.kahoot-count-input');
+    const maxTotal = {{ max_total }};
+    const btn = document.querySelector('#kahoot-ai-form button[type="submit"]');
+  if (!btn) return;
+    function updateTotal() {
+        let sum = 0;
+        inputs.forEach(el => { sum += parseInt(el.value || 0, 10); });
+        if (btn.hasAttribute('data-ai-missing')) return;
+        btn.disabled = sum === 0 || sum > maxTotal;
+    }
+    inputs.forEach(el => el.addEventListener('input', updateTotal));
+    updateTotal();
+})();
+</script>
+{% endblock %}

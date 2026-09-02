@@ -22,12 +22,25 @@
         <h2 class="question-text" id="question-text"></h2>
         <p class="question-type-hint hidden" id="question-type-hint"></p>
         <div id="options-container"></div>
+        <div id="text-answer-group" class="text-answer-group hidden">
+            <input type="text" id="text-answer-input" class="form-control text-answer-input"
+                   maxlength="100" placeholder="输入你的答案..." autocomplete="off">
+            <button type="button" id="submit-text-btn" class="btn btn-primary submit-text-btn" onclick="submitTextAnswer()">提交答案</button>
+        </div>
+        <div id="word-cloud-wrap" class="word-cloud-wrap hidden">
+            <p class="word-cloud-title">实时词云</p>
+            <div id="word-cloud-display" class="word-cloud-display"></div>
+        </div>
         <button type="button" id="submit-multi-btn" class="btn btn-primary submit-multi-btn hidden" onclick="submitMultiAnswer()">提交答案</button>
         <p id="answer-feedback"></p>
     </div>
 
     <div id="leaderboard-screen" class="leaderboard-screen hidden">
         <h2 class="page-title">排行榜</h2>
+        <div id="leaderboard-word-cloud-wrap" class="word-cloud-wrap hidden">
+            <p class="word-cloud-title">本题词云</p>
+            <div id="leaderboard-word-cloud" class="word-cloud-display"></div>
+        </div>
         <div id="leaderboard-list"></div>
         <p class="text-muted-block section-gap">等待下一题...</p>
     </div>
@@ -56,6 +69,7 @@
 {% block extra_js %}
 {% load static %}
 <script src="{% static 'js/awards.js' %}?v=1"></script>
+<script src="{% static 'js/wordcloud.js' %}?v=1"></script>
 <script>
 const ROOM_CODE = '{{ room.code }}';
 const NICKNAME = '{{ nickname }}';
@@ -141,6 +155,9 @@ function handleEvent(event, data) {
         case 'danmaku_rejected':
             showDanmakuHint(data.message);
             break;
+        case 'word_cloud_updated':
+            renderWordCloud('word-cloud-display', data.words);
+            break;
         case 'error':
             alert(data.message);
             break;
@@ -189,6 +206,9 @@ function showQuestion(state) {
     currentQuestion = q;
     const isMultiple = q.question_type === 'multiple';
     const isJudgment = q.question_type === 'judgment';
+    const isShortAnswer = q.question_type === 'short_answer';
+    const isWordCloud = q.question_type === 'word_cloud';
+    const isTextType = isShortAnswer || isWordCloud;
 
     document.getElementById('question-number').textContent =
         `第 ${state.current_question_index + 1} / ${state.total_questions} 题`;
@@ -201,6 +221,12 @@ function showQuestion(state) {
     } else if (isJudgment) {
         typeHint.textContent = '判断题：选择正确或错误';
         typeHint.classList.remove('hidden');
+    } else if (isShortAnswer) {
+        typeHint.textContent = '简答题：输入文字答案后提交';
+        typeHint.classList.remove('hidden');
+    } else if (isWordCloud) {
+        typeHint.textContent = '词云题：输入你的想法，实时生成词云';
+        typeHint.classList.remove('hidden');
     } else {
         typeHint.classList.add('hidden');
     }
@@ -210,6 +236,24 @@ function showQuestion(state) {
 
     const submitBtn = document.getElementById('submit-multi-btn');
     submitBtn.classList.toggle('hidden', !isMultiple || hasAnswered);
+
+    const textGroup = document.getElementById('text-answer-group');
+    const textInput = document.getElementById('text-answer-input');
+    textGroup.classList.toggle('hidden', !isTextType || hasAnswered);
+    if (isTextType && !hasAnswered) {
+        textInput.value = '';
+        textInput.disabled = false;
+        textInput.maxLength = isWordCloud ? 40 : 100;
+        textInput.placeholder = isWordCloud ? '例如：猫、狗、兔子...' : '输入你的答案...';
+        const textBtn = document.getElementById('submit-text-btn');
+        if (textBtn) textBtn.disabled = false;
+    }
+
+    const cloudWrap = document.getElementById('word-cloud-wrap');
+    cloudWrap.classList.toggle('hidden', !isWordCloud);
+    if (isWordCloud) {
+        renderWordCloud('word-cloud-display', q.word_cloud || []);
+    }
 
     const imgWrap = document.getElementById('question-image-wrap');
     const imgEl = document.getElementById('question-image');
@@ -223,9 +267,16 @@ function showQuestion(state) {
 
     const container = document.getElementById('options-container');
     container.innerHTML = '';
+    container.classList.remove('judgment-options');
+    container.classList.toggle('hidden', isTextType);
+
+    if (isTextType) {
+        startTimer(q.time_limit);
+        return;
+    }
+
     container.classList.toggle('judgment-options', isJudgment);
     const colors = ['option-a', 'option-b', 'option-c', 'option-d'];
-
     q.options.forEach((opt, i) => {
         const btn = document.createElement('button');
         btn.className = `option-btn ${colors[i]}`;
@@ -281,6 +332,21 @@ function toggleMultiOption(key, btn) {
     }
 }
 
+function submitTextAnswer() {
+    if (hasAnswered) return;
+    const text = document.getElementById('text-answer-input').value.trim();
+    if (!text) return;
+    hasAnswered = true;
+    disableOptions();
+
+    const responseTime = Date.now() - questionStartTime;
+    sendWs({
+        action: 'submit_answer',
+        answer_text: text,
+        response_time_ms: responseTime,
+    });
+}
+
 function submitMultiAnswer() {
     if (hasAnswered || selectedOptions.size === 0) return;
     hasAnswered = true;
@@ -312,6 +378,12 @@ function submitAnswer(key, btn) {
 function disableOptions() {
     document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
     document.getElementById('submit-multi-btn').classList.add('hidden');
+    const textGroup = document.getElementById('text-answer-group');
+    if (textGroup) textGroup.classList.add('hidden');
+    const textInput = document.getElementById('text-answer-input');
+    const textBtn = document.getElementById('submit-text-btn');
+    if (textInput) textInput.disabled = true;
+    if (textBtn) textBtn.disabled = true;
 }
 
 function showAnswerFeedback(data) {
@@ -363,10 +435,17 @@ function showResultThenLeaderboard(state) {
 
 function showResultMessage(state) {
     const fb = document.getElementById('answer-feedback');
-    const correctLabel = formatCorrectLabel(state.question);
+    const q = state.question;
+    const isWordCloud = q && q.question_type === 'word_cloud';
+    const correctLabel = formatCorrectLabel(q);
 
     if (lastAnswerResult.answered) {
-        if (lastAnswerResult.is_correct) {
+        if (isWordCloud) {
+            fb.innerHTML = `
+                <div class="result-big correct">已提交</div>
+                <div class="result-points">+${lastAnswerResult.points}</div>
+            `;
+        } else if (lastAnswerResult.is_correct) {
             fb.innerHTML = `
                 <div class="result-big correct">回答正确</div>
                 <div class="result-points">+${lastAnswerResult.points}</div>
@@ -400,6 +479,12 @@ function getCorrectKeys(state) {
 
 function formatCorrectLabel(question) {
     if (!question) return '';
+    if (question.question_type === 'short_answer' && question.correct_answer) {
+        return question.correct_answer;
+    }
+    if (question.question_type === 'word_cloud') {
+        return '';
+    }
     const keys = getCorrectKeys({ question });
     return keys.join(', ');
 }
@@ -421,6 +506,15 @@ function applyLeaderboardState(state) {
     document.querySelector('.timer-bar').style.visibility = 'visible';
     document.getElementById('leaderboard-screen').classList.remove('hidden');
     renderLeaderboard(state.leaderboard, 'leaderboard-list');
+
+    const cloudWrap = document.getElementById('leaderboard-word-cloud-wrap');
+    const q = state.question;
+    if (q && q.question_type === 'word_cloud') {
+        cloudWrap.classList.remove('hidden');
+        renderWordCloud('leaderboard-word-cloud', q.word_cloud || []);
+    } else {
+        cloudWrap.classList.add('hidden');
+    }
 }
 
 function renderLeaderboard(leaderboard, containerId) {

@@ -7,6 +7,7 @@
     <div class="studio-title-group">
         <div class="studio-badge">Teacher Studio · 教学工作台</div>
         <h1 class="studio-main-title">老师控制台</h1>
+        <p class="form-hint">当前账号：{{ teacher.display_name|default:teacher.username }}</p>
     </div>
     <a href="{% url 'teacher_logout' %}" class="btn-exit" title="安全退出">
         <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -20,7 +21,7 @@
 
 <!-- 核心大头业务卡片网格 -->
 <div class="studio-features-grid">
-    
+
     <!-- 模块 1: 创建房间 -->
     <div class="feature-card feature-card-primary">
         <div class="feature-card-header">
@@ -34,15 +35,13 @@
             <span class="feature-badge badge-primary">大屏互动</span>
         </div>
         <h2 class="feature-card-title">创建互动房间</h2>
-        <p class="feature-card-desc">挑选题库组合，一键生成 6 位房间号，支持实时投屏与手机极速抢答。</p>
+        <p class="feature-card-desc">挑选我的题库或公开题目，一键生成 6 位房间号，支持实时投屏与手机抢答。</p>
         <div class="feature-card-footer">
             <a href="{% url 'room_create' %}" class="btn btn-primary btn-block">
                 + 发起新房间 →
             </a>
         </div>
     </div>
-
-    <!-- 模块 2: 我的题库中心 -->
     <div class="feature-card">
         <div class="feature-card-header">
             <div class="feature-icon-wrap icon-secondary">
@@ -53,11 +52,14 @@
             </div>
             <span class="feature-badge">{{ question_count }} 道专属题目</span>
         </div>
-        <h2 class="feature-card-title">题库管理中心</h2>
-        <p class="feature-card-desc">自主编排单选、多选、判断题与题目配图，沉淀你的专属教学测验资源库。</p>
+        <h2 class="feature-card-title">新建 Kahoot / 我的题库</h2>
+        <p class="feature-card-desc">手动出题或 AI 批量生成，支持单选、多选、判断、简答与词云题。</p>
         <div class="feature-card-footer">
-            <a href="{% url 'question_list' %}" class="btn btn-secondary btn-block">
-                管理专属题库 →
+            <a href="{% url 'kahoot_new' %}" class="btn btn-secondary btn-block">
+                新建 Kahoot →
+            </a>
+            <a href="{% url 'question_list' %}" class="btn btn-outline btn-block section-gap">
+                管理我的 {{ question_count }} 道题 →
             </a>
         </div>
     </div>
@@ -72,13 +74,13 @@
                     <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
                 </svg>
             </div>
-            <span class="feature-badge badge-terracotta">教师互助 · 即将推出</span>
+            <span class="feature-badge badge-terracotta">教师互助</span>
         </div>
-        <h2 class="feature-card-title">公共共享题库</h2>
-        <p class="feature-card-desc">教师间互相分享优质试卷与教学测验题，支持一键引用同行题库与协同备课。</p>
+        <h2 class="feature-card-title">公开共享题库</h2>
+        <p class="feature-card-desc">浏览其他老师公开的优质题目，可在创建房间时一键选用（无法编辑他人题目）。</p>
         <div class="feature-card-footer">
             <a href="{% url 'question_list' %}" class="btn btn-outline btn-block">
-                探索精选题库 (预览) →
+                浏览公开题库 →
             </a>
         </div>
     </div>

@@ -45,12 +45,20 @@
             <form method="post" action="{% url 'teacher_login' %}">
                 {% csrf_token %}
                 <div class="form-group">
-                    <label for="password">管理员访问密码</label>
+                    <label for="teacher_username">用户名</label>
+                    <input type="text" id="teacher_username" name="username" class="form-control form-control-lg"
+                           placeholder="输入用户名" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="password">密码</label>
                     <input type="password" id="password" name="password" class="form-control form-control-lg"
-                           placeholder="输入老师管理密码" required autocomplete="current-password">
+                           placeholder="输入密码" required autocomplete="current-password">
                 </div>
                 <button type="submit" class="btn btn-primary btn-block btn-lg entrance-submit-btn">登录控制台 →</button>
             </form>
+            <p class="text-center section-gap">
+                <a href="{% url 'teacher_register' %}">邀请码注册老师账号</a>
+            </p>
             
             <div class="flip-switch-divider">
                 <button type="button" class="flip-trigger-btn" onclick="toggleCardFlip(false)">
@@ -72,8 +80,8 @@ function toggleCardFlip(flipToTeacher) {
     } else if (flipToTeacher) {
         card.classList.add('is-flipped');
         setTimeout(() => {
-            const pwd = document.getElementById('password');
-            if (pwd) pwd.focus();
+            const userInput = document.getElementById('teacher_username');
+            if (userInput) userInput.focus();
         }, 350);
     } else {
         card.classList.remove('is-flipped');

@@ -23,23 +23,38 @@
             <label for="name">房间名称</label>
             <input type="text" id="name" name="name" class="form-control" placeholder="例如：期中知识竞赛" required autofocus>
         </div>
+
+        {% if my_questions or public_questions %}
         <div class="form-group">
             <label>选择题目 (至少 1 道)</label>
-            {% if questions %}
+
+            {% if my_questions %}
+            <p class="form-hint"><strong>我的题目</strong></p>
             <ul class="checkbox-list">
-                {% for q in questions %}
+                {% for q in my_questions %}
                 <li>
                     <input type="checkbox" name="questions" value="{{ q.pk }}" id="q{{ q.pk }}">
                     <label for="q{{ q.pk }}">{{ q.text|truncatechars:80 }} ({{ q.time_limit }}s)</label>
                 </li>
                 {% endfor %}
             </ul>
-            {% else %}
-            <p class="text-muted-block">暂无题目，请先 <a href="{% url 'question_create' %}">添加题目</a></p>
+            {% endif %}
+
+            {% if public_questions %}
+            <p class="form-hint section-gap"><strong>公开题库（其他老师）</strong></p>
+            <ul class="checkbox-list">
+                {% for q in public_questions %}
+                <li>
+                    <input type="checkbox" name="questions" value="{{ q.pk }}" id="q{{ q.pk }}">
+                    <label for="q{{ q.pk }}">{{ q.text|truncatechars:70 }} · {{ q.teacher.username }} ({{ q.time_limit }}s)</label>
+                </li>
+                {% endfor %}
+            </ul>
             {% endif %}
         </div>
-        {% if questions %}
         <button type="submit" class="btn btn-primary btn-lg">创建并启动房间 →</button>
+        {% else %}
+        <p class="text-muted-block">暂无可用题目，请先 <a href="{% url 'kahoot_new' %}">新建 Kahoot</a></p>
         {% endif %}
     </form>
 </div>

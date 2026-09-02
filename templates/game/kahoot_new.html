@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}新建 Kahoot - Kahoot{% endblock %}
+
+{% block content %}
+<div class="logo logo-sm">新建 Kahoot</div>
+<div class="nav-links">
+    <a href="{% url 'teacher_dashboard' %}" class="btn btn-outline">返回控制台</a>
+    <a href="{% url 'question_list' %}" class="btn btn-outline">浏览题库 ({{ question_count }})</a>
+</div>
+
+<div class="kahoot-choice-grid">
+    <a href="{% url 'question_create' %}?from=kahoot" class="kahoot-choice-card">
+        <div class="kahoot-choice-icon">✏️</div>
+        <h3 class="kahoot-choice-title">手动编辑</h3>
+        <p class="kahoot-choice-desc">逐题填写题干、选项与答案，支持图片及五种题型（含词云）。</p>
+        <span class="kahoot-choice-cta">开始手动出题 →</span>
+    </a>
+    <a href="{% url 'kahoot_ai' %}" class="kahoot-choice-card kahoot-choice-card-ai">
+        <div class="kahoot-choice-icon">✨</div>
+        <h3 class="kahoot-choice-title">AI 生成 Kahoot</h3>
+        <p class="kahoot-choice-desc">指定主题、题型数量与详细要求，由阶跃星辰大模型批量生成单选、多选、判断、简答题。</p>
+        <span class="kahoot-choice-cta">使用 AI 生成 →</span>
+    </a>
+</div>
+
+<p class="text-muted-block section-gap">创建完成后，在「创建房间」中勾选题目即可开始课堂游戏。</p>
+{% endblock %}

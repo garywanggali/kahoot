@@ -14,26 +14,52 @@
         </a>
         <h1 class="studio-main-title">{% if action == 'edit' %}编辑题目{% else %}添加题目{% endif %}</h1>
     </div>
+    {% if from_kahoot %}
+    <a href="{% url 'kahoot_new' %}" class="btn btn-outline">新建 Kahoot</a>
+    {% endif %}
 </div>
 
 <div class="card">
-    <form method="post" enctype="multipart/form-data">
+    <form method="post" enctype="multipart/form-data" id="question-form">
         {% csrf_token %}
+        {% if from_kahoot %}<input type="hidden" name="from_kahoot" value="1">{% endif %}
         <div class="form-group">
-            <label for="text">题目内容</label>
+            <label>题型</label>
+            <div class="type-toggle">
+                <label class="type-option">
+                    <input type="radio" name="question_type" value="single"
+                           {% if not question or question.question_type == 'single' %}checked{% endif %}>
+                    单选题
+                </label>
+                <label class="type-option">
+                    <input type="radio" name="question_type" value="multiple"
+                           {% if question.question_type == 'multiple' %}checked{% endif %}>
+                    多选题
+                </label>
+                <label class="type-option">
+                    <input type="radio" name="question_type" value="judgment"
+                           {% if question.question_type == 'judgment' %}checked{% endif %}>
+                    判断题
+                </label>
+                <label class="type-option">
+                    <input type="radio" name="question_type" value="short_answer"
+                           {% if question.question_type == 'short_answer' %}checked{% endif %}>
+                    简答题
+                </label>
+                <label class="type-option">
+                    <input type="radio" name="question_type" value="word_cloud"
+                           {% if question.question_type == 'word_cloud' %}checked{% endif %}>
+                    词云题
+                </label>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="text">题目</label>
             <input type="text" id="text" name="text" class="form-control"
-                   value="{{ question.text|default:'' }}" placeholder="输入问题描述" required autofocus>
+                   value="{{ question.text|default:'' }}" required>
         </div>
         <div class="form-group">
-            <label for="question_type">题型</label>
-            <select id="question_type" name="question_type" class="form-control">
-                <option value="single" {% if question.question_type == 'single' %}selected{% endif %}>单选题 (4选1)</option>
-                <option value="multiple" {% if question.question_type == 'multiple' %}selected{% endif %}>多选题 (支持多个正确选项)</option>
-                <option value="judgment" {% if question.question_type == 'judgment' %}selected{% endif %}>判断题 (对/错)</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="image">题目配图（可选）</label>
+            <label for="image">题目图片（可选）</label>
             <input type="file" id="image" name="image" class="form-control"
                    accept="image/jpeg,image/png,image/gif,image/webp">
             <p class="form-hint">JPG / PNG / GIF / WEBP，最大 {{ max_image_mb|default:2 }}MB</p>
@@ -46,37 +72,144 @@
             </label>
             {% endif %}
         </div>
-        <div class="form-group">
-            <label for="option_a">选项 A</label>
+        <div class="form-group hidden" id="short-answer-group">
+            <label for="short_correct">参考答案</label>
+            <input type="text" id="short_correct" name="short_correct" class="form-control"
+                   value="{% if question.question_type == 'short_answer' %}{{ question.option_a }}{% endif %}"
+                   placeholder="例如：北京">
+            <p class="form-hint">多个可接受答案用 | 分隔，如：猫|猫咪</p>
+        </div>
+        <div class="form-group hidden" id="word-cloud-hint-group">
+            <p class="form-hint">词云题无标准答案，学生提交后实时汇总展示词云（适合调查、开放问题）。</p>
+        </div>
+        <div class="form-group" id="option-a-group">
+            <label for="option_a" id="option-a-label">选项 A</label>
             <input type="text" id="option_a" name="option_a" class="form-control"
-                   value="{{ question.option_a|default:'' }}" required>
+                   value="{% if question.question_type == 'judgment' %}{{ question.option_a|default:'正确' }}{% else %}{{ question.option_a|default:'' }}{% endif %}" required>
         </div>
-        <div class="form-group">
-            <label for="option_b">选项 B</label>
+        <div class="form-group" id="option-b-group">
+            <label for="option_b" id="option-b-label">选项 B</label>
             <input type="text" id="option_b" name="option_b" class="form-control"
-                   value="{{ question.option_b|default:'' }}" required>
+                   value="{% if question.question_type == 'judgment' %}{{ question.option_b|default:'错误' }}{% else %}{{ question.option_b|default:'' }}{% endif %}" required>
         </div>
-        <div class="form-group">
+        <div class="form-group" id="option-c-group">
             <label for="option_c">选项 C</label>
             <input type="text" id="option_c" name="option_c" class="form-control"
                    value="{{ question.option_c|default:'' }}" required>
         </div>
-        <div class="form-group">
+        <div class="form-group" id="option-d-group">
             <label for="option_d">选项 D</label>
             <input type="text" id="option_d" name="option_d" class="form-control"
                    value="{{ question.option_d|default:'' }}" required>
         </div>
-        <div class="form-group">
+        <div class="form-group" id="single-answer-group">
             <label for="correct_option">正确答案</label>
-            <input type="text" id="correct_option" name="correct_option" class="form-control"
-                   value="{{ question.correct_option|default:'A' }}" placeholder="如：A 或 A,B (多选时以逗号分隔)" required>
+            <select id="correct_option" name="correct_option" class="form-control">
+                <option value="A" {% if question.correct_option == 'A' %}selected{% endif %}>A</option>
+                <option value="B" {% if question.correct_option == 'B' %}selected{% endif %}>B</option>
+                <option value="C" {% if question.correct_option == 'C' %}selected{% endif %}>C</option>
+                <option value="D" {% if question.correct_option == 'D' %}selected{% endif %}>D</option>
+            </select>
+        </div>
+        <div class="form-group hidden" id="judgment-answer-group">
+            <label>正确答案</label>
+            <div class="type-toggle">
+                <label class="type-option">
+                    <input type="radio" name="judgment_correct" value="A"
+                           {% if not question or question.question_type != 'judgment' or question.correct_option == 'A' %}checked{% endif %}>
+                    选「正确」项
+                </label>
+                <label class="type-option">
+                    <input type="radio" name="judgment_correct" value="B"
+                           {% if question.question_type == 'judgment' and question.correct_option == 'B' %}checked{% endif %}>
+                    选「错误」项
+                </label>
+            </div>
+        </div>
+        <div class="form-group hidden" id="multiple-answer-group">
+            <label>正确答案（至少选 2 项）</label>
+            <div class="correct-checkboxes">
+                {% for key in "ABCD" %}
+                <label class="checkbox-inline">
+                    <input type="checkbox" name="correct_options" value="{{ key }}"
+                           {% if question and key in question.correct_option_keys %}checked{% endif %}>
+                    {{ key }}
+                </label>
+                {% endfor %}
+            </div>
         </div>
         <div class="form-group">
             <label for="time_limit">答题时限 (秒)</label>
             <input type="number" id="time_limit" name="time_limit" class="form-control"
                    value="{{ question.time_limit|default:20 }}" min="5" max="120">
         </div>
+        <div class="form-group">
+            <label class="checkbox-inline">
+                <input type="checkbox" name="is_public" value="1"
+                       {% if question.is_public %}checked{% endif %}>
+                公开到题库（其他老师可查看并在房间中使用，但无法编辑）
+            </label>
+        </div>
         <button type="submit" class="btn btn-primary btn-lg">保存题目</button>
+        {% if from_kahoot and action == 'create' %}
+        <p class="form-hint section-gap">保存后可继续添加下一题，或返回 <a href="{% url 'kahoot_new' %}">新建 Kahoot</a>。</p>
+        {% endif %}
     </form>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function setOptionRequired(type) {
+    const isChoice = type === 'single' || type === 'multiple';
+    const isJudgment = type === 'judgment';
+    document.getElementById('option_a').required = isChoice || isJudgment;
+    document.getElementById('option_b').required = isChoice || isJudgment;
+    document.getElementById('option_c').required = isChoice;
+    document.getElementById('option_d').required = isChoice;
+}
+
+function updateAnswerFields() {
+    const type = document.querySelector('input[name="question_type"]:checked').value;
+    const isMultiple = type === 'multiple';
+    const isJudgment = type === 'judgment';
+    const isShort = type === 'short_answer';
+    const isWordCloud = type === 'word_cloud';
+
+    document.getElementById('single-answer-group').classList.toggle('hidden', isMultiple || isJudgment || isShort || isWordCloud);
+    document.getElementById('multiple-answer-group').classList.toggle('hidden', !isMultiple);
+    document.getElementById('judgment-answer-group').classList.toggle('hidden', !isJudgment);
+    document.getElementById('short-answer-group').classList.toggle('hidden', !isShort);
+    document.getElementById('word-cloud-hint-group').classList.toggle('hidden', !isWordCloud);
+
+    document.getElementById('option-a-group').classList.toggle('hidden', isShort || isWordCloud);
+    document.getElementById('option-b-group').classList.toggle('hidden', isJudgment || isShort || isWordCloud);
+    document.getElementById('option-c-group').classList.toggle('hidden', isJudgment || isShort || isWordCloud);
+    document.getElementById('option-d-group').classList.toggle('hidden', isJudgment || isShort || isWordCloud);
+
+    if (isJudgment) {
+        document.getElementById('option-a-label').textContent = '「正确」选项文字';
+        document.getElementById('option-b-label').textContent = '「错误」选项文字';
+        if (!document.getElementById('option_a').value.trim()) document.getElementById('option_a').value = '正确';
+        if (!document.getElementById('option_b').value.trim()) document.getElementById('option_b').value = '错误';
+    } else if (!isShort && !isWordCloud) {
+        document.getElementById('option-a-label').textContent = '选项 A';
+        document.getElementById('option-b-label').textContent = '选项 B';
+    }
+
+    setOptionRequired(type);
+}
+
+document.getElementById('question-form').addEventListener('submit', (e) => {
+    const type = document.querySelector('input[name="question_type"]:checked').value;
+    if (type === 'short_answer') {
+        document.getElementById('option_a').value = document.getElementById('short_correct').value.trim();
+    }
+});
+
+document.querySelectorAll('input[name="question_type"]').forEach(el => {
+    el.addEventListener('change', updateAnswerFields);
+});
+updateAnswerFields();
+</script>
 {% endblock %}

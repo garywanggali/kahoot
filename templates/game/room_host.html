@@ -31,6 +31,10 @@
         </div>
         <h2 class="question-text" id="host-question-text"></h2>
         <div id="host-options"></div>
+        <div id="host-word-cloud-wrap" class="word-cloud-wrap hidden">
+            <p class="word-cloud-title">实时词云</p>
+            <div id="host-word-cloud-display" class="word-cloud-display"></div>
+        </div>
         <p class="player-count section-gap">已答题: <span id="answer-count">0</span> / <span id="total-players">0</span></p>
         <div class="host-controls">
             <button class="btn btn-warning" onclick="endQuestion()">结束本题 & 显示排行</button>
@@ -39,6 +43,10 @@
 
     <div id="host-leaderboard" class="card hidden">
         <h2 class="page-title">排行榜</h2>
+        <div id="host-leaderboard-word-cloud-wrap" class="word-cloud-wrap hidden">
+            <p class="word-cloud-title">本题词云</p>
+            <div id="host-leaderboard-word-cloud" class="word-cloud-display"></div>
+        </div>
         <div id="host-leaderboard-list"></div>
         <div class="host-controls">
             <button id="btn-next" class="btn btn-primary" onclick="nextQuestion()">下一题</button>
@@ -67,6 +75,7 @@
 {% block extra_js %}
 {% load static %}
 <script src="{% static 'js/awards.js' %}?v=1"></script>
+<script src="{% static 'js/wordcloud.js' %}?v=1"></script>
 <script>
 const ROOM_CODE = '{{ room.code }}';
 const INITIAL_STATE = {{ initial_state_json|safe }};
@@ -137,6 +146,9 @@ function handleHostEvent(event, data) {
         case 'danmaku':
             showHostDanmaku(data);
             break;
+        case 'word_cloud_updated':
+            renderWordCloud('host-word-cloud-display', data.words);
+            break;
     }
 }
 
@@ -156,6 +168,14 @@ function applyHostState(state) {
         currentHostQuestionId = null;
         document.getElementById('host-leaderboard').classList.remove('hidden');
         renderLeaderboard(state.leaderboard, 'host-leaderboard-list');
+        const cloudWrap = document.getElementById('host-leaderboard-word-cloud-wrap');
+        const q = state.question;
+        if (q && q.question_type === 'word_cloud') {
+            cloudWrap.classList.remove('hidden');
+            renderWordCloud('host-leaderboard-word-cloud', q.word_cloud || []);
+        } else {
+            cloudWrap.classList.add('hidden');
+        }
         const btn = document.getElementById('btn-next');
         if (state.current_question_index + 1 >= state.total_questions) {
             btn.textContent = '结束游戏';
@@ -179,9 +199,26 @@ function showHostQuestion(state) {
     if (currentHostQuestionId === q.id) return;
     currentHostQuestionId = q.id;
 
+    const typeLabels = {
+        multiple: '【多选】',
+        judgment: '【判断】',
+        short_answer: '【简答】',
+        word_cloud: '【词云】',
+    };
+    const typeLabel = typeLabels[q.question_type] || '【单选】';
     document.getElementById('host-question-number').textContent =
-        `${q.question_type === 'multiple' ? '【多选】' : q.question_type === 'judgment' ? '【判断】' : '【单选】'} 第 ${state.current_question_index + 1} / ${state.total_questions} 题`;
+        `${typeLabel} 第 ${state.current_question_index + 1} / ${state.total_questions} 题`;
     document.getElementById('host-question-text').textContent = q.text;
+
+    const isShortAnswer = q.question_type === 'short_answer';
+    const isWordCloud = q.question_type === 'word_cloud';
+    const isTextType = isShortAnswer || isWordCloud;
+
+    const cloudWrap = document.getElementById('host-word-cloud-wrap');
+    cloudWrap.classList.toggle('hidden', !isWordCloud);
+    if (isWordCloud) {
+        renderWordCloud('host-word-cloud-display', q.word_cloud || []);
+    }
 
     const imgWrap = document.getElementById('host-question-image-wrap');
     const imgEl = document.getElementById('host-question-image');
@@ -194,10 +231,16 @@ function showHostQuestion(state) {
     }
 
     const container = document.getElementById('host-options');
-    const colors = ['option-a', 'option-b', 'option-c', 'option-d'];
-    container.innerHTML = q.options.map((opt, i) =>
-        `<div class="option-btn ${colors[i]}">${opt.key}. ${opt.text}</div>`
-    ).join('');
+    if (isTextType) {
+        container.innerHTML = isShortAnswer
+            ? '<p class="form-hint">学生输入文字答案，系统自动比对参考答案</p>'
+            : '<p class="form-hint">学生提交后实时汇总词云</p>';
+    } else {
+        const colors = ['option-a', 'option-b', 'option-c', 'option-d'];
+        container.innerHTML = q.options.map((opt, i) =>
+            `<div class="option-btn ${colors[i]}">${opt.key}. ${opt.text}</div>`
+        ).join('');
+    }
 
     startHostTimer(q.time_limit);
 }

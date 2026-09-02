@@ -112,6 +112,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 TEACHER_PASSWORD = os.environ.get('TEACHER_PASSWORD', 'teacher123')
 
+STEPFUN_API_KEY = os.environ.get('STEPFUN_API_KEY', '')
+STEPFUN_MODEL = os.environ.get('STEPFUN_MODEL', 'step-3.7-flash')
+STEPFUN_BASE_URL = os.environ.get('STEPFUN_BASE_URL', 'https://api.stepfun.com/v1')
+
 _csrf_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_origins.split(',') if o.strip()]
 
