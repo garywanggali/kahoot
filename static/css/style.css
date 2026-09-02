@@ -2092,7 +2092,7 @@ button.kahoot-choice-button:focus-visible {
 }
 
 /* ==========================================================================
-   Question Set List Viewport & Frosted Table System (我的题库高质感列表 - 零滚动+分页)
+   Question Set List Viewport & Frosted Table System (我的题库高质感撞色列表 - 零滚动+分页)
    ========================================================================== */
 .question-list-viewport {
     max-width: 1040px;
@@ -2114,6 +2114,18 @@ button.kahoot-choice-button:focus-visible {
     }
 }
 
+.header-count-tag {
+    background: #111111;
+    color: #ffffff;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 800;
+    padding: 0.22rem 0.65rem;
+    border-radius: var(--radius-pill);
+    letter-spacing: 0.02em;
+    display: inline-block;
+}
+
 .quiz-list-card {
     flex: 1;
     display: flex;
@@ -2129,7 +2141,34 @@ button.kahoot-choice-button:focus-visible {
 .card-section-header {
     margin-bottom: 1rem;
     padding-bottom: 0.85rem;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    border-bottom: 1.5px solid rgba(0, 0, 0, 0.07);
+}
+
+.section-title-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.section-title-left {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.section-tag-badge {
+    background: var(--orange-subtle);
+    color: var(--orange);
+    border: 1.5px solid rgba(255, 79, 0, 0.25);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    letter-spacing: 0.04em;
+    display: inline-block;
 }
 
 .card-section-title {
@@ -2138,7 +2177,7 @@ button.kahoot-choice-button:focus-visible {
     font-weight: 800;
     color: var(--text-black);
     letter-spacing: -0.02em;
-    margin-bottom: 0.2rem;
+    margin: 0;
 }
 
 .card-section-hint {
@@ -2155,33 +2194,39 @@ button.kahoot-choice-button:focus-visible {
 .quiz-set-table {
     width: 100%;
     border-collapse: separate;
-    border-spacing: 0 0.35rem;
+    border-spacing: 0 0.45rem;
 }
 
 .quiz-set-table th {
-    padding: 0.45rem 1rem;
+    padding: 0.4rem 1rem;
     font-family: var(--font-mono);
     font-size: 0.72rem;
-    font-weight: 700;
+    font-weight: 800;
     color: var(--text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
     border: none;
 }
 
 .quiz-set-row {
-    background: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.8);
     border-radius: 12px;
-    transition: all 0.15s cubic-bezier(0.2, 0, 0, 1);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-left: 3.5px solid transparent;
+    transition: all 0.18s cubic-bezier(0.2, 0, 0, 1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
 }
 
 .quiz-set-row:hover {
     background: #ffffff;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    border-color: #111111;
+    border-left-color: var(--orange);
+    box-shadow: 0 4px 0 #111111, 0 8px 24px rgba(0, 0, 0, 0.06);
+    transform: translateY(-2px);
 }
 
 .quiz-set-row td {
-    padding: 0.7rem 1rem;
+    padding: 0.65rem 1rem;
     border: none;
     vertical-align: middle;
     font-size: 0.92rem;
@@ -2197,6 +2242,24 @@ button.kahoot-choice-button:focus-visible {
     border-bottom-right-radius: 12px;
 }
 
+.quiz-title-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.row-num-pill {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #111111;
+    background: #e8e8e4;
+    padding: 0.18rem 0.45rem;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    flex-shrink: 0;
+}
+
 .quiz-title-link {
     display: inline-block;
     font-size: 0.98rem;
@@ -2210,92 +2273,119 @@ button.kahoot-choice-button:focus-visible {
     color: var(--orange);
 }
 
-.badge-count {
+.badge-count-contrast {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.15rem;
+    background: #ffffff;
+    border: 1.5px solid #111111;
+    border-radius: 8px;
+    padding: 0.15rem 0.55rem;
+    box-shadow: 0 2px 0 #111111;
+}
+
+.count-num {
     font-family: var(--font-mono);
-    font-size: 0.82rem;
+    font-size: 0.95rem;
+    font-weight: 900;
+    color: #111111;
+}
+
+.count-unit {
+    font-size: 0.75rem;
     font-weight: 700;
-    color: var(--text-secondary);
-    background: rgba(0, 0, 0, 0.05);
-    padding: 0.2rem 0.6rem;
+    color: #666666;
+}
+
+.chip-public-contrast {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: rgba(255, 79, 0, 0.12);
+    border: 1.5px solid var(--orange);
+    color: var(--orange);
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    font-weight: 800;
+    padding: 0.18rem 0.65rem;
     border-radius: var(--radius-pill);
+    letter-spacing: 0.02em;
+}
+
+.chip-dot-orange {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--orange);
+    box-shadow: 0 0 6px var(--orange);
     display: inline-block;
 }
 
-.chip-public {
+.chip-private-contrast {
     display: inline-block;
     background: #111111;
     color: #ffffff;
     font-family: var(--font-body);
     font-size: 0.78rem;
-    font-weight: 700;
+    font-weight: 800;
     padding: 0.2rem 0.65rem;
     border-radius: var(--radius-pill);
     letter-spacing: 0.02em;
 }
 
-.chip-private {
-    display: inline-block;
-    background: #f0f0ed;
-    color: #666666;
-    font-family: var(--font-body);
-    font-size: 0.78rem;
-    font-weight: 600;
-    padding: 0.2rem 0.65rem;
-    border-radius: var(--radius-pill);
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    letter-spacing: 0.02em;
-}
-
-.time-text {
+.time-text-contrast {
     font-family: var(--font-mono);
     font-size: 0.82rem;
-    color: var(--text-muted);
+    font-weight: 600;
+    color: #555555;
 }
 
 .table-actions-inline {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 0.4rem;
+    gap: 0.45rem;
 }
 
-.btn-action-edit {
+.btn-action-edit-contrast {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.3rem;
+    gap: 0.35rem;
     height: 32px;
-    padding: 0 0.85rem;
+    padding: 0 0.95rem;
     background: #111111;
     color: #ffffff;
     font-family: var(--font-body);
     font-size: 0.82rem;
-    font-weight: 700;
+    font-weight: 800;
     border-radius: var(--radius-pill);
     text-decoration: none;
-    border: 1.5px solid #111111;
+    border: 2px solid #111111;
+    box-shadow: 0 2px 0 #000000;
     transition: all 0.15s cubic-bezier(0.2, 0, 0, 1);
     box-sizing: border-box;
 }
 
-.btn-action-edit:hover {
+.btn-action-edit-contrast:hover {
     background: var(--orange);
     border-color: var(--orange);
     color: #ffffff;
-    box-shadow: 0 3px 10px var(--orange-glow);
+    box-shadow: 0 2px 0 var(--orange-hover), 0 4px 14px var(--orange-glow);
     transform: translateY(-1px);
 }
 
-.btn-action-delete {
+.btn-action-delete-contrast {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 32px;
     height: 32px;
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.8);
-    border: 1.5px solid rgba(0, 0, 0, 0.15);
-    color: var(--text-muted);
+    background: #ffffff;
+    border: 1.5px solid #111111;
+    color: #111111;
+    box-shadow: 0 2px 0 #111111;
     cursor: pointer;
     text-decoration: none;
     transition: all 0.15s ease;
@@ -2303,11 +2393,12 @@ button.kahoot-choice-button:focus-visible {
     flex-shrink: 0;
 }
 
-.btn-action-delete:hover {
+.btn-action-delete-contrast:hover {
     background: #ff3b30;
     border-color: #ff3b30;
     color: #ffffff;
-    transform: scale(1.04);
+    box-shadow: 0 2px 0 #b30000, 0 4px 12px rgba(255, 59, 48, 0.35);
+    transform: translateY(-1px);
 }
 
 .pagination-bar {
@@ -2316,20 +2407,21 @@ button.kahoot-choice-button:focus-visible {
     justify-content: space-between;
     margin-top: 1rem;
     padding-top: 0.85rem;
-    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    border-top: 1.5px solid rgba(0, 0, 0, 0.07);
 }
 
 .btn-page {
     display: inline-flex;
     align-items: center;
     height: 32px;
-    padding: 0 0.85rem;
+    padding: 0 0.95rem;
     border-radius: var(--radius-pill);
-    background: rgba(255, 255, 255, 0.85);
-    border: 1.5px solid rgba(0, 0, 0, 0.12);
+    background: #ffffff;
+    border: 1.5px solid #111111;
+    box-shadow: 0 2px 0 #111111;
     font-family: var(--font-body);
     font-size: 0.82rem;
-    font-weight: 700;
+    font-weight: 800;
     color: var(--text-black);
     cursor: pointer;
     transition: all 0.15s ease;
@@ -2337,18 +2429,23 @@ button.kahoot-choice-button:focus-visible {
 
 .btn-page:hover:not(:disabled) {
     background: #111111;
-    border-color: #111111;
     color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 0 #000000;
 }
 
 .btn-page:disabled {
     opacity: 0.35;
+    box-shadow: none;
     cursor: not-allowed;
 }
 
 .page-indicator {
     font-family: var(--font-mono);
     font-size: 0.82rem;
-    font-weight: 700;
-    color: var(--text-secondary);
+    font-weight: 800;
+    color: var(--text-black);
+    background: rgba(0, 0, 0, 0.05);
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-pill);
 }
