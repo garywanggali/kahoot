@@ -4,11 +4,89 @@
 
 {% block content %}
 <div class="logo">Ka<span>hoo</span>t!</div>
-<div class="card text-center">
-    <h2 class="page-title">互动课堂测验平台</h2>
-    <div class="actions-row">
-        <a href="{% url 'join_room' %}" class="btn btn-primary btn-lg">加入游戏</a>
-        <a href="{% url 'teacher_login' %}" class="btn btn-secondary btn-lg">老师入口</a>
+
+<div class="flip-wrapper">
+    <div class="flip-card" id="main-flip-card">
+        
+        <!-- 正面：学生端（直接输入房间号与昵称） -->
+        <div class="flip-card-side flip-card-front card">
+            <div class="card-badge">参与者通道</div>
+            <h2 class="page-title text-center">加入游戏</h2>
+            
+            <form method="post" action="{% url 'join_room' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="code">房间号</label>
+                    <input type="text" id="code" name="code" class="form-control"
+                           placeholder="输入 6 位房间号" maxlength="6" pattern="[0-9]{6}"
+                           value="{{ code|default:'' }}" required autofocus>
+                </div>
+                <div class="form-group">
+                    <label for="nickname">你的昵称</label>
+                    <input type="text" id="nickname" name="nickname" class="form-control"
+                           placeholder="输入你的昵称" maxlength="50"
+                           value="{{ nickname|default:'' }}" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block btn-lg">进入游戏 →</button>
+            </form>
+            
+            <div class="flip-switch-divider">
+                <button type="button" class="flip-trigger-btn" onclick="toggleCardFlip(true)">
+                    你是出题人？<strong>切换至老师端 ↻</strong>
+                </button>
+            </div>
+        </div>
+
+        <!-- 背面：老师端（输入密码进入控制台） -->
+        <div class="flip-card-side flip-card-back card">
+            <div class="card-badge teacher-badge">主持与题库</div>
+            <h2 class="page-title text-center">老师控制台</h2>
+            
+            <form method="post" action="{% url 'teacher_login' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="password">访问密码</label>
+                    <input type="password" id="password" name="password" class="form-control"
+                           placeholder="输入老师管理密码" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block btn-lg">登录控制台 →</button>
+            </form>
+            
+            <div class="flip-switch-divider">
+                <button type="button" class="flip-trigger-btn" onclick="toggleCardFlip(false)">
+                    ← <strong>返回学生加入通道</strong>
+                </button>
+            </div>
+        </div>
+
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleCardFlip(flipToTeacher) {
+    const card = document.getElementById('main-flip-card');
+    if (flipToTeacher === undefined) {
+        card.classList.toggle('is-flipped');
+    } else if (flipToTeacher) {
+        card.classList.add('is-flipped');
+        setTimeout(() => {
+            const pwd = document.getElementById('password');
+            if (pwd) pwd.focus();
+        }, 350);
+    } else {
+        card.classList.remove('is-flipped');
+        setTimeout(() => {
+            const codeInput = document.getElementById('code');
+            if (codeInput) codeInput.focus();
+        }, 350);
+    }
+}
+
+// 支持 URL 参数 ?tab=teacher 或 #teacher 自动直接翻转到老师端
+if (window.location.search.includes('tab=teacher') || window.location.hash === '#teacher') {
+    toggleCardFlip(true);
+}
+</script>
 {% endblock %}
