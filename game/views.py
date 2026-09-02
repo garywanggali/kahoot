@@ -134,11 +134,11 @@ def question_delete(request, pk):
 
 def _save_question(request, question=None):
     text = request.POST.get('text', '').strip()
+    question_type = request.POST.get('question_type', Question.TYPE_SINGLE)
     option_a = request.POST.get('option_a', '').strip()
     option_b = request.POST.get('option_b', '').strip()
     option_c = request.POST.get('option_c', '').strip()
     option_d = request.POST.get('option_d', '').strip()
-    correct_option = request.POST.get('correct_option', 'A').upper()
     time_limit = int(request.POST.get('time_limit', 20) or 20)
     image_file = request.FILES.get('image')
     remove_image = request.POST.get('remove_image') == '1'
@@ -153,8 +153,22 @@ def _save_question(request, question=None):
         messages.error(request, '请填写所有字段')
         return render(request, 'game/question_form.html', form_ctx)
 
-    if correct_option not in ('A', 'B', 'C', 'D'):
-        correct_option = 'A'
+    if question_type not in (Question.TYPE_SINGLE, Question.TYPE_MULTIPLE):
+        question_type = Question.TYPE_SINGLE
+
+    if question_type == Question.TYPE_MULTIPLE:
+        correct_options = sorted({
+            opt.upper() for opt in request.POST.getlist('correct_options')
+            if opt.upper() in ('A', 'B', 'C', 'D')
+        })
+        if len(correct_options) < 2:
+            messages.error(request, '多选题请至少选择 2 个正确答案')
+            return render(request, 'game/question_form.html', form_ctx)
+        correct_option = ','.join(correct_options)
+    else:
+        correct_option = request.POST.get('correct_option', 'A').upper()
+        if correct_option not in ('A', 'B', 'C', 'D'):
+            correct_option = 'A'
 
     if image_file:
         try:
@@ -165,6 +179,7 @@ def _save_question(request, question=None):
 
     if question:
         question.text = text
+        question.question_type = question_type
         question.option_a = option_a
         question.option_b = option_b
         question.option_c = option_c
@@ -183,6 +198,7 @@ def _save_question(request, question=None):
     else:
         Question.objects.create(
             text=text,
+            question_type=question_type,
             option_a=option_a,
             option_b=option_b,
             option_c=option_c,

@@ -9,8 +9,23 @@
 </div>
 
 <div class="card">
-    <form method="post" enctype="multipart/form-data">
+    <form method="post" enctype="multipart/form-data" id="question-form">
         {% csrf_token %}
+        <div class="form-group">
+            <label>题型</label>
+            <div class="type-toggle">
+                <label class="type-option">
+                    <input type="radio" name="question_type" value="single"
+                           {% if not question or question.question_type == 'single' %}checked{% endif %}>
+                    单选题
+                </label>
+                <label class="type-option">
+                    <input type="radio" name="question_type" value="multiple"
+                           {% if question.question_type == 'multiple' %}checked{% endif %}>
+                    多选题
+                </label>
+            </div>
+        </div>
         <div class="form-group">
             <label for="text">题目</label>
             <input type="text" id="text" name="text" class="form-control"
@@ -50,7 +65,7 @@
             <input type="text" id="option_d" name="option_d" class="form-control"
                    value="{{ question.option_d|default:'' }}" required>
         </div>
-        <div class="form-group">
+        <div class="form-group" id="single-answer-group">
             <label for="correct_option">正确答案</label>
             <select id="correct_option" name="correct_option" class="form-control">
                 <option value="A" {% if question.correct_option == 'A' %}selected{% endif %}>A</option>
@@ -58,6 +73,18 @@
                 <option value="C" {% if question.correct_option == 'C' %}selected{% endif %}>C</option>
                 <option value="D" {% if question.correct_option == 'D' %}selected{% endif %}>D</option>
             </select>
+        </div>
+        <div class="form-group hidden" id="multiple-answer-group">
+            <label>正确答案（至少选 2 项）</label>
+            <div class="correct-checkboxes">
+                {% for key in "ABCD" %}
+                <label class="checkbox-inline">
+                    <input type="checkbox" name="correct_options" value="{{ key }}"
+                           {% if question and key in question.correct_option_keys %}checked{% endif %}>
+                    {{ key }}
+                </label>
+                {% endfor %}
+            </div>
         </div>
         <div class="form-group">
             <label for="time_limit">答题时限 (秒)</label>
@@ -67,4 +94,19 @@
         <button type="submit" class="btn btn-primary">保存</button>
     </form>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function updateAnswerFields() {
+    const isMultiple = document.querySelector('input[name="question_type"]:checked').value === 'multiple';
+    document.getElementById('single-answer-group').classList.toggle('hidden', isMultiple);
+    document.getElementById('multiple-answer-group').classList.toggle('hidden', !isMultiple);
+}
+
+document.querySelectorAll('input[name="question_type"]').forEach(el => {
+    el.addEventListener('change', updateAnswerFields);
+});
+updateAnswerFields();
+</script>
 {% endblock %}

@@ -20,7 +20,9 @@
             <img id="question-image" src="" alt="题目图片">
         </div>
         <h2 class="question-text" id="question-text"></h2>
+        <p class="question-type-hint hidden" id="question-type-hint"></p>
         <div id="options-container"></div>
+        <button type="button" id="submit-multi-btn" class="btn btn-primary submit-multi-btn hidden" onclick="submitMultiAnswer()">提交答案</button>
         <p id="answer-feedback"></p>
     </div>
 
@@ -59,6 +61,7 @@ let currentQuestionId = null;
 let questionStartTime = null;
 let timerInterval = null;
 let hasAnswered = false;
+let selectedOptions = new Set();
 let lastAnswerResult = { answered: false, is_correct: false, points: 0, selected_option: null };
 let resultRevealTimer = null;
 let danmakuEnabled = false;
@@ -172,17 +175,31 @@ function showQuestion(state) {
     if (currentQuestionId !== q.id) {
         currentQuestionId = q.id;
         hasAnswered = false;
+        selectedOptions = new Set();
         lastAnswerResult = { answered: false, is_correct: false, points: 0, selected_option: null };
         questionStartTime = Date.now();
         clearResultRevealTimer();
     }
     currentQuestion = q;
+    const isMultiple = q.question_type === 'multiple';
 
     document.getElementById('question-number').textContent =
         `第 ${state.current_question_index + 1} / ${state.total_questions} 题`;
     document.getElementById('question-text').textContent = q.text;
+
+    const typeHint = document.getElementById('question-type-hint');
+    if (isMultiple) {
+        typeHint.textContent = '多选题：可选择多个答案，选完后点击提交';
+        typeHint.classList.remove('hidden');
+    } else {
+        typeHint.classList.add('hidden');
+    }
+
     document.getElementById('answer-feedback').textContent = '';
     document.querySelector('.timer-bar').style.visibility = 'visible';
+
+    const submitBtn = document.getElementById('submit-multi-btn');
+    submitBtn.classList.toggle('hidden', !isMultiple || hasAnswered);
 
     const imgWrap = document.getElementById('question-image-wrap');
     const imgEl = document.getElementById('question-image');
@@ -203,7 +220,11 @@ function showQuestion(state) {
         btn.className = `option-btn ${colors[i]}`;
         btn.textContent = opt.text;
         btn.dataset.key = opt.key;
-        btn.onclick = () => submitAnswer(opt.key, btn);
+        if (isMultiple) {
+            btn.onclick = () => toggleMultiOption(opt.key, btn);
+        } else {
+            btn.onclick = () => submitAnswer(opt.key, btn);
+        }
         container.appendChild(btn);
     });
 
@@ -238,6 +259,31 @@ function clearTimer() {
     }
 }
 
+function toggleMultiOption(key, btn) {
+    if (hasAnswered) return;
+    if (selectedOptions.has(key)) {
+        selectedOptions.delete(key);
+        btn.classList.remove('selected');
+    } else {
+        selectedOptions.add(key);
+        btn.classList.add('selected');
+    }
+}
+
+function submitMultiAnswer() {
+    if (hasAnswered || selectedOptions.size === 0) return;
+    hasAnswered = true;
+    disableOptions();
+    document.getElementById('submit-multi-btn').classList.add('hidden');
+
+    const responseTime = Date.now() - questionStartTime;
+    sendWs({
+        action: 'submit_answer',
+        selected_options: Array.from(selectedOptions).sort(),
+        response_time_ms: responseTime,
+    });
+}
+
 function submitAnswer(key, btn) {
     if (hasAnswered) return;
     hasAnswered = true;
@@ -254,6 +300,7 @@ function submitAnswer(key, btn) {
 
 function disableOptions() {
     document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+    document.getElementById('submit-multi-btn').classList.add('hidden');
 }
 
 function showAnswerFeedback(data) {
@@ -290,9 +337,9 @@ function showResultThenLeaderboard(state) {
     document.querySelector('.timer-bar').style.visibility = 'hidden';
     disableOptions();
 
-    const correctKey = state.question?.correct_option;
-    if (correctKey) {
-        highlightCorrectAnswer(correctKey);
+    const correctKeys = getCorrectKeys(state);
+    if (correctKeys.length) {
+        highlightCorrectAnswers(correctKeys);
     }
 
     showResultMessage(state);
@@ -305,7 +352,7 @@ function showResultThenLeaderboard(state) {
 
 function showResultMessage(state) {
     const fb = document.getElementById('answer-feedback');
-    const correctLabel = state.question?.correct_option || '';
+    const correctLabel = formatCorrectLabel(state.question);
 
     if (lastAnswerResult.answered) {
         if (lastAnswerResult.is_correct) {
@@ -328,21 +375,41 @@ function showResultMessage(state) {
     fb.innerHTML += '<div class="result-hint" style="margin-top:1rem;">即将显示排行榜...</div>';
 }
 
-function applyLeaderboardState(state) {
-    hideAllScreens();
-    document.querySelector('.timer-bar').style.visibility = 'visible';
-    document.getElementById('leaderboard-screen').classList.remove('hidden');
-    renderLeaderboard(state.leaderboard, 'leaderboard-list');
+function getCorrectKeys(state) {
+    const q = state.question;
+    if (!q) return [];
+    if (q.correct_options && q.correct_options.length) {
+        return q.correct_options;
+    }
+    if (q.correct_option) {
+        return [q.correct_option];
+    }
+    return [];
 }
 
-function highlightCorrectAnswer(correctKey) {
+function formatCorrectLabel(question) {
+    if (!question) return '';
+    const keys = getCorrectKeys({ question });
+    return keys.join(', ');
+}
+
+function highlightCorrectAnswers(correctKeys) {
+    const correctSet = new Set(correctKeys);
     document.querySelectorAll('.option-btn').forEach(btn => {
-        if (btn.dataset.key === correctKey) {
+        const key = btn.dataset.key;
+        if (correctSet.has(key)) {
             btn.classList.add('correct');
         } else if (btn.classList.contains('selected')) {
             btn.classList.add('wrong');
         }
     });
+}
+
+function applyLeaderboardState(state) {
+    hideAllScreens();
+    document.querySelector('.timer-bar').style.visibility = 'visible';
+    document.getElementById('leaderboard-screen').classList.remove('hidden');
+    renderLeaderboard(state.leaderboard, 'leaderboard-list');
 }
 
 function renderLeaderboard(leaderboard, containerId) {

@@ -15,6 +15,7 @@
         <thead>
             <tr>
                 <th>题目</th>
+                <th>题型</th>
                 <th>图片</th>
                 <th>正确答案</th>
                 <th>时限</th>
@@ -25,8 +26,9 @@
             {% for q in questions %}
             <tr>
                 <td>{{ q.text|truncatechars:60 }}</td>
+                <td>{% if q.question_type == 'multiple' %}多选{% else %}单选{% endif %}</td>
                 <td>{% if q.image %}有{% else %}—{% endif %}</td>
-                <td>{{ q.correct_option }}</td>
+                <td>{{ q.get_correct_option_display }}</td>
                 <td>{{ q.time_limit }}s</td>
                 <td>
                     <a href="{% url 'question_edit' q.pk %}">编辑</a>

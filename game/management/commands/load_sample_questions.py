@@ -4,12 +4,13 @@ from game.models import Question
 
 
 class Command(BaseCommand):
-    help = '导入示例选择题'
+    help = '导入示例单选题和多选题'
 
     def handle(self, *args, **options):
         samples = [
             {
                 'text': '中国的首都是哪里？',
+                'question_type': Question.TYPE_SINGLE,
                 'option_a': '上海',
                 'option_b': '北京',
                 'option_c': '广州',
@@ -19,6 +20,7 @@ class Command(BaseCommand):
             },
             {
                 'text': '1 + 1 = ?',
+                'question_type': Question.TYPE_SINGLE,
                 'option_a': '1',
                 'option_b': '2',
                 'option_c': '3',
@@ -28,6 +30,7 @@ class Command(BaseCommand):
             },
             {
                 'text': 'Python 是一种什么类型的语言？',
+                'question_type': Question.TYPE_SINGLE,
                 'option_a': '编译型',
                 'option_b': '解释型',
                 'option_c': '汇编语言',
@@ -37,6 +40,7 @@ class Command(BaseCommand):
             },
             {
                 'text': '地球围绕什么旋转？',
+                'question_type': Question.TYPE_SINGLE,
                 'option_a': '月球',
                 'option_b': '太阳',
                 'option_c': '火星',
@@ -46,12 +50,63 @@ class Command(BaseCommand):
             },
             {
                 'text': '一年有多少个月？',
+                'question_type': Question.TYPE_SINGLE,
                 'option_a': '10',
                 'option_b': '11',
                 'option_c': '12',
                 'option_d': '13',
                 'correct_option': 'C',
                 'time_limit': 15,
+            },
+            {
+                'text': '下列哪些属于编程语言？（多选）',
+                'question_type': Question.TYPE_MULTIPLE,
+                'option_a': 'Python',
+                'option_b': 'HTML',
+                'option_c': 'Java',
+                'option_d': 'JPEG',
+                'correct_option': 'A,C',
+                'time_limit': 25,
+            },
+            {
+                'text': '下列哪些是偶数？（多选）',
+                'question_type': Question.TYPE_MULTIPLE,
+                'option_a': '2',
+                'option_b': '3',
+                'option_c': '4',
+                'option_d': '7',
+                'correct_option': 'A,C',
+                'time_limit': 20,
+            },
+            {
+                'text': '下列哪些是中国四大名著？（多选）',
+                'question_type': Question.TYPE_MULTIPLE,
+                'option_a': '红楼梦',
+                'option_b': '西游记',
+                'option_c': '水浒传',
+                'option_d': '聊斋志异',
+                'correct_option': 'A,B,C',
+                'time_limit': 30,
+            },
+            {
+                'text': '下列哪些是可再生能源？（多选）',
+                'question_type': Question.TYPE_MULTIPLE,
+                'option_a': '太阳能',
+                'option_b': '煤炭',
+                'option_c': '风能',
+                'option_d': '石油',
+                'correct_option': 'A,C',
+                'time_limit': 25,
+            },
+            {
+                'text': '下列哪些动物是哺乳动物？（多选）',
+                'question_type': Question.TYPE_MULTIPLE,
+                'option_a': '海豚',
+                'option_b': '企鹅',
+                'option_c': '蝙蝠',
+                'option_d': '鳄鱼',
+                'correct_option': 'A,C',
+                'time_limit': 25,
             },
         ]
 
@@ -64,4 +119,9 @@ class Command(BaseCommand):
             if was_created:
                 created += 1
 
-        self.stdout.write(self.style.SUCCESS(f'已导入 {created} 道新题目，共 {Question.objects.count()} 道'))
+        single_count = Question.objects.filter(question_type=Question.TYPE_SINGLE).count()
+        multiple_count = Question.objects.filter(question_type=Question.TYPE_MULTIPLE).count()
+        self.stdout.write(self.style.SUCCESS(
+            f'已导入 {created} 道新题目，题库共 {Question.objects.count()} 道'
+            f'（单选 {single_count}，多选 {multiple_count}）'
+        ))

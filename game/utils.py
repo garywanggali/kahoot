@@ -1,6 +1,6 @@
 from django.utils import timezone
 
-from .models import Answer, Player, Room
+from .models import Answer, Player, Question, Room
 from .validators import MAX_QUESTION_IMAGE_BYTES
 
 
@@ -38,10 +38,15 @@ def get_room_state(room):
         question_data = {
             'id': current_q.id,
             'text': current_q.text,
+            'question_type': current_q.question_type,
             'options': current_q.get_options(),
             'time_limit': current_q.time_limit,
-            'correct_option': current_q.correct_option if room.status == Room.STATUS_LEADERBOARD else None,
         }
+        if room.status == Room.STATUS_LEADERBOARD:
+            if current_q.question_type == Question.TYPE_MULTIPLE:
+                question_data['correct_options'] = sorted(current_q.get_correct_option_set())
+            else:
+                question_data['correct_option'] = current_q.correct_option
         if current_q.image:
             question_data['image_url'] = current_q.image.url
         state['question'] = question_data

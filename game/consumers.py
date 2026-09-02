@@ -8,7 +8,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.layers import get_channel_layer
 from django.utils import timezone
 
-from .models import Answer, Player, Room
+from .models import Answer, Player, Question, Room
 from .utils import calculate_points, get_room_state
 
 DANMAKU_MAX_LENGTH = 40
@@ -169,8 +169,8 @@ class RoomConsumer(AsyncWebsocketConsumer):
         if not question:
             return
 
-        selected = data.get('selected_option', '').upper()
-        if selected not in ('A', 'B', 'C', 'D'):
+        selected = self.normalize_answer_selection(question, data)
+        if selected is None:
             return
 
         exists = await self.answer_exists(self.player_id, question.id)
@@ -178,7 +178,7 @@ class RoomConsumer(AsyncWebsocketConsumer):
             return
 
         response_time_ms = data.get('response_time_ms', 0)
-        is_correct = selected == question.correct_option
+        is_correct = question.is_answer_correct(selected)
         points = calculate_points(question.time_limit, response_time_ms, is_correct)
 
         await self.create_answer(
@@ -314,6 +314,25 @@ class RoomConsumer(AsyncWebsocketConsumer):
 
     async def get_player_count(self, room_id):
         return await Player.objects.filter(room_id=room_id).acount()
+
+    @staticmethod
+    def normalize_answer_selection(question, data):
+        if question.question_type == Question.TYPE_MULTIPLE:
+            options = data.get('selected_options', [])
+            if not isinstance(options, list) or not options:
+                return None
+            valid = sorted({
+                opt.upper() for opt in options
+                if isinstance(opt, str) and opt.upper() in ('A', 'B', 'C', 'D')
+            })
+            if not valid:
+                return None
+            return ','.join(valid)
+
+        selected = data.get('selected_option', '').upper()
+        if selected not in ('A', 'B', 'C', 'D'):
+            return None
+        return selected
 
 
 def get_room_state_by_code(room_code):

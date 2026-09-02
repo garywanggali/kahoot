@@ -174,7 +174,7 @@ function showHostQuestion(state) {
     currentHostQuestionId = q.id;
 
     document.getElementById('host-question-number').textContent =
-        `第 ${state.current_question_index + 1} / ${state.total_questions} 题`;
+        `${q.question_type === 'multiple' ? '【多选】' : '【单选】'} 第 ${state.current_question_index + 1} / ${state.total_questions} 题`;
     document.getElementById('host-question-text').textContent = q.text;
 
     const imgWrap = document.getElementById('host-question-image-wrap');
