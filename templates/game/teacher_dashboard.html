@@ -3,11 +3,38 @@
 {% block title %}老师控制台 - Kahoot{% endblock %}
 
 {% block content %}
-<div class="logo logo-sm">老师控制台</div>
-<div class="nav-links">
-    <a href="{% url 'question_list' %}" class="btn btn-secondary">题库管理 ({{ question_count }})</a>
-    <a href="{% url 'room_create' %}" class="btn btn-primary">创建房间</a>
-    <a href="{% url 'teacher_logout' %}" class="btn btn-outline">退出</a>
+<div class="studio-header-bar">
+    <div class="studio-title-group">
+        <div class="studio-badge">Teacher Studio</div>
+        <h1 class="studio-main-title">老师控制台</h1>
+    </div>
+    <a href="{% url 'teacher_logout' %}" class="btn-exit" title="安全退出">
+        <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+        <span>退出登录</span>
+    </a>
+</div>
+
+<div class="studio-toolbar">
+    <div class="toolbar-left">
+        <a href="{% url 'room_create' %}" class="btn btn-primary">
+            <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            创建房间
+        </a>
+        <a href="{% url 'question_list' %}" class="btn btn-secondary">
+            <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+            题库管理 ({{ question_count }})
+        </a>
+    </div>
 </div>
 
 <div class="card">
@@ -27,8 +54,8 @@
             <tr>
                 <td><strong>{{ room.code }}</strong></td>
                 <td>{{ room.name }}</td>
-                <td>{{ room.get_status_display }}</td>
-                <td><a href="{% url 'room_host' room.pk %}">主持游戏</a></td>
+                <td><span class="status-chip">{{ room.get_status_display }}</span></td>
+                <td><a href="{% url 'room_host' room.pk %}" class="table-action-link">主持游戏 →</a></td>
             </tr>
             {% endfor %}
         </tbody>

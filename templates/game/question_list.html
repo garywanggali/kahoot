@@ -3,10 +3,24 @@
 {% block title %}题库管理 - Kahoot{% endblock %}
 
 {% block content %}
-<div class="logo logo-sm">题库管理</div>
-<div class="nav-links">
-    <a href="{% url 'teacher_dashboard' %}" class="btn btn-outline">返回控制台</a>
-    <a href="{% url 'question_create' %}" class="btn btn-primary">添加题目</a>
+<div class="studio-header-bar">
+    <div class="studio-title-group">
+        <a href="{% url 'teacher_dashboard' %}" class="btn-back">
+            <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>返回控制台</span>
+        </a>
+        <h1 class="studio-main-title">题库管理</h1>
+    </div>
+    <a href="{% url 'question_create' %}" class="btn btn-primary">
+        <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        添加题目
+    </a>
 </div>
 
 <div class="card">
@@ -26,13 +40,13 @@
             {% for q in questions %}
             <tr>
                 <td>{{ q.text|truncatechars:60 }}</td>
-                <td>{% if q.question_type == 'multiple' %}多选{% elif q.question_type == 'judgment' %}判断{% else %}单选{% endif %}</td>
+                <td><span class="type-chip">{% if q.question_type == 'multiple' %}多选{% elif q.question_type == 'judgment' %}判断{% else %}单选{% endif %}</span></td>
                 <td>{% if q.image %}有{% else %}—{% endif %}</td>
                 <td>{{ q.get_correct_option_display }}</td>
                 <td>{{ q.time_limit }}s</td>
                 <td>
                     <a href="{% url 'question_edit' q.pk %}">编辑</a>
-                    &nbsp;
+                    &nbsp;&nbsp;
                     <a href="{% url 'question_delete' q.pk %}" class="delete-link">删除</a>
                 </td>
             </tr>

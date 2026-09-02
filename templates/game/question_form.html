@@ -3,41 +3,37 @@
 {% block title %}{% if action == 'edit' %}编辑题目{% else %}添加题目{% endif %} - Kahoot{% endblock %}
 
 {% block content %}
-<div class="logo logo-sm">{% if action == 'edit' %}编辑题目{% else %}添加题目{% endif %}</div>
-<div class="nav-links">
-    <a href="{% url 'question_list' %}" class="btn btn-outline">返回题库</a>
+<div class="studio-header-bar">
+    <div class="studio-title-group">
+        <a href="{% url 'question_list' %}" class="btn-back">
+            <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>返回题库</span>
+        </a>
+        <h1 class="studio-main-title">{% if action == 'edit' %}编辑题目{% else %}添加题目{% endif %}</h1>
+    </div>
 </div>
 
 <div class="card">
-    <form method="post" enctype="multipart/form-data" id="question-form">
+    <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="form-group">
-            <label>题型</label>
-            <div class="type-toggle">
-                <label class="type-option">
-                    <input type="radio" name="question_type" value="single"
-                           {% if not question or question.question_type == 'single' %}checked{% endif %}>
-                    单选题
-                </label>
-                <label class="type-option">
-                    <input type="radio" name="question_type" value="multiple"
-                           {% if question.question_type == 'multiple' %}checked{% endif %}>
-                    多选题
-                </label>
-                <label class="type-option">
-                    <input type="radio" name="question_type" value="judgment"
-                           {% if question.question_type == 'judgment' %}checked{% endif %}>
-                    判断题
-                </label>
-            </div>
-        </div>
-        <div class="form-group">
-            <label for="text">题目</label>
+            <label for="text">题目内容</label>
             <input type="text" id="text" name="text" class="form-control"
-                   value="{{ question.text|default:'' }}" required>
+                   value="{{ question.text|default:'' }}" placeholder="输入问题描述" required autofocus>
         </div>
         <div class="form-group">
-            <label for="image">题目图片（可选）</label>
+            <label for="question_type">题型</label>
+            <select id="question_type" name="question_type" class="form-control">
+                <option value="single" {% if question.question_type == 'single' %}selected{% endif %}>单选题 (4选1)</option>
+                <option value="multiple" {% if question.question_type == 'multiple' %}selected{% endif %}>多选题 (支持多个正确选项)</option>
+                <option value="judgment" {% if question.question_type == 'judgment' %}selected{% endif %}>判断题 (对/错)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="image">题目配图（可选）</label>
             <input type="file" id="image" name="image" class="form-control"
                    accept="image/jpeg,image/png,image/gif,image/webp">
             <p class="form-hint">JPG / PNG / GIF / WEBP，最大 {{ max_image_mb|default:2 }}MB</p>
@@ -50,107 +46,37 @@
             </label>
             {% endif %}
         </div>
-        <div class="form-group" id="option-a-group">
-            <label for="option_a" id="option-a-label">选项 A</label>
+        <div class="form-group">
+            <label for="option_a">选项 A</label>
             <input type="text" id="option_a" name="option_a" class="form-control"
-                   value="{% if question.question_type == 'judgment' %}{{ question.option_a|default:'正确' }}{% else %}{{ question.option_a|default:'' }}{% endif %}" required>
+                   value="{{ question.option_a|default:'' }}" required>
         </div>
-        <div class="form-group" id="option-b-group">
-            <label for="option_b" id="option-b-label">选项 B</label>
+        <div class="form-group">
+            <label for="option_b">选项 B</label>
             <input type="text" id="option_b" name="option_b" class="form-control"
-                   value="{% if question.question_type == 'judgment' %}{{ question.option_b|default:'错误' }}{% else %}{{ question.option_b|default:'' }}{% endif %}" required>
+                   value="{{ question.option_b|default:'' }}" required>
         </div>
-        <div class="form-group" id="option-c-group">
+        <div class="form-group">
             <label for="option_c">选项 C</label>
             <input type="text" id="option_c" name="option_c" class="form-control"
                    value="{{ question.option_c|default:'' }}" required>
         </div>
-        <div class="form-group" id="option-d-group">
+        <div class="form-group">
             <label for="option_d">选项 D</label>
             <input type="text" id="option_d" name="option_d" class="form-control"
                    value="{{ question.option_d|default:'' }}" required>
         </div>
-        <div class="form-group" id="single-answer-group">
+        <div class="form-group">
             <label for="correct_option">正确答案</label>
-            <select id="correct_option" name="correct_option" class="form-control">
-                <option value="A" {% if question.correct_option == 'A' %}selected{% endif %}>A</option>
-                <option value="B" {% if question.correct_option == 'B' %}selected{% endif %}>B</option>
-                <option value="C" {% if question.correct_option == 'C' %}selected{% endif %}>C</option>
-                <option value="D" {% if question.correct_option == 'D' %}selected{% endif %}>D</option>
-            </select>
-        </div>
-        <div class="form-group hidden" id="judgment-answer-group">
-            <label>正确答案</label>
-            <div class="type-toggle">
-                <label class="type-option">
-                    <input type="radio" name="judgment_correct" value="A"
-                           {% if not question or question.question_type != 'judgment' or question.correct_option == 'A' %}checked{% endif %}>
-                    选「正确」项
-                </label>
-                <label class="type-option">
-                    <input type="radio" name="judgment_correct" value="B"
-                           {% if question.question_type == 'judgment' and question.correct_option == 'B' %}checked{% endif %}>
-                    选「错误」项
-                </label>
-            </div>
-        </div>
-        <div class="form-group hidden" id="multiple-answer-group">
-            <label>正确答案（至少选 2 项）</label>
-            <div class="correct-checkboxes">
-                {% for key in "ABCD" %}
-                <label class="checkbox-inline">
-                    <input type="checkbox" name="correct_options" value="{{ key }}"
-                           {% if question and key in question.correct_option_keys %}checked{% endif %}>
-                    {{ key }}
-                </label>
-                {% endfor %}
-            </div>
+            <input type="text" id="correct_option" name="correct_option" class="form-control"
+                   value="{{ question.correct_option|default:'A' }}" placeholder="如：A 或 A,B (多选时以逗号分隔)" required>
         </div>
         <div class="form-group">
             <label for="time_limit">答题时限 (秒)</label>
             <input type="number" id="time_limit" name="time_limit" class="form-control"
                    value="{{ question.time_limit|default:20 }}" min="5" max="120">
         </div>
-        <button type="submit" class="btn btn-primary">保存</button>
+        <button type="submit" class="btn btn-primary btn-lg">保存题目</button>
     </form>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-function setOptionRequired(isJudgment) {
-    document.getElementById('option_c').required = !isJudgment;
-    document.getElementById('option_d').required = !isJudgment;
-}
-
-function updateAnswerFields() {
-    const type = document.querySelector('input[name="question_type"]:checked').value;
-    const isMultiple = type === 'multiple';
-    const isJudgment = type === 'judgment';
-
-    document.getElementById('single-answer-group').classList.toggle('hidden', isMultiple || isJudgment);
-    document.getElementById('multiple-answer-group').classList.toggle('hidden', !isMultiple);
-    document.getElementById('judgment-answer-group').classList.toggle('hidden', !isJudgment);
-    document.getElementById('option-c-group').classList.toggle('hidden', isJudgment);
-    document.getElementById('option-d-group').classList.toggle('hidden', isJudgment);
-
-    document.getElementById('option-a-label').textContent = isJudgment ? '「正确」选项文字' : '选项 A';
-    document.getElementById('option-b-label').textContent = isJudgment ? '「错误」选项文字' : '选项 B';
-
-    if (isJudgment) {
-        if (!document.getElementById('option_a').value.trim()) {
-            document.getElementById('option_a').value = '正确';
-        }
-        if (!document.getElementById('option_b').value.trim()) {
-            document.getElementById('option_b').value = '错误';
-        }
-    }
-    setOptionRequired(isJudgment);
-}
-
-document.querySelectorAll('input[name="question_type"]').forEach(el => {
-    el.addEventListener('change', updateAnswerFields);
-});
-updateAnswerFields();
-</script>
 {% endblock %}

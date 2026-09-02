@@ -420,6 +420,152 @@ a:hover {
 }
 
 /* ==========================================================================
+   Studio Navigation Header & Dedicated Exit / Back Controls
+   ========================================================================== */
+.studio-header-bar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--outline-variant);
+}
+
+.studio-title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.studio-badge {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--secondary);
+    background: var(--surface-container);
+    border: 1px solid var(--outline-variant);
+    padding: 0.25rem 0.65rem;
+    border-radius: var(--radius-pill);
+    display: inline-block;
+    width: fit-content;
+}
+
+.studio-main-title {
+    font-family: var(--font-serif);
+    font-size: 2.75rem;
+    font-weight: 500;
+    color: var(--primary-container);
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+}
+
+.btn-exit {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1.15rem;
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--on-surface-variant);
+    background: var(--surface-container-lowest);
+    border: 1px solid var(--outline-variant);
+    border-radius: var(--radius-pill);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.btn-exit:hover {
+    background: var(--surface-container-high);
+    border-color: var(--kh-option-c);
+    color: var(--kh-option-c-dark);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--secondary);
+    text-decoration: none;
+    transition: color 0.15s ease, transform 0.15s ease;
+    margin-bottom: 0.35rem;
+    border: none;
+}
+
+.btn-back:hover {
+    color: var(--primary-container);
+    transform: translateX(-3px);
+    border: none;
+}
+
+.icon-svg {
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+.studio-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.75rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.status-chip {
+    display: inline-block;
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.25rem 0.65rem;
+    border-radius: var(--radius-pill);
+    background: var(--surface-container);
+    color: var(--secondary);
+    border: 1px solid var(--outline-variant);
+}
+
+.type-chip {
+    display: inline-block;
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.2rem 0.55rem;
+    border-radius: var(--radius-xs);
+    background: var(--surface-container-high);
+    color: var(--primary-container);
+    border: 1px solid var(--outline-variant);
+}
+
+.table-action-link {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    color: var(--kh-option-c);
+    text-decoration: none;
+}
+
+.table-action-link:hover {
+    color: var(--kh-option-c-dark);
+    text-decoration: underline;
+}
+
+/* ==========================================================================
    Forms & Clean Inputs
    ========================================================================== */
 .form-group {

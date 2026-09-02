@@ -3,9 +3,17 @@
 {% block title %}创建房间 - Kahoot{% endblock %}
 
 {% block content %}
-<div class="logo logo-sm">创建房间</div>
-<div class="nav-links">
-    <a href="{% url 'teacher_dashboard' %}" class="btn btn-outline">返回控制台</a>
+<div class="studio-header-bar">
+    <div class="studio-title-group">
+        <a href="{% url 'teacher_dashboard' %}" class="btn-back">
+            <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>返回控制台</span>
+        </a>
+        <h1 class="studio-main-title">创建新房间</h1>
+    </div>
 </div>
 
 <div class="card">
@@ -13,7 +21,7 @@
         {% csrf_token %}
         <div class="form-group">
             <label for="name">房间名称</label>
-            <input type="text" id="name" name="name" class="form-control" placeholder="例如：数学测验">
+            <input type="text" id="name" name="name" class="form-control" placeholder="例如：期中知识竞赛" required autofocus>
         </div>
         <div class="form-group">
             <label>选择题目 (至少 1 道)</label>
@@ -31,7 +39,7 @@
             {% endif %}
         </div>
         {% if questions %}
-        <button type="submit" class="btn btn-primary">创建房间</button>
+        <button type="submit" class="btn btn-primary btn-lg">创建并启动房间 →</button>
         {% endif %}
     </form>
 </div>
