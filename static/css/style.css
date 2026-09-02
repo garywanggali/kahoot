@@ -2,6 +2,7 @@
    Industrial Craft Studio Design System
    Inspired by MK-78 / Teenage Engineering & Apple Pro Hardware
    Palette: Matte Pitch Black / Alabaster Off-White / High-Voltage Safety Orange
+   Zero-Scroll Single Viewport Responsive Architecture
    ========================================================================== */
 
 :root {
@@ -9,25 +10,24 @@
     --bg-base: #f6f6f4;
     --bg-surface: #ffffff;
     --bg-card: #ffffff;
-    --bg-subtle: #eeeee9;
+    --bg-subtle: #f0f0ed;
     --bg-dark: #121214;
 
     /* Text & Ink */
     --text-black: #111111;
     --text-primary: #18181b;
-    --text-secondary: #555555;
-    --text-muted: #888888;
-    --text-dim: #aaaaaa;
+    --text-secondary: #444444;
+    --text-muted: #777777;
 
     /* Borders */
-    --border-light: #e4e4e0;
+    --border-light: #e0e0dc;
     --border-dark: #111111;
-    --border-subtle: #ecece8;
+    --border-subtle: #eaeae6;
 
     /* High-Voltage Safety Orange */
     --orange: #ff4f00;
     --orange-hover: #e54600;
-    --orange-glow: rgba(255, 79, 0, 0.25);
+    --orange-glow: rgba(255, 79, 0, 0.28);
     --orange-subtle: rgba(255, 79, 0, 0.08);
 
     /* 4 Choice Button Colors */
@@ -51,13 +51,13 @@
     /* Elevation & Shapes */
     --radius-sm: 6px;
     --radius-md: 12px;
-    --radius-lg: 20px;
+    --radius-lg: 16px;
     --radius-pill: 9999px;
 
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-    --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.1);
-    --shadow-keycap: 0 10px 25px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.1);
+    --shadow-keycap: 0 8px 20px rgba(0, 0, 0, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 * {
@@ -66,19 +66,22 @@
     padding: 0;
 }
 
+html, body {
+    height: 100%;
+    overflow-x: hidden;
+}
+
 body {
     font-family: var(--font-body);
     background-color: var(--bg-base);
     color: var(--text-primary);
-    min-height: 100vh;
-    line-height: 1.5;
+    line-height: 1.4;
     font-size: 15px;
     -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
     position: relative;
 }
 
-/* Subtle industrial dot grid texture */
+/* Subtle industrial dot grid background */
 body::before {
     content: '';
     position: fixed;
@@ -86,9 +89,9 @@ body::before {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-image: radial-gradient(#d6d6d0 1px, transparent 1px);
-    background-size: 32px 32px;
-    opacity: 0.45;
+    background-image: radial-gradient(#d6d6d0 1.2px, transparent 1.2px);
+    background-size: 28px 28px;
+    opacity: 0.55;
     pointer-events: none;
     z-index: 0;
 }
@@ -104,23 +107,48 @@ a:hover {
 }
 
 .container {
-    max-width: 1240px;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 2rem 2rem 5rem;
+    padding: 1.25rem 2rem;
     position: relative;
     z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 /* ==========================================================================
-   MK-78 Top Meta Bar (Minimalist Header)
+   Zero-Scroll Single Viewport Entrance
+   ========================================================================== */
+.landing-screen-viewport {
+    height: calc(100vh - 2.5rem);
+    max-height: calc(100vh - 2.5rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+    position: relative;
+}
+
+.landing-main-flow {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: auto 0;
+}
+
+/* ==========================================================================
+   MK-78 Minimal Header
    ========================================================================== */
 .mk-topbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-bottom: 2rem;
-    margin-bottom: 2rem;
+    padding-bottom: 0.75rem;
     border-bottom: 1px solid var(--border-light);
+    flex-shrink: 0;
 }
 
 .mk-brand {
@@ -144,50 +172,38 @@ a:hover {
 }
 
 .mk-label {
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.15em;
+    font-family: var(--font-hero);
+    font-size: 1.1rem;
+    font-weight: 900;
+    letter-spacing: -0.02em;
     color: var(--text-black);
-    text-transform: uppercase;
-}
-
-.mk-terminal-hint {
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    letter-spacing: 0.05em;
-}
-
-@media (max-width: 768px) {
-    .mk-terminal-hint { display: none; }
 }
 
 .btn-mk-pill {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.55rem 1.15rem;
+    gap: 0.4rem;
+    padding: 0.5rem 1.15rem;
     background: var(--text-black);
     color: #ffffff;
     border: none;
     border-radius: var(--radius-pill);
     font-family: var(--font-body);
     font-size: 0.85rem;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 3px 0 #000000;
 }
 
 .btn-mk-pill:hover {
     background: var(--orange);
+    box-shadow: 0 3px 0 var(--orange-hover), 0 6px 16px var(--orange-glow);
     transform: translateY(-1px);
-    box-shadow: 0 6px 16px var(--orange-glow);
 }
 
 /* ==========================================================================
-   Floating 3D Mechanical Keycaps (Tactile Background Accents)
+   Floating 3D Geometric Keycaps
    ========================================================================== */
 .floating-keycaps-stage {
     position: absolute;
@@ -207,79 +223,61 @@ a:hover {
     justify-content: center;
     border-radius: 12px;
     font-family: var(--font-mono);
-    font-size: 0.8rem;
-    font-weight: 700;
-    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 800;
+    padding: 0.65rem 0.95rem;
     box-shadow: var(--shadow-keycap);
     user-select: none;
-    transition: transform 0.3s ease;
     animation: keycapHover 6s infinite ease-in-out alternate;
 }
 
 .keycap-dark {
-    background: linear-gradient(145deg, #242428 0%, #131316 100%);
-    color: #e4e4e7;
-    border: 1px solid #2e2e33;
+    background: linear-gradient(145deg, #27272b 0%, #141416 100%);
+    color: #ffffff;
+    border: 1px solid #333338;
 }
 
 .keycap-orange {
-    background: linear-gradient(145deg, #ff631f 0%, #e04400 100%);
+    background: linear-gradient(145deg, #ff5e1a 0%, #e04400 100%);
     color: #ffffff;
     border: 1px solid #ff7a3d;
-    box-shadow: 0 10px 25px rgba(255, 79, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 20px rgba(255, 79, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
-/* Position Keycaps organically around screen */
-.keycap-pos-1 { top: 7%; left: 24%; transform: rotate(-8deg); animation-delay: 0s; }
-.keycap-pos-2 { top: 12%; left: 8%; transform: rotate(12deg); animation-delay: 1.2s; }
-.keycap-pos-3 { top: 8%; right: 14%; transform: rotate(6deg); animation-delay: 2.4s; }
-.keycap-pos-4 { top: 58%; left: 5%; transform: rotate(-14deg); animation-delay: 0.8s; }
-.keycap-pos-5 { top: 55%; right: 7%; transform: rotate(10deg); animation-delay: 1.8s; }
-.keycap-pos-6 { top: 78%; right: 20%; transform: rotate(-6deg); animation-delay: 3s; }
-.keycap-pos-7 { top: 82%; left: 16%; transform: rotate(15deg); animation-delay: 2s; }
+.keycap-pos-1 { top: 6%; left: 20%; transform: rotate(-8deg); animation-delay: 0s; }
+.keycap-pos-2 { top: 12%; left: 6%; transform: rotate(12deg); animation-delay: 1.2s; }
+.keycap-pos-3 { top: 10%; right: 10%; transform: rotate(6deg); animation-delay: 2.4s; }
+.keycap-pos-4 { top: 62%; left: 5%; transform: rotate(-14deg); animation-delay: 0.8s; }
+.keycap-pos-5 { top: 58%; right: 6%; transform: rotate(10deg); animation-delay: 1.8s; }
+.keycap-pos-6 { top: 82%; right: 18%; transform: rotate(-6deg); animation-delay: 3s; }
 
 @keyframes keycapHover {
-    0% { transform: translateY(0) rotate(var(--rot, 0deg)); }
-    100% { transform: translateY(-16px) rotate(calc(var(--rot, 0deg) + 3deg)); }
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-12px); }
 }
 
 @media (max-width: 1024px) {
-    .floating-keycaps-stage { opacity: 0.4; }
+    .floating-keycaps-stage { opacity: 0.3; }
 }
 
 /* ==========================================================================
-   Hero Section (Massive Headline: every question. every answer.)
+   Hero Section (every question. every answer.)
    ========================================================================== */
 .hero-section {
     text-align: center;
-    margin: 2.5rem auto 3.5rem;
-    max-width: 900px;
+    margin: 0.5rem auto 1.5rem;
     position: relative;
     z-index: 1;
 }
 
-.hero-code-badge {
-    display: inline-block;
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    background: var(--bg-subtle);
-    border: 1px solid var(--border-light);
-    padding: 0.3rem 0.85rem;
-    border-radius: var(--radius-sm);
-    margin-bottom: 1.75rem;
-    letter-spacing: 0.05em;
-}
-
 .hero-headline {
     font-family: var(--font-hero);
-    font-size: clamp(3.2rem, 7.5vw, 6.2rem);
+    font-size: clamp(2.8rem, 5.2vw, 4.2rem);
     font-weight: 900;
     line-height: 0.96;
     letter-spacing: -0.05em;
-    margin-bottom: 1.5rem;
     user-select: none;
+    margin: 0;
 }
 
 .headline-black {
@@ -292,21 +290,13 @@ a:hover {
     color: var(--orange);
 }
 
-.hero-subtext {
-    font-size: 1.15rem;
-    color: var(--text-secondary);
-    line-height: 1.6;
-    max-width: 600px;
-    margin: 0 auto;
-    letter-spacing: -0.01em;
-}
-
 /* ==========================================================================
-   3D Flip Industrial Entrance Console
+   3D Flip High-Contrast Color Block Console
    ========================================================================== */
 .flip-wrapper {
-    max-width: 580px;
-    margin: 0 auto 4rem;
+    max-width: 480px;
+    width: 100%;
+    margin: 0 auto;
     perspective: 1200px;
     position: relative;
     z-index: 2;
@@ -315,9 +305,9 @@ a:hover {
 .flip-card {
     position: relative;
     width: 100%;
-    min-height: 520px;
+    min-height: 380px;
     transform-style: preserve-3d;
-    transition: transform 0.75s cubic-bezier(0.34, 1.3, 0.64, 1);
+    transition: transform 0.65s cubic-bezier(0.34, 1.3, 0.64, 1);
 }
 
 .flip-card.is-flipped {
@@ -349,76 +339,39 @@ a:hover {
 }
 
 .card-industrial {
-    background: var(--bg-surface);
-    border: 1.5px solid var(--text-black);
+    background: #ffffff;
+    border: 2px solid var(--text-black);
     border-radius: var(--radius-lg);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08), 0 4px 0 var(--text-black);
-    padding: 3rem 2.75rem 2.25rem;
+    box-shadow: 0 8px 0 var(--text-black), 0 16px 30px rgba(0, 0, 0, 0.06);
+    padding: 2.25rem 2.25rem 1.75rem;
 }
 
-.card-chip-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--border-light);
-}
-
-.mono-badge {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    color: var(--text-black);
-    background: var(--bg-subtle);
-    padding: 0.3rem 0.7rem;
-    border-radius: var(--radius-sm);
-}
-
-.mono-badge.badge-orange {
-    color: var(--orange);
-    background: var(--orange-subtle);
-    border: 1px solid rgba(255, 79, 0, 0.2);
-}
-
-.status-indicator {
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    color: var(--correct);
-}
-
-/* ==========================================================================
-   Industrial Forms & Clean High-Impact Inputs
-   ========================================================================== */
+/* High-Contrast Inputs */
 .form-group-industrial {
-    margin-bottom: 1.75rem;
+    margin-bottom: 1.15rem;
 }
 
 .form-group-industrial label {
     display: block;
-    margin-bottom: 0.6rem;
-    font-family: var(--font-mono);
-    font-weight: 700;
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    margin-bottom: 0.45rem;
+    font-family: var(--font-body);
+    font-weight: 800;
+    font-size: 0.85rem;
+    color: var(--text-black);
+    letter-spacing: 0.04em;
 }
 
 .input-industrial {
     width: 100%;
-    padding: 1rem 1.25rem;
+    padding: 0.85rem 1.15rem;
     background: var(--bg-subtle);
-    border: 1.5px solid var(--border-light);
+    border: 2px solid var(--border-light);
     border-radius: var(--radius-md);
     color: var(--text-black);
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     font-family: var(--font-body);
-    font-weight: 500;
-    transition: all 0.2s ease;
+    font-weight: 600;
+    transition: all 0.15s ease;
     outline: none;
 }
 
@@ -432,17 +385,16 @@ a:hover {
     color: var(--text-muted);
 }
 
-/* Game PIN Prominent Hero Input */
+/* Big Game PIN Input with High Energy Contrast */
 .input-pin {
     font-family: var(--font-mono) !important;
-    font-size: 2.6rem !important;
+    font-size: 2.25rem !important;
     font-weight: 800 !important;
-    letter-spacing: 0.25em !important;
+    letter-spacing: 0.22em !important;
     text-align: center !important;
-    padding: 0.85rem 1rem !important;
+    padding: 0.75rem 1rem !important;
     background: #ffffff !important;
     border: 2px solid var(--text-black) !important;
-    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.04) !important;
 }
 
 .input-pin:focus {
@@ -451,45 +403,46 @@ a:hover {
 }
 
 .input-pin::placeholder {
-    letter-spacing: 0.25em;
-    color: #cccccc !important;
+    letter-spacing: 0.22em;
+    color: #c4c4be !important;
 }
 
-/* Buttons */
+/* High-Impact 撞色 CTA Button (Safety Orange + Bold Black Shadow) */
 .btn-industrial-primary {
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.6rem;
-    padding: 1.15rem 2rem;
-    background: var(--text-black);
+    padding: 1rem 1.75rem;
+    background: var(--orange);
     color: #ffffff;
-    border: none;
+    border: 2px solid var(--text-black);
     border-radius: var(--radius-pill);
     font-family: var(--font-hero);
     font-size: 1.15rem;
-    font-weight: 700;
+    font-weight: 800;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
-    box-shadow: 0 4px 0 #000000, 0 10px 20px rgba(0, 0, 0, 0.15);
-    margin-top: 1.25rem;
+    transition: all 0.18s cubic-bezier(0.2, 0, 0, 1);
+    box-shadow: 0 4px 0 var(--text-black);
+    margin-top: 0.75rem;
 }
 
 .btn-industrial-primary:hover {
-    background: var(--orange);
-    box-shadow: 0 4px 0 var(--orange-hover), 0 12px 25px var(--orange-glow);
+    background: var(--text-black);
+    color: #ffffff;
+    box-shadow: 0 4px 0 var(--orange);
     transform: translateY(-2px);
 }
 
 .btn-industrial-primary:active {
     transform: translateY(2px);
-    box-shadow: 0 1px 0 #000000;
+    box-shadow: 0 1px 0 var(--text-black);
 }
 
 .flip-footer-switch {
-    margin-top: 2rem;
-    padding-top: 1.25rem;
+    margin-top: 1.15rem;
+    padding-top: 0.85rem;
     border-top: 1px dashed var(--border-light);
     text-align: center;
 }
@@ -498,34 +451,40 @@ a:hover {
     background: none;
     border: none;
     font-family: var(--font-body);
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 600;
     color: var(--text-secondary);
     cursor: pointer;
     transition: color 0.15s ease;
-    padding: 0.5rem 1rem;
+    padding: 0.4rem 0.8rem;
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.35rem;
+}
+
+.flip-switch-action strong {
+    color: var(--text-black);
+    text-decoration: underline;
+    text-underline-offset: 3px;
 }
 
 .flip-switch-action:hover {
     color: var(--orange);
 }
 
-.flip-switch-action .switch-icon {
-    font-size: 1.1rem;
+.flip-switch-action:hover strong {
+    color: var(--orange);
 }
 
 .teacher-extra-links {
     text-align: center;
-    margin-top: 1rem;
+    margin-top: 0.75rem;
 }
 
 .link-mono {
-    font-family: var(--font-mono);
+    font-family: var(--font-body);
     font-size: 0.85rem;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--text-secondary);
 }
 
@@ -534,29 +493,14 @@ a:hover {
 }
 
 /* ==========================================================================
-   Bottom Micro-Meta Bar
-   ========================================================================== */
-.mk-bottom-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-top: 2rem;
-    border-top: 1px solid var(--border-light);
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    letter-spacing: 0.1em;
-}
-
-/* ==========================================================================
    General Studio Components (Dashboard, Question, Play Views)
    ========================================================================== */
 .card {
     background: var(--bg-surface);
-    border: 1.5px solid var(--border-light);
+    border: 2px solid var(--border-light);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md);
-    padding: 3rem;
+    padding: 2.75rem;
     margin-bottom: 2.5rem;
 }
 
@@ -575,7 +519,7 @@ a:hover {
     font-weight: 900;
     letter-spacing: -0.04em;
     text-align: center;
-    margin-bottom: 2.5rem;
+    margin-bottom: 2rem;
     color: var(--text-black);
 }
 
@@ -584,7 +528,7 @@ a:hover {
 }
 
 .logo-sm {
-    font-size: 2.4rem;
+    font-size: 2.2rem;
     margin-bottom: 1.5rem;
 }
 
@@ -598,7 +542,7 @@ a:hover {
     font-size: 0.95rem;
     font-weight: 700;
     cursor: pointer;
-    border: none;
+    border: 2px solid transparent;
     transition: all 0.2s ease;
     box-shadow: var(--shadow-sm);
 }
@@ -606,29 +550,33 @@ a:hover {
 .btn-primary {
     background: var(--text-black);
     color: #ffffff;
+    border-color: var(--text-black);
+    box-shadow: 0 3px 0 #000000;
 }
 .btn-primary:hover {
     background: var(--orange);
-    box-shadow: 0 6px 18px var(--orange-glow);
+    border-color: var(--orange);
+    box-shadow: 0 4px 14px var(--orange-glow);
 }
 
 .btn-secondary {
     background: var(--bg-subtle);
     color: var(--text-black);
-    border: 1px solid var(--border-light);
+    border: 1.5px solid var(--border-light);
 }
 .btn-secondary:hover {
     background: #e4e4df;
+    border-color: var(--text-black);
 }
 
 .btn-outline {
     background: transparent;
     color: var(--text-black);
-    border: 1.5px solid var(--border-light);
+    border: 1.5px solid var(--text-black);
 }
 .btn-outline:hover {
-    border-color: var(--text-black);
-    background: var(--bg-subtle);
+    background: var(--text-black);
+    color: #ffffff;
 }
 
 .btn-block { width: 100%; }
@@ -653,7 +601,7 @@ a:hover {
     border-radius: var(--radius-pill);
     overflow: hidden;
     margin-bottom: 2rem;
-    border: 1px solid var(--border-light);
+    border: 1.5px solid var(--text-black);
 }
 
 .timer-fill {
@@ -702,12 +650,12 @@ a:hover {
     font-size: 1.35rem;
     font-weight: 800;
     color: #ffffff;
-    border: none;
+    border: 2px solid var(--text-black);
     cursor: pointer;
     text-align: left;
     transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
     user-select: none;
-    box-shadow: 0 6px 0 rgba(0, 0, 0, 0.25), 0 10px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 5px 0 var(--text-black);
 }
 
 .option-btn:hover:not(:disabled) {
@@ -715,20 +663,20 @@ a:hover {
 }
 
 .option-btn:active:not(:disabled) {
-    transform: translateY(4px);
-    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
+    transform: translateY(3px);
+    box-shadow: 0 2px 0 var(--text-black);
 }
 
-.option-a { background: var(--kh-option-a); box-shadow: 0 6px 0 var(--kh-option-a-dark); }
+.option-a { background: var(--kh-option-a); }
 .option-a::before { content: '▲'; font-size: 1.3rem; margin-right: 1.1rem; }
 
-.option-b { background: var(--kh-option-b); box-shadow: 0 6px 0 var(--kh-option-b-dark); }
+.option-b { background: var(--kh-option-b); }
 .option-b::before { content: '◆'; font-size: 1.4rem; margin-right: 1.1rem; }
 
-.option-c { background: var(--kh-option-c); color: #111; box-shadow: 0 6px 0 var(--kh-option-c-dark); }
+.option-c { background: var(--kh-option-c); color: #111; }
 .option-c::before { content: '●'; font-size: 1.4rem; margin-right: 1.1rem; }
 
-.option-d { background: var(--kh-option-d); box-shadow: 0 6px 0 var(--kh-option-d-dark); }
+.option-d { background: var(--kh-option-d); }
 .option-d::before { content: '■'; font-size: 1.4rem; margin-right: 1.1rem; }
 
 .option-btn.selected {
@@ -738,7 +686,7 @@ a:hover {
 
 .option-btn.correct {
     background: var(--correct) !important;
-    box-shadow: 0 0 25px rgba(0, 179, 65, 0.5), 0 6px 0 #008f34 !important;
+    box-shadow: 0 0 25px rgba(0, 179, 65, 0.5), 0 5px 0 #008f34 !important;
 }
 
 .option-btn.wrong {
@@ -798,7 +746,7 @@ a:hover {
     font-weight: 700;
     color: var(--text-black);
     background: #ffffff;
-    border: 1.5px solid var(--text-black);
+    border: 2px solid var(--text-black);
     border-radius: var(--radius-pill);
     box-shadow: 0 3px 0 var(--text-black);
     transition: all 0.15s ease;
@@ -818,7 +766,7 @@ a:hover {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    font-family: var(--font-mono);
+    font-family: var(--font-body);
     font-size: 0.9rem;
     font-weight: 700;
     color: var(--text-secondary);
@@ -847,7 +795,7 @@ a:hover {
 
 .feature-card {
     background: var(--bg-surface);
-    border: 1.5px solid var(--border-light);
+    border: 2px solid var(--border-light);
     border-radius: var(--radius-lg);
     padding: 2.5rem 2.25rem;
     display: flex;
@@ -883,16 +831,16 @@ a:hover {
     align-items: center;
     justify-content: center;
     background: var(--bg-subtle);
-    border: 1px solid var(--border-light);
+    border: 1.5px solid var(--border-light);
     color: var(--text-black);
 }
 
 .feature-badge {
-    font-family: var(--font-mono);
+    font-family: var(--font-body);
     font-size: 0.75rem;
-    font-weight: 700;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.04em;
     padding: 0.3rem 0.75rem;
     border-radius: var(--radius-pill);
     background: var(--bg-subtle);
@@ -943,12 +891,12 @@ th, td {
 }
 
 th {
-    font-family: var(--font-mono);
+    font-family: var(--font-body);
     color: var(--text-muted);
-    font-weight: 700;
+    font-weight: 800;
     font-size: 0.8rem;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.05em;
 }
 
 td {
@@ -958,7 +906,7 @@ td {
 
 .status-chip {
     display: inline-block;
-    font-family: var(--font-mono);
+    font-family: var(--font-body);
     font-size: 0.75rem;
     font-weight: 700;
     padding: 0.25rem 0.65rem;
@@ -969,7 +917,7 @@ td {
 }
 
 .table-action-link {
-    font-weight: 700;
+    font-weight: 800;
     color: var(--orange);
 }
 
@@ -980,19 +928,18 @@ td {
 .form-group label {
     display: block;
     margin-bottom: 0.5rem;
-    font-family: var(--font-mono);
-    font-weight: 700;
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-family: var(--font-body);
+    font-weight: 800;
+    font-size: 0.85rem;
+    color: var(--text-black);
+    letter-spacing: 0.02em;
 }
 
 .form-control {
     width: 100%;
     padding: 0.9rem 1.15rem;
     background: var(--bg-subtle);
-    border: 1.5px solid var(--border-light);
+    border: 2px solid var(--border-light);
     border-radius: var(--radius-sm);
     color: var(--text-black);
     font-size: 1.05rem;
