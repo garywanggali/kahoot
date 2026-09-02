@@ -1,75 +1,186 @@
 {% extends "base.html" %}
 
-{% block title %}创建房间 - Kahoot{% endblock %}
+{% block title %}创建互动房间 - 互动测验工作台{% endblock %}
 
 {% block content %}
-<div class="studio-header-bar">
-    <div class="studio-title-group">
-        <a href="{% url 'teacher_dashboard' %}" class="btn-back">
-            <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="19" y1="12" x2="5" y2="12"></line>
-                <polyline points="12 19 5 12 12 5"></polyline>
-            </svg>
-            <span>返回控制台</span>
-        </a>
-        <h1 class="studio-main-title">创建新房间</h1>
-        <p class="form-hint">选择一套 Kahoot，整组题目导入房间</p>
+<div class="room-create-viewport">
+    
+    <!-- 顶部极简导航栏 -->
+    <div class="studio-header-bar" style="margin-bottom: 1.25rem;">
+        <div class="studio-title-group">
+            <a href="{% url 'teacher_dashboard' %}" class="btn-back">
+                <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                <span>返回控制台</span>
+            </a>
+            <h1 class="studio-main-title">创建互动房间</h1>
+        </div>
     </div>
-</div>
 
-<div class="card">
-    <form method="post">
-        {% csrf_token %}
-        <div class="form-group">
-            <label for="name">房间名称</label>
-            <input type="text" id="name" name="name" class="form-control" placeholder="例如：期中知识竞赛" autofocus>
-        </div>
-
-        {% if my_quiz_sets or public_quiz_sets %}
-        <div class="form-group">
-            <label>选择 Kahoot 套题</label>
-
-            {% if my_quiz_sets %}
-            <p class="form-hint"><strong>我的套题</strong></p>
-            <ul class="radio-list quiz-set-radio-list">
-                {% for qs in my_quiz_sets %}
-                <li>
-                    <label class="quiz-set-radio-item">
-                        <input type="radio" name="quiz_set_id" value="{{ qs.pk }}"
-                               {% if preselect_id == qs.pk|stringformat:"s" %}checked{% endif %}
-                               {% if not preselect_id and forloop.first %}checked{% endif %}>
-                        <span class="quiz-set-radio-body">
-                            <strong>{{ qs.title }}</strong>
-                            <span class="quiz-set-radio-meta">{{ qs.question_count }} 道题</span>
-                        </span>
+    <!-- 核心卡片容器 -->
+    <div class="room-create-card-wrap">
+        <div class="room-create-card card-glass">
+            
+            <form method="post" id="form-room-create">
+                {% csrf_token %}
+                
+                <!-- 房间名称输入区 -->
+                <div class="room-form-section" style="margin-bottom: 1.75rem;">
+                    <label for="room-name-input" class="room-section-label">
+                        <span>房间名称</span>
+                        <span class="room-label-hint">（选填，留空将默认使用套题名称）</span>
                     </label>
-                </li>
-                {% endfor %}
-            </ul>
-            {% endif %}
+                    <input type="text" id="room-name-input" name="name" class="input-industrial input-wizard-contrast"
+                           placeholder="例如：初一地理期中竞赛 / 课前 5 分钟随堂测验"
+                           maxlength="200" autocomplete="off" autofocus>
+                </div>
 
-            {% if public_quiz_sets %}
-            <p class="form-hint section-gap"><strong>公开套题（其他老师）</strong></p>
-            <ul class="radio-list quiz-set-radio-list">
-                {% for qs in public_quiz_sets %}
-                <li>
-                    <label class="quiz-set-radio-item">
-                        <input type="radio" name="quiz_set_id" value="{{ qs.pk }}"
-                               {% if preselect_id == qs.pk|stringformat:"s" %}checked{% endif %}>
-                        <span class="quiz-set-radio-body">
-                            <strong>{{ qs.title }}</strong>
-                            <span class="quiz-set-radio-meta">{{ qs.teacher.username }} · {{ qs.question_count }} 道题</span>
-                        </span>
-                    </label>
-                </li>
-                {% endfor %}
-            </ul>
-            {% endif %}
+                <!-- 测验套题选择区 -->
+                <div class="room-form-section">
+                    <div class="room-quiz-section-header">
+                        <label class="room-section-label" style="margin-bottom: 0;">
+                            <span>选择互动测验套题</span>
+                            <span class="room-label-hint">（点击卡片即可直接选中）</span>
+                        </label>
+
+                        <!-- 分类切换标签 -->
+                        <div class="room-quiz-filter-tabs">
+                            <button type="button" class="tab-pill active" id="tab-my-quiz" onclick="switchQuizTab('my')">
+                                我的题库 ({{ my_quiz_sets|length }})
+                            </button>
+                            {% if public_quiz_sets %}
+                            <button type="button" class="tab-pill" id="tab-public-quiz" onclick="switchQuizTab('public')">
+                                公共题库 ({{ public_quiz_sets|length }})
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if my_quiz_sets or public_quiz_sets %}
+                        
+                        <!-- 我的题库列表 -->
+                        <div class="room-quiz-grid-wrap" id="panel-my-quiz">
+                            {% if my_quiz_sets %}
+                            <div class="room-quiz-grid">
+                                {% for qs in my_quiz_sets %}
+                                <label class="room-quiz-card {% if preselect_id == qs.pk|stringformat:'s' or not preselect_id and forloop.first %}is-selected{% endif %}">
+                                    <input type="radio" name="quiz_set_id" value="{{ qs.pk }}" class="room-quiz-radio"
+                                           {% if preselect_id == qs.pk|stringformat:"s" %}checked{% endif %}
+                                           {% if not preselect_id and forloop.first %}checked{% endif %}>
+                                    
+                                    <div class="room-quiz-card-head">
+                                        <div class="room-card-meta-left">
+                                            <span class="room-card-index">{{ forloop.counter|stringformat:"02d" }}</span>
+                                            <span class="room-count-badge">{{ qs.question_count }} 题</span>
+                                        </div>
+                                        <div class="room-card-check-icon">
+                                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="20 6 9 17 4 12"></polyline>
+                                            </svg>
+                                        </div>
+                                    </div>
+
+                                    <div class="room-quiz-card-body">
+                                        <h3 class="room-quiz-title" title="{{ qs.title }}">{{ qs.title }}</h3>
+                                    </div>
+                                </label>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="room-empty-tip">
+                                <p>您还没有创建自己的测验套题</p>
+                                <a href="{% url 'kahoot_new' %}" class="btn btn-outline btn-sm">+ 去新建套题</a>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- 公共题库列表 -->
+                        {% if public_quiz_sets %}
+                        <div class="room-quiz-grid-wrap" id="panel-public-quiz" style="display: none;">
+                            <div class="room-quiz-grid">
+                                {% for qs in public_quiz_sets %}
+                                <label class="room-quiz-card {% if preselect_id == qs.pk|stringformat:'s' %}is-selected{% endif %}">
+                                    <input type="radio" name="quiz_set_id" value="{{ qs.pk }}" class="room-quiz-radio"
+                                           {% if preselect_id == qs.pk|stringformat:"s" %}checked{% endif %}>
+                                    
+                                    <div class="room-quiz-card-head">
+                                        <div class="room-card-meta-left">
+                                            <span class="room-card-index">{{ forloop.counter|stringformat:"02d" }}</span>
+                                            <span class="room-count-badge">{{ qs.question_count }} 题</span>
+                                            <span class="room-author-chip">{{ qs.teacher.display_name|default:qs.teacher.username }}</span>
+                                        </div>
+                                        <div class="room-card-check-icon">
+                                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="20 6 9 17 4 12"></polyline>
+                                            </svg>
+                                        </div>
+                                    </div>
+
+                                    <div class="room-quiz-card-body">
+                                        <h3 class="room-quiz-title" title="{{ qs.title }}">{{ qs.title }}</h3>
+                                    </div>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- 底部提交操作栏 -->
+                        <div class="room-card-footer">
+                            <button type="submit" class="btn-create-room-submit" id="btn-submit-room">
+                                <span>创建并启动房间</span>
+                                <span>→</span>
+                            </button>
+                        </div>
+
+                    {% else %}
+                        <div class="room-empty-tip">
+                            <p>当前暂无任何可用测验套题</p>
+                            <a href="{% url 'kahoot_new' %}" class="btn btn-primary" style="margin-top: 0.5rem;">+ 立即新建第一套 Kahoot</a>
+                        </div>
+                    {% endif %}
+
+                </div>
+            </form>
+
         </div>
-        <button type="submit" class="btn btn-primary btn-lg">创建并启动房间 →</button>
-        {% else %}
-        <p class="text-muted-block">暂无可用套题，请先 <a href="{% url 'kahoot_new' %}">新建 Kahoot</a></p>
-        {% endif %}
-    </form>
+    </div>
+
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function switchQuizTab(tab) {
+    const myPanel = document.getElementById('panel-my-quiz');
+    const pubPanel = document.getElementById('panel-public-quiz');
+    const myTab = document.getElementById('tab-my-quiz');
+    const pubTab = document.getElementById('tab-public-quiz');
+
+    if (tab === 'my') {
+        if (myPanel) myPanel.style.display = 'block';
+        if (pubPanel) pubPanel.style.display = 'none';
+        if (myTab) myTab.classList.add('active');
+        if (pubTab) pubTab.classList.remove('active');
+    } else {
+        if (myPanel) myPanel.style.display = 'none';
+        if (pubPanel) pubPanel.style.display = 'block';
+        if (myTab) myTab.classList.remove('active');
+        if (pubTab) pubTab.classList.add('active');
+    }
+}
+
+// 选中卡片联动高亮样式
+document.querySelectorAll('.room-quiz-radio').forEach(radio => {
+    radio.addEventListener('change', () => {
+        document.querySelectorAll('.room-quiz-card').forEach(card => card.classList.remove('is-selected'));
+        if (radio.checked) {
+            const parentCard = radio.closest('.room-quiz-card');
+            if (parentCard) parentCard.classList.add('is-selected');
+        }
+    });
+});
+</script>
 {% endblock %}
