@@ -628,3 +628,46 @@ button.kahoot-create-card {
     justify-content: flex-end;
     gap: 0.75rem;
 }
+
+/* ==========================================================================
+   Top Save Notification Toast (顶部绿色极速保存通知)
+   ========================================================================== */
+.editor-top-save-banner {
+    position: fixed;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #10B981;
+    color: #ffffff;
+    padding: 0.5rem 1.25rem;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 700;
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35), 0 2px 0 #059669;
+    border: 1.5px solid rgba(255, 255, 255, 0.3);
+    pointer-events: none;
+    transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+    animation: slideDownToast 0.25s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.editor-top-save-banner.hidden {
+    opacity: 0;
+    transform: translate(-50%, -20px);
+    pointer-events: none;
+}
+
+@keyframes slideDownToast {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -15px);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}

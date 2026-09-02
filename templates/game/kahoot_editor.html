@@ -19,6 +19,14 @@
                    value="{{ quiz_set.title }}" maxlength="200" placeholder="Kahoot 名称">
         </div>
         
+        <!-- 顶部绿色极速保存通知条 -->
+        <div id="save-toast-banner" class="editor-top-save-banner hidden">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span id="save-toast-text">已快速保存</span>
+        </div>
+
         <!-- 右侧并列：保存键 + 退出键 -->
         <div class="kahoot-editor-topbar-right">
             <button type="button" class="btn btn-outline" id="btn-save-quiz">保存</button>
@@ -154,5 +162,5 @@
 const INITIAL_QUESTIONS = {{ questions_json|safe }};
 const MAX_IMAGE_MB = {{ max_image_mb }};
 </script>
-<script src="{% static 'js/kahoot_editor.js' %}?v=11"></script>
+<script src="{% static 'js/kahoot_editor.js' %}?v=13"></script>
 {% endblock %}

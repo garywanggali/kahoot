@@ -298,8 +298,10 @@
             renderList();
             if (silent) {
                 els.saveStatus.textContent = '已自动保存';
+                showTopSaveToast('已快速保存');
             } else {
                 els.saveStatus.textContent = '已保存';
+                showTopSaveToast('已快速保存');
             }
         } catch (e) {
             els.saveStatus.textContent = e.message;
@@ -346,6 +348,20 @@
         }
     }
 
+    let toastTimer = null;
+    function showTopSaveToast(msg = '已快速保存', duration = 2200) {
+        const banner = document.getElementById('save-toast-banner');
+        const textEl = document.getElementById('save-toast-text');
+        if (!banner) return;
+        if (textEl) textEl.textContent = msg;
+        banner.classList.remove('hidden');
+
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+            banner.classList.add('hidden');
+        }, duration);
+    }
+
     async function saveOnly() {
         if (saving) return;
         saving = true;
@@ -360,6 +376,7 @@
                 is_public: publicVal,
             });
             setSaveStatus('✓ 已保存全部更改');
+            showTopSaveToast('已快速保存');
             setTimeout(() => setSaveStatus(''), 2500);
         } catch (e) {
             setSaveStatus('保存失败：' + e.message);
