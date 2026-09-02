@@ -49,6 +49,31 @@ class AIKahootError(Exception):
     """Raised when AI generation or validation fails."""
 
 
+def _short_answer_looks_like_multi_item_list(text: str) -> bool:
+    if any(marker in text for marker in _SHORT_ANSWER_MULTI_ITEM_MARKERS):
+        return True
+    return '，' in text or ',' in text
+
+
+def is_valid_ai_short_answer(option_a: str) -> bool:
+    """Reject AI short answers that are hard to auto-match."""
+    if not option_a or not option_a.strip():
+        return False
+    if any(ch.isspace() for ch in option_a):
+        return False
+    segments = [part.strip() for part in option_a.split('|') if part.strip()]
+    if not segments:
+        return False
+    for segment in segments:
+        if any(ch.isspace() for ch in segment):
+            return False
+        if len(segment) > MAX_AI_SHORT_ANSWER_LEN:
+            return False
+        if _short_answer_looks_like_multi_item_list(segment):
+            return False
+    return True
+
+
 def build_system_prompt() -> str:
     schema_text = json.dumps(QUESTION_JSON_SCHEMA, ensure_ascii=False, indent=2)
     return (
@@ -60,8 +85,14 @@ def build_system_prompt() -> str:
         '- question_type 只能是 single、multiple、judgment、short_answer。\n'
         '- 多选题 correct_option 为逗号分隔字母，如 A,C，至少 2 个正确答案。\n'
         '- 判断题 option_a 为「正确」，option_b 为「错误」，correct_option 为 A 或 B。\n'
-        '- 简答题参考答案写在 option_a，多个可接受答案用 | 分隔，correct_option 固定 A。\n'
-        '- 简答题 option_b/option_c/option_d 可写「—」。\n'
+        '- 简答题参考答案写在 option_a，correct_option 固定 A；option_b/option_c/option_d 可写「—」。\n'
+        '- 简答题必须便于系统自动判分：参考答案只能是极短的词或数字（通常几个字，如 北京、1949、'
+        '二氧化碳），不得含空格。\n'
+        '- 禁止简答题答案为多个并列项（如「德国和日本」）或含「和」「与」「及」、顿号、逗号的列举；'
+        '此类应改为单选题或多选题。\n'
+        '- 若同一答案有多种简短写法，仅用 | 分隔（如 二氧化碳|CO2），且每种写法都必须无空格、'
+        f'不超过 {MAX_AI_SHORT_ANSWER_LEN} 个字符。\n'
+        '- 简答题题干应要求单个简短答案，避免「列举…」「说出两个…」等需多个词或多项的作答方式。\n'
         '- 题目使用简体中文，难度适合中学生。\n'
         '- 不要生成词云题。'
     )
@@ -124,7 +155,7 @@ def validate_and_normalize_questions(
             if correct not in ('A', 'B'):
                 correct = 'A'
         elif qtype == Question.TYPE_SHORT_ANSWER:
-            if not option_a:
+            if not is_valid_ai_short_answer(option_a):
                 continue
             option_b = Question.TEXT_OPTION_PLACEHOLDER
             option_c = Question.TEXT_OPTION_PLACEHOLDER
