@@ -28,19 +28,22 @@
     <h3 class="page-title">生成设置</h3>
     <form method="post" id="kahoot-ai-form">
         {% csrf_token %}
-        {% if kahoot_title %}
-        <input type="hidden" name="kahoot_title" value="{{ kahoot_title }}">
-        {% endif %}
+        <input type="hidden" name="kahoot_title" value="{{ kahoot_title|default:'' }}">
         {% if kahoot_title %}
         <div class="form-group">
-            <label>Kahoot 名称</label>
-            <p class="form-hint"><strong>{{ kahoot_title }}</strong>（在新建页已设定，保存后将作为套题名称）</p>
+            <label>套题名称</label>
+            <p class="form-hint"><strong>{{ kahoot_title }}</strong>（在新建页已设定，保存后将使用此名称）</p>
+        </div>
+        {% else %}
+        <div class="alert alert-warning">
+            未检测到套题名称，请 <a href="{% url 'kahoot_new' %}">返回新建页</a> 先命名题库再选择 AI 生成。
         </div>
         {% endif %}
         <div class="form-group">
             <label for="topic">主题 / 方向</label>
             <input type="text" id="topic" name="topic" class="form-control" required
                    value="{{ topic }}" placeholder="例如：地理、中国古代史、英语词汇">
+            <p class="form-hint">仅用于指导 AI 出题内容，与套题名称无关。</p>
         </div>
         <div class="form-group">
             <label for="description">详细要求（可选）</label>
@@ -73,7 +76,9 @@
             </div>
             <p class="form-hint">AI 仅生成以上四种题型，不含词云题。</p>
         </div>
-        <button type="submit" class="btn btn-primary" {% if not ai_configured %}disabled data-ai-missing{% endif %}>
+        <button type="submit" class="btn btn-primary" id="btn-ai-generate"
+                {% if not ai_configured or not kahoot_title %}disabled{% endif %}
+                {% if not ai_configured %}data-ai-missing{% endif %}>
             生成题目
         </button>
     </form>
@@ -82,7 +87,7 @@
 {% if preview %}
 <div class="card section-gap">
     <h3 class="page-title">预览（{{ preview|length }} 道）</h3>
-    <p class="form-hint">确认无误后保存为套题「{{ kahoot_title|default:topic }}」，并可直接创建房间。</p>
+    <p class="form-hint">套题名称：<strong>{{ kahoot_title }}</strong>。确认内容后可查看详情页审核，需要修改时再进入可视化编辑。</p>
     <div class="kahoot-preview-list">
         {% for q in preview %}
         <div class="kahoot-preview-item">
@@ -113,7 +118,8 @@
         <form method="post" class="inline-form">
             {% csrf_token %}
             <input type="hidden" name="action" value="save">
-            <button type="submit" class="btn btn-primary">保存为套题</button>
+            <input type="hidden" name="kahoot_title" value="{{ kahoot_title }}">
+            <button type="submit" class="btn btn-primary">查看详情并审核 →</button>
         </form>
         <form method="post" action="{% url 'kahoot_ai_discard' %}" class="inline-form">
             {% csrf_token %}
@@ -122,6 +128,14 @@
     </div>
 </div>
 {% endif %}
+
+<div id="ai-loading-overlay" class="ai-loading-overlay hidden" aria-live="polite" aria-busy="true">
+    <div class="ai-loading-panel card-glass">
+        <div class="ai-loading-spinner" aria-hidden="true"></div>
+        <p class="ai-loading-title">AI 正在出题</p>
+        <p class="ai-loading-hint">通常需要 30 秒～2 分钟，请勿关闭或刷新页面</p>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -129,16 +143,31 @@
 (function () {
     const inputs = document.querySelectorAll('.kahoot-count-input');
     const maxTotal = {{ max_total }};
-    const btn = document.querySelector('#kahoot-ai-form button[type="submit"]');
-  if (!btn) return;
-    function updateTotal() {
-        let sum = 0;
-        inputs.forEach(el => { sum += parseInt(el.value || 0, 10); });
-        if (btn.hasAttribute('data-ai-missing')) return;
-        btn.disabled = sum === 0 || sum > maxTotal;
+    const btn = document.getElementById('btn-ai-generate');
+    const form = document.getElementById('kahoot-ai-form');
+    const overlay = document.getElementById('ai-loading-overlay');
+
+    if (btn) {
+        function updateTotal() {
+            let sum = 0;
+            inputs.forEach(el => { sum += parseInt(el.value || 0, 10); });
+            if (btn.hasAttribute('data-ai-missing')) return;
+            const hasTitle = form && form.querySelector('input[name=kahoot_title]')?.value.trim();
+            btn.disabled = !hasTitle || sum === 0 || sum > maxTotal;
+        }
+        inputs.forEach(el => el.addEventListener('input', updateTotal));
+        updateTotal();
     }
-    inputs.forEach(el => el.addEventListener('input', updateTotal));
-    updateTotal();
+
+    if (form && overlay) {
+        form.addEventListener('submit', function () {
+            overlay.classList.remove('hidden');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = '生成中…';
+            }
+        });
+    }
 })();
 </script>
 {% endblock %}

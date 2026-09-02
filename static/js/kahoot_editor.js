@@ -6,6 +6,9 @@
     let questions = Array.isArray(INITIAL_QUESTIONS) ? INITIAL_QUESTIONS.slice() : [];
     let activeIndex = questions.length > 0 ? 0 : -1;
     let correctKeys = new Set();
+    let dirty = false;
+    let autoSaveTimer = null;
+    let saving = false;
 
     const els = {
         list: document.getElementById('question-list'),
@@ -61,6 +64,18 @@
         return activeIndex >= 0 ? questions[activeIndex] : null;
     }
 
+    function markDirty() {
+        dirty = true;
+        scheduleAutoSave();
+    }
+
+    function scheduleAutoSave() {
+        if (autoSaveTimer) clearTimeout(autoSaveTimer);
+        autoSaveTimer = setTimeout(() => {
+            if (dirty && currentQuestion()) saveQuestion({ silent: true });
+        }, 900);
+    }
+
     function renderList() {
         els.list.innerHTML = '';
         questions.forEach((q, i) => {
@@ -69,7 +84,7 @@
             const label = (q.text || '').trim() || '（未填写题干）';
             li.innerHTML = `<span class="kahoot-editor-q-num">${i + 1}</span>
                 <span class="kahoot-editor-q-label">${typeLabel(q.question_type)} · ${label.slice(0, 28)}</span>`;
-            li.onclick = () => selectQuestion(i);
+            li.onclick = () => { void selectQuestion(i); };
             els.list.appendChild(li);
         });
         if (questions.length === 0) {
@@ -152,16 +167,21 @@
         els.previewNumber.textContent = questions.length
             ? `第 ${activeIndex + 1} / ${questions.length} 题（预览）`
             : '';
-        els.saveStatus.textContent = '';
+        if (!saving) els.saveStatus.textContent = '';
     }
 
-    function selectQuestion(index) {
+    async function selectQuestion(index) {
+        if (index === activeIndex) return;
+        if (dirty && currentQuestion()) {
+            await saveQuestion({ silent: true });
+        }
         if (index < 0 || index >= questions.length) {
             activeIndex = -1;
             renderList();
             return;
         }
         activeIndex = index;
+        dirty = false;
         renderList();
         fillForm(questions[activeIndex]);
     }
@@ -226,28 +246,44 @@
         return data;
     }
 
-    async function saveQuestion() {
+    async function saveQuestion(options = {}) {
+        const silent = options.silent;
         const q = currentQuestion();
-        if (!q) return;
-        els.saveStatus.textContent = '保存中…';
+        if (!q || saving) return;
+        saving = true;
+        if (!silent) els.saveStatus.textContent = '保存中…';
         try {
             const data = await apiPost(`/teacher/kahoot/${quizId}/questions/save/`, readFormToPayload());
             questions[activeIndex] = data.question;
             els.imageInput.value = '';
             els.removeImage.dataset.pendingRemove = '0';
+            dirty = false;
             fillForm(data.question);
             renderList();
-            els.saveStatus.textContent = '已保存';
+            if (silent) {
+                els.saveStatus.textContent = '已自动保存';
+            } else {
+                els.saveStatus.textContent = '已保存';
+            }
         } catch (e) {
             els.saveStatus.textContent = e.message;
+            if (!silent) throw e;
+        } finally {
+            saving = false;
         }
     }
 
     async function addQuestion() {
+        if (dirty && currentQuestion()) {
+            await saveQuestion({ silent: true });
+        }
         try {
             const data = await apiPost(`/teacher/kahoot/${quizId}/questions/add/`, new FormData());
             questions.push(data.question);
-            selectQuestion(questions.length - 1);
+            activeIndex = questions.length - 1;
+            dirty = false;
+            renderList();
+            fillForm(data.question);
         } catch (e) {
             alert(e.message);
         }
@@ -260,28 +296,48 @@
         try {
             await apiPost(`/teacher/kahoot/${quizId}/questions/${q.id}/delete/`, new FormData());
             questions.splice(activeIndex, 1);
-            selectQuestion(Math.min(activeIndex, questions.length - 1));
+            dirty = false;
+            if (questions.length === 0) {
+                activeIndex = -1;
+                renderList();
+                return;
+            }
+            activeIndex = Math.min(activeIndex, questions.length - 1);
+            renderList();
+            fillForm(questions[activeIndex]);
         } catch (e) {
             alert(e.message);
         }
     }
 
-    async function saveMeta() {
+    async function saveQuizSet() {
         try {
+            if (dirty && currentQuestion()) {
+                await saveQuestion({ silent: true });
+            }
             await apiPost(`/teacher/kahoot/${quizId}/meta/`, {
                 title: els.quizTitle.value.trim(),
                 is_public: els.quizPublic.checked ? '1' : '0',
             });
-            els.saveStatus.textContent = '套题设置已保存';
+            els.saveStatus.textContent = '套题已保存';
         } catch (e) {
             alert(e.message);
         }
     }
 
     document.getElementById('btn-add-question').addEventListener('click', addQuestion);
-    document.getElementById('btn-save-question').addEventListener('click', saveQuestion);
     document.getElementById('btn-delete-question').addEventListener('click', deleteQuestion);
-    document.getElementById('btn-save-meta').addEventListener('click', saveMeta);
+    document.getElementById('btn-save-quiz-set').addEventListener('click', saveQuizSet);
+
+    const watchEls = [
+        els.text, els.type, els.time,
+        els.optionA, els.optionB, els.optionC, els.optionD,
+        els.shortCorrect,
+    ];
+    watchEls.forEach(el => {
+        el.addEventListener('input', markDirty);
+        el.addEventListener('change', markDirty);
+    });
 
     els.type.addEventListener('change', () => {
         applyTypeUi(els.type.value);
@@ -291,6 +347,7 @@
             correctKeys = new Set(['A']);
             updateCorrectMarks();
         }
+        markDirty();
     });
 
     document.querySelectorAll('.kahoot-editor-mark-correct').forEach(btn => {
@@ -304,6 +361,7 @@
                 correctKeys = new Set([key]);
             }
             updateCorrectMarks();
+            markDirty();
         });
     });
 
@@ -320,6 +378,7 @@
         els.mediaPlaceholder.classList.add('hidden');
         els.removeImage.classList.remove('hidden');
         els.removeImage.dataset.pendingRemove = '0';
+        markDirty();
     });
     els.removeImage.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -329,8 +388,12 @@
         els.mediaPlaceholder.classList.remove('hidden');
         els.removeImage.classList.add('hidden');
         els.removeImage.dataset.pendingRemove = '1';
+        markDirty();
     });
 
     renderList();
-    if (questions.length) selectQuestion(0);
+    if (questions.length) {
+        activeIndex = 0;
+        fillForm(questions[0]);
+    }
 })();

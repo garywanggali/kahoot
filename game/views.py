@@ -787,6 +787,13 @@ def _ai_form_context(request, **extra):
     }
 
 
+def _preview_labels_from(questions):
+    return [
+        {**q, 'type_label': question_type_label(q['question_type'])}
+        for q in questions
+    ]
+
+
 def kahoot_ai(request):
     teacher, redirect_resp = require_teacher_or_redirect(request)
     if redirect_resp:
@@ -803,16 +810,24 @@ def kahoot_ai(request):
             ))
 
         title = (
-            request.session.get('ai_kahoot_title')
-            or kahoot_title
+            request.session.get('kahoot_pending_title', '').strip()
             or request.POST.get('kahoot_title', '').strip()
+            or kahoot_title
         )
+        if not title:
+            messages.error(request, '缺少套题名称，请返回新建页重新设定名称')
+            return render(request, 'game/kahoot_ai.html', _ai_form_context(
+                request, kahoot_title=kahoot_title, preview=_preview_labels_from(preview),
+            ))
+
         quiz_set = create_quiz_set_from_ai_data(title, preview, teacher)
         request.session.pop('ai_kahoot_preview', None)
-        request.session.pop('ai_kahoot_title', None)
         request.session.pop('kahoot_pending_title', None)
-        messages.success(request, f'已保存 {quiz_set.question_count()} 道题到套题「{quiz_set.title}」')
-        return redirect('kahoot_editor', pk=quiz_set.pk)
+        messages.success(
+            request,
+            f'已保存 {quiz_set.question_count()} 道题到「{quiz_set.title}」，请审核题目后创建房间或进入编辑',
+        )
+        return redirect('kahoot_detail', pk=quiz_set.pk)
 
     if request.method == 'POST':
         topic = request.POST.get('topic', '').strip()
@@ -844,26 +859,22 @@ def kahoot_ai(request):
                 request, counts=counts,
             ))
 
+        posted_title = request.POST.get('kahoot_title', '').strip()
+        if posted_title:
+            request.session['kahoot_pending_title'] = posted_title
+            kahoot_title = posted_title
+
         request.session['ai_kahoot_preview'] = questions
-        request.session['ai_kahoot_title'] = topic
-        preview_labels = [
-            {**q, 'type_label': question_type_label(q['question_type'])}
-            for q in questions
-        ]
-        messages.success(request, f'已生成 {len(questions)} 道题目，请预览后保存')
+        preview_labels = _preview_labels_from(questions)
+        messages.success(request, f'已生成 {len(questions)} 道题目，请预览后查看详情')
         return render(request, 'game/kahoot_ai.html', _ai_form_context(
             request,
             counts=counts,
             preview=preview_labels,
-            kahoot_title=kahoot_title or topic,
+            kahoot_title=kahoot_title,
         ))
 
-    preview_labels = None
-    if preview:
-        preview_labels = [
-            {**q, 'type_label': question_type_label(q['question_type'])}
-            for q in preview
-        ]
+    preview_labels = _preview_labels_from(preview) if preview else None
 
     return render(request, 'game/kahoot_ai.html', _ai_form_context(
         request,

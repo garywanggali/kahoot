@@ -22,7 +22,7 @@
                 公开套题
             </label>
             <a href="{% url 'kahoot_detail' quiz_set.pk %}" class="btn btn-outline">套题详情</a>
-            <button type="button" class="btn btn-primary" id="btn-save-meta">保存设置</button>
+            <button type="button" class="btn btn-primary" id="btn-save-quiz-set">保存套题</button>
         </div>
     </header>
 
@@ -116,7 +116,6 @@
             </div>
             <p class="form-hint" id="type-hint">单选：点击右侧 ✓ 标记唯一正确答案</p>
             <div class="kahoot-editor-props-actions">
-                <button type="button" class="btn btn-primary btn-block" id="btn-save-question">保存本题</button>
                 <button type="button" class="btn btn-outline btn-block" id="btn-delete-question">删除本题</button>
             </div>
         </aside>
@@ -129,5 +128,5 @@
 const INITIAL_QUESTIONS = {{ questions_json|safe }};
 const MAX_IMAGE_MB = {{ max_image_mb }};
 </script>
-<script src="{% static 'js/kahoot_editor.js' %}?v=2"></script>
+<script src="{% static 'js/kahoot_editor.js' %}?v=3"></script>
 {% endblock %}
