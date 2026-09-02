@@ -777,11 +777,51 @@ a:hover {
     transform: translateX(-3px);
 }
 
+/* ==========================================================================
+   High-Fidelity Glass-Effect Stats Card UI Architecture
+   Inspired by Apple Pro & Glass-Effect Stats Card UI Specs
+   Dual-Masked Border Specular Overlays & Ambient Refraction Glow
+   ========================================================================== */
+.glass-ambient-glows {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.glow-orb-1 {
+    position: absolute;
+    top: 15%;
+    left: 18%;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 79, 0, 0.12) 0%, rgba(255, 149, 0, 0.05) 50%, transparent 70%);
+    filter: blur(50px);
+}
+
+.glow-orb-2 {
+    position: absolute;
+    top: 45%;
+    right: 12%;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 184, 0, 0.1) 0%, rgba(255, 79, 0, 0.04) 50%, transparent 70%);
+    filter: blur(60px);
+}
+
 .studio-features-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 1.75rem;
     margin-bottom: 3rem;
+    position: relative;
+    z-index: 1;
 }
 
 @media (max-width: 960px) {
@@ -790,42 +830,104 @@ a:hover {
     }
 }
 
-/* ==========================================================================
-   Frosted Glassmorphism Cards (高级磨砂玻璃框)
-   ========================================================================== */
+.feature-card-wrapper {
+    position: relative;
+}
+
+/* Staggered Bottom Glow Layer */
+.card-bottom-glow {
+    position: absolute;
+    inset: -3px;
+    border-radius: 26px;
+    background: linear-gradient(135deg, rgba(255, 79, 0, 0.18) 0%, rgba(255, 184, 0, 0.08) 60%, transparent 100%);
+    filter: blur(14px);
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.75;
+    transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+.feature-card-wrapper:hover .card-bottom-glow {
+    opacity: 1;
+    filter: blur(18px);
+    background: linear-gradient(135deg, rgba(255, 79, 0, 0.3) 0%, rgba(255, 184, 0, 0.18) 60%, transparent 100%);
+}
+
+/* Dual Masked Border Specular Overlays */
+.glass-border-overlay-1 {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.25) 50%, transparent 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.glass-border-overlay-2 {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: linear-gradient(315deg, hsl(25, 95%, 53%) 0%, rgba(255, 149, 0, 0.28) 40%, transparent 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* Multi-Stop Text Gradient */
+.card-content-gradient {
+    background: linear-gradient(135deg, #111111 0%, #2b2b30 75%, hsl(25, 95%, 53%) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* High-Fidelity Frosted Glass Base */
 .card-glass,
 .feature-card-glass {
-    background: rgba(255, 255, 255, 0.72) !important;
-    backdrop-filter: blur(20px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.9) !important;
-    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
+    position: relative;
+    background: rgba(255, 255, 255, 0.68) !important;
+    backdrop-filter: blur(20px) saturate(190%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(190%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
     border-radius: 24px !important;
+    overflow: hidden;
+    z-index: 1;
 }
 
 .feature-card {
-    background: rgba(255, 255, 255, 0.72);
-    border: 1px solid rgba(255, 255, 255, 0.9);
+    position: relative;
+    background: rgba(255, 255, 255, 0.68);
+    border: 1px solid rgba(255, 255, 255, 0.8);
     border-radius: 24px;
     padding: 2.5rem 2.25rem;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.04);
-    transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s ease, border-color 0.2s ease;
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    transition: transform 0.22s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.22s ease, background 0.22s ease;
+    backdrop-filter: blur(20px) saturate(190%);
+    -webkit-backdrop-filter: blur(20px) saturate(190%);
+    overflow: hidden;
+    z-index: 1;
 }
 
 .feature-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.07), inset 0 1px 0 rgba(255, 255, 255, 1);
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow: 0 24px 50px rgba(0, 0, 0, 0.07), inset 0 1px 0 rgba(255, 255, 255, 1);
 }
 
 .feature-card-primary {
-    background: rgba(255, 255, 255, 0.92) !important;
+    background: rgba(255, 255, 255, 0.88) !important;
     border: 2px solid var(--text-black) !important;
-    box-shadow: 0 8px 0 var(--text-black), 0 20px 40px rgba(0, 0, 0, 0.07) !important;
+    box-shadow: 0 8px 0 var(--text-black), 0 20px 42px rgba(0, 0, 0, 0.08) !important;
 }
 
 .feature-card-header {
@@ -833,6 +935,8 @@ a:hover {
     align-items: center;
     justify-content: space-between;
     margin-bottom: 1.25rem;
+    position: relative;
+    z-index: 3;
 }
 
 .feature-icon-wrap {
@@ -842,9 +946,10 @@ a:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(240, 240, 237, 0.65);
-    border: 1px solid rgba(255, 255, 255, 0.85);
+    background: rgba(245, 245, 242, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.9);
     color: var(--text-black);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
 .feature-badge {
@@ -853,11 +958,11 @@ a:hover {
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    padding: 0.3rem 0.75rem;
+    padding: 0.35rem 0.85rem;
     border-radius: var(--radius-pill);
-    background: rgba(240, 240, 237, 0.75);
+    background: rgba(242, 242, 238, 0.85);
     color: var(--text-secondary);
-    border: 1px solid rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.85);
 }
 
 .badge-primary {
@@ -867,18 +972,19 @@ a:hover {
 }
 
 .badge-terracotta {
-    background: rgba(255, 79, 0, 0.08);
+    background: rgba(255, 79, 0, 0.09);
     color: var(--orange);
-    border: 1px solid rgba(255, 79, 0, 0.2);
+    border: 1px solid rgba(255, 79, 0, 0.25);
 }
 
 .feature-card-title {
     font-family: var(--font-hero);
     font-size: 1.65rem;
     font-weight: 800;
-    color: var(--text-black);
     margin: 0.5rem 0 0.6rem;
     letter-spacing: -0.02em;
+    position: relative;
+    z-index: 3;
 }
 
 .feature-card-desc {
@@ -887,27 +993,37 @@ a:hover {
     line-height: 1.6;
     margin-bottom: 2rem;
     flex: 1;
+    position: relative;
+    z-index: 3;
+}
+
+.feature-card-footer {
+    position: relative;
+    z-index: 3;
 }
 
 .feature-card-footer-stacked {
     display: flex;
     flex-direction: column;
     gap: 0.65rem;
+    position: relative;
+    z-index: 3;
 }
 
 .btn-glass-subtle {
-    background: rgba(238, 238, 235, 0.85);
+    background: rgba(235, 235, 230, 0.85);
     color: var(--text-black);
-    border: 1px solid rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.9);
     font-weight: 700;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
 .btn-glass-subtle:hover {
-    background: #e2e2dd;
+    background: #dfdfd9;
 }
 
 .btn-glass-outline {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.4);
     color: var(--text-black);
     border: 1.5px solid var(--text-black);
     font-weight: 700;
