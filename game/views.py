@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 from .ai_kahoot import (
     AIKahootError,
@@ -54,6 +55,7 @@ from .teacher_auth import (
     own_quiz_sets,
     public_quiz_sets_excluding,
     require_teacher_or_redirect,
+    require_teacher_api,
     teacher_rooms,
 )
 from .room_cache import drop_runtime, flush_runtime_force, get_runtime
@@ -523,6 +525,7 @@ def kahoot_import_template(request):
     return response
 
 
+@ensure_csrf_cookie
 def kahoot_editor(request, pk):
     teacher, redirect_resp = require_teacher_or_redirect(request)
     if redirect_resp:
@@ -545,9 +548,9 @@ def kahoot_editor(request, pk):
 
 
 def kahoot_editor_meta(request, pk):
-    teacher, redirect_resp = require_teacher_or_redirect(request)
-    if redirect_resp:
-        return redirect_resp
+    teacher, err_resp = require_teacher_api(request)
+    if err_resp:
+        return err_resp
     quiz_set = get_object_or_404(QuizSet, pk=pk)
     if not can_edit_quiz_set(teacher, quiz_set):
         return JsonResponse({'error': '无权编辑'}, status=403)
@@ -563,9 +566,9 @@ def kahoot_editor_meta(request, pk):
 
 
 def kahoot_question_add(request, pk):
-    teacher, redirect_resp = require_teacher_or_redirect(request)
-    if redirect_resp:
-        return redirect_resp
+    teacher, err_resp = require_teacher_api(request)
+    if err_resp:
+        return err_resp
     quiz_set = get_object_or_404(QuizSet, pk=pk)
     if not can_edit_quiz_set(teacher, quiz_set):
         return JsonResponse({'error': '无权编辑'}, status=403)
@@ -589,9 +592,9 @@ def kahoot_question_add(request, pk):
 
 
 def kahoot_question_save(request, pk):
-    teacher, redirect_resp = require_teacher_or_redirect(request)
-    if redirect_resp:
-        return redirect_resp
+    teacher, err_resp = require_teacher_api(request)
+    if err_resp:
+        return err_resp
     quiz_set = get_object_or_404(QuizSet, pk=pk)
     if not can_edit_quiz_set(teacher, quiz_set):
         return JsonResponse({'error': '无权编辑'}, status=403)
@@ -625,9 +628,9 @@ def kahoot_question_save(request, pk):
 
 
 def kahoot_question_delete_api(request, pk, qid):
-    teacher, redirect_resp = require_teacher_or_redirect(request)
-    if redirect_resp:
-        return redirect_resp
+    teacher, err_resp = require_teacher_api(request)
+    if err_resp:
+        return err_resp
     quiz_set = get_object_or_404(QuizSet, pk=pk)
     if not can_edit_quiz_set(teacher, quiz_set):
         return JsonResponse({'error': '无权编辑'}, status=403)

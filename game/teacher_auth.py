@@ -38,6 +38,16 @@ def require_teacher_or_redirect(request):
     return teacher, None
 
 
+def require_teacher_api(request):
+    """For JSON API views: return 401 instead of HTML redirect."""
+    from django.http import JsonResponse
+
+    teacher = get_current_teacher(request)
+    if not teacher:
+        return None, JsonResponse({'error': '请先登录老师账号'}, status=401)
+    return teacher, None
+
+
 def normalize_username(username: str) -> str:
     return username.strip().lower()
 

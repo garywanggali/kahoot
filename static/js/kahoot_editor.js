@@ -32,8 +32,18 @@
     };
 
     function csrfToken() {
-        const m = document.cookie.match(/csrftoken=([^;]+)/);
-        return m ? m[1] : '';
+        const input = document.querySelector('#kahoot-editor input[name=csrfmiddlewaretoken]');
+        if (input && input.value) return input.value;
+        const m = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+        return m ? decodeURIComponent(m[1]) : '';
+    }
+
+    function appendCsrf(formData) {
+        const token = csrfToken();
+        if (token && formData instanceof FormData && !formData.has('csrfmiddlewaretoken')) {
+            formData.append('csrfmiddlewaretoken', token);
+        }
+        return formData;
     }
 
     function typeLabel(t) {
@@ -191,12 +201,17 @@
     }
 
     async function apiPost(url, body) {
+        const token = csrfToken();
         const opts = {
             method: 'POST',
             credentials: 'same-origin',
-            headers: { 'X-CSRFToken': csrfToken() },
+            headers: {},
         };
+        if (token) {
+            opts.headers['X-CSRFToken'] = token;
+        }
         if (body instanceof FormData) {
+            appendCsrf(body);
             opts.body = body;
         } else {
             opts.headers['Content-Type'] = 'application/x-www-form-urlencoded';
@@ -205,7 +220,8 @@
         const res = await fetch(url, opts);
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
-            throw new Error(data.error || '请求失败');
+            const fallback = res.status === 403 ? 'CSRF 校验失败，请刷新页面重试' : `请求失败 (${res.status})`;
+            throw new Error(data.error || fallback);
         }
         return data;
     }

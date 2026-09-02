@@ -9,6 +9,7 @@
 
 {% block content %}
 <div class="kahoot-editor-app" id="kahoot-editor" data-quiz-id="{{ quiz_set.pk }}">
+    {% csrf_token %}
     <header class="kahoot-editor-topbar">
         <div class="kahoot-editor-topbar-left">
             <a href="{% url 'kahoot_new' %}" class="btn-back kahoot-editor-back">← 返回</a>
@@ -128,5 +129,5 @@
 const INITIAL_QUESTIONS = {{ questions_json|safe }};
 const MAX_IMAGE_MB = {{ max_image_mb }};
 </script>
-<script src="{% static 'js/kahoot_editor.js' %}?v=1"></script>
+<script src="{% static 'js/kahoot_editor.js' %}?v=2"></script>
 {% endblock %}
