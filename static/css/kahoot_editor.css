@@ -239,27 +239,17 @@ body:has(.kahoot-editor-app) .container {
 
 .kahoot-editor-media {
     position: relative;
-    margin-bottom: 1.25rem;
-    border: 2px dashed var(--border-light);
+    margin-bottom: 1rem;
     border-radius: var(--radius-md);
-    min-height: 120px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: var(--bg-subtle);
-    cursor: pointer;
+    background: transparent;
 }
 
-.kahoot-editor-media-placeholder {
-    text-align: center;
-    color: var(--text-muted);
-    padding: 1rem;
-}
-
-.kahoot-editor-media-placeholder span {
-    font-size: 2rem;
-    display: block;
-    margin-bottom: 0.25rem;
+.kahoot-editor-media.hidden {
+    display: none !important;
 }
 
 .kahoot-editor-preview-img {
@@ -267,23 +257,24 @@ body:has(.kahoot-editor-app) .container {
     max-width: 100%;
     object-fit: contain;
     border-radius: var(--radius-md);
+    margin-bottom: 0.5rem;
 }
 
 .kahoot-editor-stem-input {
     width: 100%;
-    min-height: 84px;
+    min-height: 108px;
     font-family: var(--font-hero);
-    font-size: 1.85rem;
+    font-size: 2.1rem;
     font-weight: 800;
-    line-height: 1.35;
+    line-height: 1.45;
     text-align: center;
-    border: 2px solid var(--orange);
+    border: 2.5px solid var(--orange);
     background: #ffffff;
-    border-radius: 16px;
-    padding: 1.25rem 1.5rem;
+    border-radius: 20px;
+    padding: 1.6rem 1.85rem;
     margin-bottom: 1.5rem;
     color: var(--text-black);
-    box-shadow: 0 4px 14px var(--orange-subtle);
+    box-shadow: 0 4px 16px var(--orange-subtle);
     box-sizing: border-box;
     display: block;
     resize: none;
@@ -304,7 +295,7 @@ body:has(.kahoot-editor-app) .container {
 .kahoot-editor-options {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    gap: 1.25rem;
 }
 
 @media (max-width: 640px) {
@@ -316,13 +307,15 @@ body:has(.kahoot-editor-app) .container {
 .kahoot-editor-option {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.65rem 0.75rem;
-    border-radius: var(--radius-md);
-    border: 2px solid var(--text-black);
+    gap: 0.85rem;
+    padding: 1.15rem 1.35rem;
+    border-radius: 18px;
+    border: 2.5px solid var(--text-black);
     box-shadow: 0 4px 0 var(--text-black);
     color: #fff;
-    min-height: 3.5rem;
+    min-height: 5rem;
+    box-sizing: border-box;
+    transition: transform 0.15s ease;
 }
 
 /* 编辑器自带图标 span，禁用 play 页 .option-a::before 等伪元素 */
@@ -337,9 +330,9 @@ body:has(.kahoot-editor-app) .container {
 .kahoot-editor-option.option-d { background: var(--kh-option-d); }
 
 .kahoot-editor-option-icon {
-    font-size: 1.1rem;
+    font-size: 1.35rem;
     flex-shrink: 0;
-    width: 1.5rem;
+    width: 1.85rem;
     text-align: center;
 }
 
@@ -347,12 +340,13 @@ body:has(.kahoot-editor-app) .container {
     flex: 1;
     min-width: 0;
     border: none;
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.22);
     color: inherit;
-    font-weight: 700;
-    font-size: 1rem;
-    padding: 0.4rem 0.5rem;
-    border-radius: 4px;
+    font-weight: 800;
+    font-size: 1.2rem;
+    padding: 0.65rem 0.85rem;
+    border-radius: 8px;
+    box-sizing: border-box;
 }
 
 .kahoot-editor-option-input::placeholder {
@@ -365,15 +359,19 @@ body:has(.kahoot-editor-app) .container {
 
 .kahoot-editor-mark-correct {
     flex-shrink: 0;
-    width: 2rem;
-    height: 2rem;
+    width: 2.4rem;
+    height: 2.4rem;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.6);
+    border: 2px solid rgba(255, 255, 255, 0.65);
     background: transparent;
     color: #fff;
     cursor: pointer;
     font-weight: 800;
-    opacity: 0.6;
+    font-size: 1.15rem;
+    opacity: 0.7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .kahoot-editor-option.option-c .kahoot-editor-mark-correct {

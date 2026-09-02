@@ -4,7 +4,7 @@
 {% block title %}编辑 {{ quiz_set.title }} - Kahoot Studio{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/kahoot_editor.css' %}?v=12">
+<link rel="stylesheet" href="{% static 'css/kahoot_editor.css' %}?v=14">
 {% endblock %}
 
 {% block content %}
@@ -48,14 +48,10 @@
                 <p class="question-number" id="preview-number"></p>
                 <div class="timer-bar kahoot-editor-timer"><div class="timer-fill"></div></div>
 
-                <div class="kahoot-editor-media" id="media-zone">
+                <div class="kahoot-editor-media hidden" id="media-zone">
                     <img id="preview-image" class="kahoot-editor-preview-img hidden" alt="">
-                    <div id="media-placeholder" class="kahoot-editor-media-placeholder">
-                        <span>+</span>
-                        <p>点击上传题目图片（可选）</p>
-                    </div>
                     <input type="file" id="image-input" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden">
-                    <button type="button" class="btn btn-outline btn-sm hidden" id="btn-remove-image">移除图片</button>
+                    <button type="button" class="btn btn-outline btn-sm" id="btn-remove-image">移除图片</button>
                 </div>
 
                 <textarea id="field-text" class="kahoot-editor-stem-input" rows="2"
@@ -122,6 +118,12 @@
                     <option value="120">120 秒</option>
                 </select>
             </div>
+            <div class="form-group">
+                <label>配图（可选）</label>
+                <button type="button" class="btn btn-outline btn-block" id="btn-upload-image-sidebar">
+                    📷 上传题目配图
+                </button>
+            </div>
             <p class="form-hint" id="type-hint">单选：点击右侧 ✓ 标记唯一正确答案</p>
             <div class="kahoot-editor-props-actions">
                 <button type="button" class="btn btn-outline btn-block" id="btn-delete-question">删除本题</button>
@@ -162,5 +164,5 @@
 const INITIAL_QUESTIONS = {{ questions_json|safe }};
 const MAX_IMAGE_MB = {{ max_image_mb }};
 </script>
-<script src="{% static 'js/kahoot_editor.js' %}?v=13"></script>
+<script src="{% static 'js/kahoot_editor.js' %}?v=14"></script>
 {% endblock %}

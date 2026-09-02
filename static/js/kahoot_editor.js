@@ -29,16 +29,17 @@
 
     function showQuestionImage(url) {
         const src = normalizeImageUrl(url);
+        const mediaZone = document.getElementById('media-zone');
         if (!src) {
             els.previewImage.removeAttribute('src');
             els.previewImage.classList.add('hidden');
-            els.mediaPlaceholder.classList.remove('hidden');
+            if (mediaZone) mediaZone.classList.add('hidden');
             els.removeImage.classList.add('hidden');
             return;
         }
         els.previewImage.src = src;
         els.previewImage.classList.remove('hidden');
-        els.mediaPlaceholder.classList.add('hidden');
+        if (mediaZone) mediaZone.classList.remove('hidden');
         els.removeImage.classList.remove('hidden');
     }
 
@@ -57,9 +58,9 @@
         shortPanel: document.getElementById('short-panel'),
         wordPanel: document.getElementById('wordcloud-panel'),
         previewImage: document.getElementById('preview-image'),
-        mediaPlaceholder: document.getElementById('media-placeholder'),
         imageInput: document.getElementById('image-input'),
         removeImage: document.getElementById('btn-remove-image'),
+        uploadSidebarBtn: document.getElementById('btn-upload-image-sidebar'),
         saveStatus: document.getElementById('save-status'),
         typeHint: document.getElementById('type-hint'),
         quizTitle: document.getElementById('quiz-title-input'),
@@ -475,7 +476,9 @@
         });
     });
 
-    els.mediaPlaceholder.addEventListener('click', () => els.imageInput.click());
+    if (els.uploadSidebarBtn) {
+        els.uploadSidebarBtn.addEventListener('click', () => els.imageInput.click());
+    }
     els.imageInput.addEventListener('change', () => {
         const file = els.imageInput.files[0];
         if (!file) return;
