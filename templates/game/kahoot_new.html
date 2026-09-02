@@ -2,6 +2,11 @@
 
 {% block title %}新建 Kahoot - Kahoot Studio{% endblock %}
 
+{% block extra_css %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/kahoot_editor.css' %}?v=1">
+{% endblock %}
+
 {% block content %}
 <div class="studio-header-bar">
     <div class="studio-title-group">
@@ -12,7 +17,8 @@
             </svg>
             <span>返回控制台</span>
         </a>
-        <h1 class="studio-main-title">新建 Kahoot 测验</h1>
+        <h1 class="studio-main-title">创建题库</h1>
+        <p class="form-hint">选择一种方式创建整套 Kahoot 题目</p>
     </div>
     <a href="{% url 'question_list' %}" class="btn btn-outline">
         我的题库 ({{ quiz_set_count }}) →
@@ -20,38 +26,89 @@
 </div>
 
 <div class="card">
-    <h3 class="page-title">第一步：命名这套 Kahoot</h3>
-    <p class="form-hint">每次新建都会保存为<strong>一套完整题目</strong>，可在题库中复用，也可一键创建房间。</p>
-    <form method="post" action="{% url 'kahoot_start' %}" class="section-gap">
-        {% csrf_token %}
-        <div class="form-group">
-            <label for="title">Kahoot 名称</label>
-            <input type="text" id="title" name="title" class="form-control" required
-                   value="{{ pending_title }}" placeholder="例如：七年级地理期中复习">
-        </div>
-        <div class="kahoot-choice-grid">
-            <button type="submit" name="action" value="manual" class="kahoot-choice-card kahoot-choice-button">
-                <div class="kahoot-choice-icon">✏️</div>
-                <h3 class="kahoot-choice-title">手动编辑出题</h3>
-                <p class="kahoot-choice-desc">逐题填写题干与选项，支持单选、多选、判断、简答、词云。</p>
-                <span class="kahoot-choice-cta">开始手动出题 →</span>
-            </button>
-            <button type="submit" name="action" value="ai" class="kahoot-choice-card kahoot-choice-card-ai kahoot-choice-button">
-                <div class="kahoot-choice-icon">✨</div>
-                <h3 class="kahoot-choice-title">AI 智能生成</h3>
-                <p class="kahoot-choice-desc">指定主题与题型配比，由大模型批量生成题目。</p>
-                <span class="kahoot-choice-cta">使用 AI 生成 →</span>
-            </button>
-        </div>
-    </form>
-</div>
+    <div class="form-group">
+        <label for="title">Kahoot 名称</label>
+        <input type="text" id="title" name="title" class="form-control"
+               value="{{ pending_title }}" placeholder="例如：七年级地理期中复习">
+        <p class="form-hint">手动编写、AI 生成、复制公共题库时需要名称；Excel 导入页可单独填写。</p>
+    </div>
 
-<div class="card section-gap">
-    <a href="{% url 'kahoot_import' %}" class="kahoot-choice-card kahoot-choice-card-excel" style="display:block;text-decoration:none;">
-        <div class="kahoot-choice-icon">📊</div>
-        <h3 class="kahoot-choice-title">Excel 导入题库</h3>
-        <p class="kahoot-choice-desc">按固定表头上传 .xlsx，批量导入单选、多选、判断、简答、词云题。</p>
-        <span class="kahoot-choice-cta">下载模板并导入 →</span>
-    </a>
+    <div class="kahoot-create-grid">
+        <form method="post" action="{% url 'kahoot_start' %}" class="kahoot-create-card kahoot-choice-button">
+            {% csrf_token %}
+            <input type="hidden" name="title" id="title-manual">
+            <input type="hidden" name="action" value="manual">
+            <div class="kahoot-create-icon">✏️</div>
+            <h3 class="kahoot-create-title">手动编写</h3>
+            <p class="kahoot-create-desc">可视化编辑器：左侧切换题号，中间模拟答题界面编辑题干与选项。</p>
+            <span class="kahoot-create-cta">进入编辑器 →</span>
+        </form>
+
+        <form method="post" action="{% url 'kahoot_start' %}" class="kahoot-create-card kahoot-choice-button">
+            {% csrf_token %}
+            <input type="hidden" name="title" id="title-ai">
+            <input type="hidden" name="action" value="ai">
+            <div class="kahoot-create-icon">✨</div>
+            <h3 class="kahoot-create-title">AI 创建</h3>
+            <p class="kahoot-create-desc">指定主题与题型数量，由大模型批量生成题目。</p>
+            <span class="kahoot-create-cta">AI 生成 →</span>
+        </form>
+
+        <a href="{% url 'kahoot_import' %}" class="kahoot-create-card" id="link-excel">
+            <div class="kahoot-create-icon">📊</div>
+            <h3 class="kahoot-create-title">导入 Excel</h3>
+            <p class="kahoot-create-desc">按固定表头上传 .xlsx，严格格式批量导入题目。</p>
+            <span class="kahoot-create-cta">下载模板并导入 →</span>
+        </a>
+
+        <a href="{% url 'kahoot_public_list' %}" class="kahoot-create-card">
+            <div class="kahoot-create-icon">🌐</div>
+            <h3 class="kahoot-create-title">使用公共题库</h3>
+            <p class="kahoot-create-desc">浏览其他老师公开的套题，复制到我的题库后编辑。</p>
+            <span class="kahoot-create-cta">浏览公共套题 →</span>
+        </a>
+    </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const titleInput = document.getElementById('title');
+    const titleManual = document.getElementById('title-manual');
+    const titleAi = document.getElementById('title-ai');
+    const linkExcel = document.getElementById('link-excel');
+
+    function syncHidden() {
+        const v = titleInput.value.trim();
+        titleManual.value = v;
+        titleAi.value = v;
+    }
+
+    titleInput.addEventListener('input', syncHidden);
+    syncHidden();
+
+    document.querySelectorAll('.kahoot-choice-button').forEach(form => {
+        form.addEventListener('submit', (e) => {
+            syncHidden();
+            const action = form.querySelector('[name=action]')?.value;
+            if (action === 'manual' || action === 'ai') {
+                if (!titleInput.value.trim()) {
+                    e.preventDefault();
+                    titleInput.focus();
+                    alert('请先填写 Kahoot 名称');
+                }
+            }
+        });
+    });
+
+    linkExcel.addEventListener('click', (e) => {
+        const t = titleInput.value.trim();
+        if (t) {
+            e.preventDefault();
+            window.location.href = linkExcel.href + '?title=' + encodeURIComponent(t);
+        }
+    });
+})();
+</script>
 {% endblock %}

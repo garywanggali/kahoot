@@ -33,7 +33,13 @@ from .models import (
     Teacher,
     TeacherInviteCode,
 )
-from .quiz_set_utils import add_question_to_quiz_set, create_room_from_quiz_set
+from .quiz_set_utils import add_question_to_quiz_set, clone_quiz_set, create_room_from_quiz_set
+from .question_save import (
+    QuestionFormError,
+    apply_question_fields,
+    parse_question_from_request,
+    question_to_editor_dict,
+)
 from .teacher_auth import (
     accessible_quiz_sets,
     can_edit_question,
@@ -398,7 +404,7 @@ def _save_question(request, teacher, question=None, quiz_set=None):
         question.save()
         messages.success(request, '题目已更新')
         if quiz_set:
-            return redirect('kahoot_detail', pk=quiz_set.pk)
+            return redirect('kahoot_editor', pk=quiz_set.pk)
     else:
         new_question = Question.objects.create(
             text=text,
@@ -417,7 +423,7 @@ def _save_question(request, teacher, question=None, quiz_set=None):
             add_question_to_quiz_set(quiz_set, new_question)
         messages.success(request, '题目已创建')
         if quiz_set:
-            return redirect('kahoot_detail', pk=quiz_set.pk)
+            return redirect('kahoot_editor', pk=quiz_set.pk)
 
     return redirect('question_list')
 
@@ -453,7 +459,7 @@ def kahoot_start(request):
 
     quiz_set = QuizSet.objects.create(title=title[:200], teacher=teacher)
     messages.success(request, f'已创建「{quiz_set.title}」，请添加题目')
-    return redirect('kahoot_detail', pk=quiz_set.pk)
+    return redirect('kahoot_editor', pk=quiz_set.pk)
 
 
 def kahoot_import(request):
@@ -464,7 +470,7 @@ def kahoot_import(request):
     ctx = {
         'required_headers': REQUIRED_HEADERS,
         'max_rows': MAX_IMPORT_ROWS,
-        'title': request.POST.get('title', '').strip(),
+        'title': request.POST.get('title', '').strip() or request.GET.get('title', '').strip(),
     }
 
     if request.method == 'POST':
@@ -493,7 +499,7 @@ def kahoot_import(request):
             request,
             f'已从 Excel 导入 {quiz_set.question_count()} 道题到「{quiz_set.title}」',
         )
-        return redirect('kahoot_detail', pk=quiz_set.pk)
+        return redirect('kahoot_editor', pk=quiz_set.pk)
 
     return render(request, 'game/kahoot_import.html', ctx)
 
@@ -509,6 +515,155 @@ def kahoot_import_template(request):
     )
     response['Content-Disposition'] = 'attachment; filename="kahoot_import_template.xlsx"'
     return response
+
+
+def kahoot_editor(request, pk):
+    teacher, redirect_resp = require_teacher_or_redirect(request)
+    if redirect_resp:
+        return redirect_resp
+    quiz_set = get_object_or_404(QuizSet, pk=pk)
+    if not can_edit_quiz_set(teacher, quiz_set):
+        messages.error(request, '只能编辑自己的套题')
+        return redirect('question_list')
+
+    questions = quiz_set.get_questions()
+    questions_json = json.dumps(
+        [question_to_editor_dict(q) for q in questions],
+        ensure_ascii=False,
+    )
+    return render(request, 'game/kahoot_editor.html', {
+        'quiz_set': quiz_set,
+        'questions_json': questions_json,
+        'max_image_mb': MAX_QUESTION_IMAGE_BYTES // (1024 * 1024),
+    })
+
+
+def kahoot_editor_meta(request, pk):
+    teacher, redirect_resp = require_teacher_or_redirect(request)
+    if redirect_resp:
+        return redirect_resp
+    quiz_set = get_object_or_404(QuizSet, pk=pk)
+    if not can_edit_quiz_set(teacher, quiz_set):
+        return JsonResponse({'error': '无权编辑'}, status=403)
+    if request.method != 'POST':
+        return JsonResponse({'error': '无效请求'}, status=405)
+
+    title = request.POST.get('title', '').strip()
+    if title:
+        quiz_set.title = title[:200]
+    quiz_set.is_public = request.POST.get('is_public') == '1'
+    quiz_set.save(update_fields=['title', 'is_public'])
+    return JsonResponse({'ok': True, 'title': quiz_set.title, 'is_public': quiz_set.is_public})
+
+
+def kahoot_question_add(request, pk):
+    teacher, redirect_resp = require_teacher_or_redirect(request)
+    if redirect_resp:
+        return redirect_resp
+    quiz_set = get_object_or_404(QuizSet, pk=pk)
+    if not can_edit_quiz_set(teacher, quiz_set):
+        return JsonResponse({'error': '无权编辑'}, status=403)
+    if request.method != 'POST':
+        return JsonResponse({'error': '无效请求'}, status=405)
+
+    question = Question.objects.create(
+        text='',
+        question_type=Question.TYPE_SINGLE,
+        option_a='',
+        option_b='',
+        option_c='',
+        option_d='',
+        correct_option='A',
+        time_limit=20,
+        teacher=teacher,
+        is_public=False,
+    )
+    add_question_to_quiz_set(quiz_set, question)
+    return JsonResponse({'ok': True, 'question': question_to_editor_dict(question)})
+
+
+def kahoot_question_save(request, pk):
+    teacher, redirect_resp = require_teacher_or_redirect(request)
+    if redirect_resp:
+        return redirect_resp
+    quiz_set = get_object_or_404(QuizSet, pk=pk)
+    if not can_edit_quiz_set(teacher, quiz_set):
+        return JsonResponse({'error': '无权编辑'}, status=403)
+    if request.method != 'POST':
+        return JsonResponse({'error': '无效请求'}, status=405)
+
+    question_id = request.POST.get('question_id', '').strip()
+    question = None
+    if question_id:
+        question = get_object_or_404(Question, pk=question_id)
+        if not can_edit_question(teacher, question):
+            return JsonResponse({'error': '无权编辑该题目'}, status=403)
+        if not quiz_set.quiz_set_questions.filter(question_id=question.pk).exists():
+            return JsonResponse({'error': '题目不属于该套题'}, status=400)
+
+    try:
+        fields = parse_question_from_request(request, question=question)
+    except QuestionFormError as exc:
+        return JsonResponse({'error': exc.message}, status=400)
+
+    if question:
+        apply_question_fields(question, fields)
+        question.save()
+    else:
+        question = Question(teacher=teacher, is_public=fields['is_public'])
+        apply_question_fields(question, fields)
+        question.save()
+        add_question_to_quiz_set(quiz_set, question)
+
+    return JsonResponse({'ok': True, 'question': question_to_editor_dict(question)})
+
+
+def kahoot_question_delete_api(request, pk, qid):
+    teacher, redirect_resp = require_teacher_or_redirect(request)
+    if redirect_resp:
+        return redirect_resp
+    quiz_set = get_object_or_404(QuizSet, pk=pk)
+    if not can_edit_quiz_set(teacher, quiz_set):
+        return JsonResponse({'error': '无权编辑'}, status=403)
+    if request.method != 'POST':
+        return JsonResponse({'error': '无效请求'}, status=405)
+
+    question = get_object_or_404(Question, pk=qid)
+    if not quiz_set.quiz_set_questions.filter(question_id=question.pk).exists():
+        return JsonResponse({'error': '题目不属于该套题'}, status=400)
+    if not can_edit_question(teacher, question):
+        return JsonResponse({'error': '无权删除'}, status=403)
+
+    quiz_set.quiz_set_questions.filter(question_id=question.pk).delete()
+    question.delete()
+    return JsonResponse({'ok': True})
+
+
+def kahoot_public_list(request):
+    teacher, redirect_resp = require_teacher_or_redirect(request)
+    if redirect_resp:
+        return redirect_resp
+    public_sets = public_quiz_sets_excluding(teacher)
+    return render(request, 'game/kahoot_public.html', {
+        'public_quiz_sets': public_sets,
+    })
+
+
+def kahoot_public_clone(request, pk):
+    teacher, redirect_resp = require_teacher_or_redirect(request)
+    if redirect_resp:
+        return redirect_resp
+    source = get_object_or_404(QuizSet, pk=pk)
+    if not can_use_quiz_set(teacher, source) or can_edit_quiz_set(teacher, source):
+        messages.error(request, '只能复制其他老师的公开套题')
+        return redirect('kahoot_public_list')
+    if request.method != 'POST':
+        return redirect('kahoot_public_list')
+
+    title = request.POST.get('title', '').strip()
+    new_set = clone_quiz_set(source, teacher, title=title)
+    messages.success(request, f'已复制到我的题库：「{new_set.title}」')
+    return redirect('kahoot_editor', pk=new_set.pk)
 
 
 def kahoot_detail(request, pk):
@@ -530,7 +685,7 @@ def kahoot_detail(request, pk):
         quiz_set.is_public = is_public
         quiz_set.save(update_fields=['title', 'is_public'])
         messages.success(request, '套题信息已更新')
-        return redirect('kahoot_detail', pk=quiz_set.pk)
+        return redirect('kahoot_editor', pk=quiz_set.pk)
 
     questions = quiz_set.get_questions()
     return render(request, 'game/kahoot_detail.html', {
@@ -648,7 +803,7 @@ def kahoot_ai(request):
         request.session.pop('ai_kahoot_title', None)
         request.session.pop('kahoot_pending_title', None)
         messages.success(request, f'已保存 {quiz_set.question_count()} 道题到套题「{quiz_set.title}」')
-        return redirect('kahoot_detail', pk=quiz_set.pk)
+        return redirect('kahoot_editor', pk=quiz_set.pk)
 
     if request.method == 'POST':
         topic = request.POST.get('topic', '').strip()

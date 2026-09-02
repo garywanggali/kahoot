@@ -1,0 +1,404 @@
+/* Kahoot-style visual question editor */
+body:has(.kahoot-editor-app) .container {
+    max-width: none;
+    padding: 0;
+    margin: 0;
+}
+
+.kahoot-editor-app {
+    min-height: calc(100vh - 2rem);
+    background: var(--bg-base);
+    display: flex;
+    flex-direction: column;
+}
+
+.kahoot-editor-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 1.25rem;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border-light);
+    flex-wrap: wrap;
+}
+
+.kahoot-editor-topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.kahoot-editor-back {
+    flex-shrink: 0;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.kahoot-editor-title-input {
+    flex: 1;
+    min-width: 12rem;
+    max-width: 28rem;
+    font-family: var(--font-hero);
+    font-size: 1.1rem;
+    font-weight: 700;
+    border: none;
+    background: var(--bg-subtle);
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-md);
+}
+
+.kahoot-editor-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.kahoot-editor-public-toggle {
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.kahoot-editor-body {
+    display: grid;
+    grid-template-columns: 200px 1fr 260px;
+    flex: 1;
+    min-height: 0;
+}
+
+@media (max-width: 960px) {
+    .kahoot-editor-body {
+        grid-template-columns: 1fr;
+    }
+    .kahoot-editor-sidebar,
+    .kahoot-editor-props {
+        border: none;
+        border-bottom: 1px solid var(--border-light);
+    }
+}
+
+.kahoot-editor-sidebar {
+    background: var(--bg-surface);
+    border-right: 1px solid var(--border-light);
+    padding: 0.75rem;
+    overflow-y: auto;
+}
+
+.kahoot-editor-sidebar-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.btn-sm {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.8rem;
+}
+
+.kahoot-editor-q-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.kahoot-editor-q-item {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    padding: 0.55rem 0.5rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    margin-bottom: 0.35rem;
+    font-size: 0.82rem;
+    line-height: 1.35;
+}
+
+.kahoot-editor-q-item:hover {
+    background: var(--bg-subtle);
+}
+
+.kahoot-editor-q-item.active {
+    border-color: var(--orange);
+    background: var(--orange-subtle);
+}
+
+.kahoot-editor-q-num {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--orange);
+    flex-shrink: 0;
+}
+
+.kahoot-editor-q-empty {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    padding: 0.5rem;
+}
+
+.kahoot-editor-stage {
+    padding: 1.5rem 2rem;
+    overflow-y: auto;
+    background: var(--bg-base);
+}
+
+.kahoot-editor-preview {
+    max-width: 52rem;
+    margin: 0 auto;
+}
+
+.kahoot-editor-timer {
+    margin-bottom: 1.25rem;
+    opacity: 0.5;
+}
+
+.kahoot-editor-media {
+    position: relative;
+    margin-bottom: 1.25rem;
+    border: 2px dashed var(--border-light);
+    border-radius: var(--radius-md);
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-subtle);
+    cursor: pointer;
+}
+
+.kahoot-editor-media-placeholder {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 1rem;
+}
+
+.kahoot-editor-media-placeholder span {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.kahoot-editor-preview-img {
+    max-height: 200px;
+    max-width: 100%;
+    object-fit: contain;
+    border-radius: var(--radius-md);
+}
+
+.kahoot-editor-stem-input {
+    width: 100%;
+    font-family: var(--font-hero);
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1.25;
+    text-align: center;
+    border: none;
+    background: transparent;
+    resize: vertical;
+    margin-bottom: 1.5rem;
+    color: var(--text-black);
+}
+
+.kahoot-editor-stem-input:focus {
+    outline: 2px solid var(--orange);
+    border-radius: var(--radius-md);
+}
+
+.kahoot-editor-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+@media (max-width: 640px) {
+    .kahoot-editor-options {
+        grid-template-columns: 1fr;
+    }
+}
+
+.kahoot-editor-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 0.75rem;
+    border-radius: var(--radius-md);
+    border: 2px solid var(--text-black);
+    box-shadow: 0 4px 0 var(--text-black);
+    color: #fff;
+    min-height: 3.5rem;
+}
+
+.kahoot-editor-option.option-a { background: var(--kh-option-a); }
+.kahoot-editor-option.option-b { background: var(--kh-option-b); }
+.kahoot-editor-option.option-c { background: var(--kh-option-c); color: #111; }
+.kahoot-editor-option.option-d { background: var(--kh-option-d); }
+
+.kahoot-editor-option-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    width: 1.5rem;
+    text-align: center;
+}
+
+.kahoot-editor-option-input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    background: rgba(255, 255, 255, 0.2);
+    color: inherit;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 0.4rem 0.5rem;
+    border-radius: 4px;
+}
+
+.kahoot-editor-option-input::placeholder {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.kahoot-editor-option.option-c .kahoot-editor-option-input::placeholder {
+    color: rgba(0, 0, 0, 0.45);
+}
+
+.kahoot-editor-mark-correct {
+    flex-shrink: 0;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 800;
+    opacity: 0.6;
+}
+
+.kahoot-editor-option.option-c .kahoot-editor-mark-correct {
+    border-color: rgba(0, 0, 0, 0.35);
+    color: #111;
+}
+
+.kahoot-editor-mark-correct.is-correct {
+    opacity: 1;
+    background: #fff;
+    color: var(--correct);
+    border-color: #fff;
+}
+
+.kahoot-editor-short {
+    max-width: 28rem;
+    margin: 0 auto;
+}
+
+.kahoot-editor-hint {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 1rem;
+}
+
+.kahoot-editor-save-hint {
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.kahoot-editor-props {
+    background: var(--bg-surface);
+    border-left: 1px solid var(--border-light);
+    padding: 1rem 1.25rem;
+    overflow-y: auto;
+}
+
+.kahoot-editor-props-title {
+    font-size: 0.95rem;
+    margin: 0 0 1rem;
+    font-weight: 700;
+}
+
+.kahoot-editor-props-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+}
+
+/* Create hub 4 options */
+.kahoot-create-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+@media (max-width: 720px) {
+    .kahoot-create-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.kahoot-create-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    border: 2px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 1.25rem;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    background: var(--bg-surface);
+}
+
+.kahoot-create-card:hover {
+    border-color: var(--orange);
+    box-shadow: 0 4px 20px var(--orange-subtle);
+}
+
+.kahoot-create-card button.kahoot-create-card {
+    width: 100%;
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+}
+
+.kahoot-create-icon {
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.kahoot-create-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin: 0 0 0.35rem;
+}
+
+.kahoot-create-desc {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.45;
+}
+
+.kahoot-create-cta {
+    display: block;
+    margin-top: 0.75rem;
+    font-weight: 700;
+    color: var(--orange);
+    font-size: 0.9rem;
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: var(--orange);
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+}

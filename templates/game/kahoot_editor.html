@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}编辑 {{ quiz_set.title }} - Kahoot Studio{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/kahoot_editor.css' %}?v=1">
+{% endblock %}
+
+{% block content %}
+<div class="kahoot-editor-app" id="kahoot-editor" data-quiz-id="{{ quiz_set.pk }}">
+    <header class="kahoot-editor-topbar">
+        <div class="kahoot-editor-topbar-left">
+            <a href="{% url 'kahoot_new' %}" class="btn-back kahoot-editor-back">← 返回</a>
+            <input type="text" id="quiz-title-input" class="kahoot-editor-title-input"
+                   value="{{ quiz_set.title }}" maxlength="200" placeholder="Kahoot 名称">
+        </div>
+        <div class="kahoot-editor-topbar-right">
+            <label class="kahoot-editor-public-toggle">
+                <input type="checkbox" id="quiz-public-input" {% if quiz_set.is_public %}checked{% endif %}>
+                公开套题
+            </label>
+            <a href="{% url 'kahoot_detail' quiz_set.pk %}" class="btn btn-outline">套题详情</a>
+            <button type="button" class="btn btn-primary" id="btn-save-meta">保存设置</button>
+        </div>
+    </header>
+
+    <div class="kahoot-editor-body">
+        <aside class="kahoot-editor-sidebar">
+            <div class="kahoot-editor-sidebar-head">
+                <span>题目</span>
+                <button type="button" class="btn btn-primary btn-sm" id="btn-add-question">+ 添加</button>
+            </div>
+            <ul class="kahoot-editor-q-list" id="question-list"></ul>
+        </aside>
+
+        <main class="kahoot-editor-stage">
+            <div class="kahoot-editor-preview" id="editor-preview">
+                <p class="question-number" id="preview-number"></p>
+                <div class="timer-bar kahoot-editor-timer"><div class="timer-fill"></div></div>
+
+                <div class="kahoot-editor-media" id="media-zone">
+                    <img id="preview-image" class="kahoot-editor-preview-img hidden" alt="">
+                    <div id="media-placeholder" class="kahoot-editor-media-placeholder">
+                        <span>+</span>
+                        <p>点击上传题目图片（可选）</p>
+                    </div>
+                    <input type="file" id="image-input" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden">
+                    <button type="button" class="btn btn-outline btn-sm hidden" id="btn-remove-image">移除图片</button>
+                </div>
+
+                <textarea id="field-text" class="kahoot-editor-stem-input" rows="2"
+                          placeholder="输入题干…" maxlength="500"></textarea>
+
+                <div id="options-panel" class="kahoot-editor-options">
+                    <div class="kahoot-editor-option option-a" data-key="A">
+                        <span class="kahoot-editor-option-icon">▲</span>
+                        <input type="text" class="kahoot-editor-option-input" id="field-option-a" placeholder="选项 A" maxlength="200">
+                        <button type="button" class="kahoot-editor-mark-correct" data-key="A" title="标为正确答案">✓</button>
+                    </div>
+                    <div class="kahoot-editor-option option-b" data-key="B">
+                        <span class="kahoot-editor-option-icon">◆</span>
+                        <input type="text" class="kahoot-editor-option-input" id="field-option-b" placeholder="选项 B" maxlength="200">
+                        <button type="button" class="kahoot-editor-mark-correct" data-key="B" title="标为正确答案">✓</button>
+                    </div>
+                    <div class="kahoot-editor-option option-c" data-key="C">
+                        <span class="kahoot-editor-option-icon">●</span>
+                        <input type="text" class="kahoot-editor-option-input" id="field-option-c" placeholder="选项 C" maxlength="200">
+                        <button type="button" class="kahoot-editor-mark-correct" data-key="C" title="标为正确答案">✓</button>
+                    </div>
+                    <div class="kahoot-editor-option option-d" data-key="D">
+                        <span class="kahoot-editor-option-icon">■</span>
+                        <input type="text" class="kahoot-editor-option-input" id="field-option-d" placeholder="选项 D" maxlength="200">
+                        <button type="button" class="kahoot-editor-mark-correct" data-key="D" title="标为正确答案">✓</button>
+                    </div>
+                </div>
+
+                <div id="short-panel" class="kahoot-editor-short hidden">
+                    <label>参考答案（多个用 | 分隔）</label>
+                    <input type="text" id="field-short-correct" class="form-control" maxlength="200">
+                </div>
+
+                <div id="wordcloud-panel" class="kahoot-editor-hint hidden">
+                    <p>词云题：学生提交文字后实时汇总，无标准答案。</p>
+                </div>
+
+                <p class="kahoot-editor-save-hint" id="save-status"></p>
+            </div>
+        </main>
+
+        <aside class="kahoot-editor-props">
+            <h3 class="kahoot-editor-props-title">题目设置</h3>
+            <div class="form-group">
+                <label for="field-type">题型</label>
+                <select id="field-type" class="form-control">
+                    <option value="single">单选题</option>
+                    <option value="multiple">多选题</option>
+                    <option value="judgment">判断题</option>
+                    <option value="short_answer">简答题</option>
+                    <option value="word_cloud">词云题</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="field-time">答题时限</label>
+                <select id="field-time" class="form-control">
+                    <option value="10">10 秒</option>
+                    <option value="15">15 秒</option>
+                    <option value="20">20 秒</option>
+                    <option value="30">30 秒</option>
+                    <option value="45">45 秒</option>
+                    <option value="60">60 秒</option>
+                    <option value="90">90 秒</option>
+                    <option value="120">120 秒</option>
+                </select>
+            </div>
+            <p class="form-hint" id="type-hint">单选：点击右侧 ✓ 标记唯一正确答案</p>
+            <div class="kahoot-editor-props-actions">
+                <button type="button" class="btn btn-primary btn-block" id="btn-save-question">保存本题</button>
+                <button type="button" class="btn btn-outline btn-block" id="btn-delete-question">删除本题</button>
+            </div>
+        </aside>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const INITIAL_QUESTIONS = {{ questions_json|safe }};
+const MAX_IMAGE_MB = {{ max_image_mb }};
+</script>
+<script src="{% static 'js/kahoot_editor.js' %}?v=1"></script>
+{% endblock %}

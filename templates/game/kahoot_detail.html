@@ -16,6 +16,7 @@
         <p class="form-hint">{{ questions|length }} 道题 · {% if quiz_set.is_public %}公开套题{% else %}仅自己可见{% endif %}</p>
     </div>
     {% if can_edit %}
+    <a href="{% url 'kahoot_editor' quiz_set.pk %}" class="btn btn-primary">可视化编辑</a>
     <a href="{% url 'question_create' %}?quiz_set={{ quiz_set.pk }}" class="btn btn-outline">+ 添加题目</a>
     {% endif %}
 </div>

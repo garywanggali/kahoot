@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}公共题库 - Kahoot{% endblock %}
+
+{% block content %}
+<div class="studio-header-bar">
+    <div class="studio-title-group">
+        <a href="{% url 'kahoot_new' %}" class="btn-back">
+            <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>返回创建题库</span>
+        </a>
+        <h1 class="studio-main-title">公共题库</h1>
+        <p class="form-hint">复制其他老师公开的套题到我的题库，可在编辑器中修改</p>
+    </div>
+</div>
+
+<div class="card">
+    {% if public_quiz_sets %}
+    <table>
+        <thead>
+            <tr>
+                <th>名称</th>
+                <th>作者</th>
+                <th>题数</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for qs in public_quiz_sets %}
+            <tr>
+                <td><strong>{{ qs.title }}</strong></td>
+                <td>{{ qs.teacher.username }}</td>
+                <td>{{ qs.question_count }}</td>
+                <td>
+                    <a href="{% url 'kahoot_detail' qs.pk %}">预览</a>
+                    &nbsp;·&nbsp;
+                    <form method="post" action="{% url 'kahoot_public_clone' qs.pk %}" class="inline-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="title" value="{{ qs.title }}（副本）">
+                        <button type="submit" class="btn-link">复制到我的题库</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-muted-block">暂无其他老师公开的套题。</p>
+    {% endif %}
+</div>
+{% endblock %}

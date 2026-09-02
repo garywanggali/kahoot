@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from .models import QuizSet, QuizSetQuestion, Room, RoomQuestion
+from django.db import transaction
+
+from .models import Question, QuizSet, QuizSetQuestion, Room, RoomQuestion
 
 
 def create_room_from_quiz_set(quiz_set: QuizSet, teacher, name: str | None = None) -> Room:
@@ -34,3 +36,36 @@ def add_question_to_quiz_set(quiz_set: QuizSet, question, order: int | None = No
         question=question,
         order=order,
     )
+
+
+@transaction.atomic
+def clone_quiz_set(source: QuizSet, teacher, title: str | None = None) -> QuizSet:
+    new_title = (title or '').strip() or f'{source.title}（副本）'
+    new_set = QuizSet.objects.create(
+        title=new_title[:200],
+        teacher=teacher,
+        is_public=False,
+    )
+    for qsq in source.quiz_set_questions.select_related('question').order_by('order'):
+        q = qsq.question
+        new_q = Question.objects.create(
+            text=q.text,
+            question_type=q.question_type,
+            option_a=q.option_a,
+            option_b=q.option_b,
+            option_c=q.option_c,
+            option_d=q.option_d,
+            correct_option=q.correct_option,
+            time_limit=q.time_limit,
+            teacher=teacher,
+            is_public=False,
+        )
+        if q.image:
+            # 图片不复制，避免跨教师 media 权限问题
+            pass
+        QuizSetQuestion.objects.create(
+            quiz_set=new_set,
+            question=new_q,
+            order=qsq.order,
+        )
+    return new_set
