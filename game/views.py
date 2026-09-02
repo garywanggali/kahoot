@@ -5,7 +5,7 @@ import re
 
 from django.contrib import messages
 from django.core.exceptions import ValidationError
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .ai_kahoot import (
@@ -16,6 +16,13 @@ from .ai_kahoot import (
     question_type_label,
 )
 from .stepfun_client import generate_kahoot_questions, stepfun_configured
+from .excel_import import (
+    ExcelImportError,
+    MAX_IMPORT_ROWS,
+    REQUIRED_HEADERS,
+    build_template_xlsx,
+    import_quiz_set_from_xlsx,
+)
 from .models import (
     Answer,
     Player,
@@ -447,6 +454,61 @@ def kahoot_start(request):
     quiz_set = QuizSet.objects.create(title=title[:200], teacher=teacher)
     messages.success(request, f'已创建「{quiz_set.title}」，请添加题目')
     return redirect('kahoot_detail', pk=quiz_set.pk)
+
+
+def kahoot_import(request):
+    teacher, redirect_resp = require_teacher_or_redirect(request)
+    if redirect_resp:
+        return redirect_resp
+
+    ctx = {
+        'required_headers': REQUIRED_HEADERS,
+        'max_rows': MAX_IMPORT_ROWS,
+        'title': request.POST.get('title', '').strip(),
+    }
+
+    if request.method == 'POST':
+        title = ctx['title']
+        upload = request.FILES.get('excel_file')
+        if not title:
+            messages.error(request, '请填写 Kahoot 名称')
+            return render(request, 'game/kahoot_import.html', ctx)
+        if not upload:
+            messages.error(request, '请选择要上传的 Excel 文件')
+            return render(request, 'game/kahoot_import.html', ctx)
+        if not upload.name.lower().endswith('.xlsx'):
+            messages.error(request, '仅支持 .xlsx 格式（Excel 2007+）')
+            return render(request, 'game/kahoot_import.html', ctx)
+
+        try:
+            quiz_set = import_quiz_set_from_xlsx(teacher, title, upload.read())
+        except ExcelImportError as exc:
+            msg = str(exc)
+            if exc.row:
+                msg = f'第 {exc.row} 行：{msg}'
+            messages.error(request, msg)
+            return render(request, 'game/kahoot_import.html', ctx)
+
+        messages.success(
+            request,
+            f'已从 Excel 导入 {quiz_set.question_count()} 道题到「{quiz_set.title}」',
+        )
+        return redirect('kahoot_detail', pk=quiz_set.pk)
+
+    return render(request, 'game/kahoot_import.html', ctx)
+
+
+def kahoot_import_template(request):
+    teacher, redirect_resp = require_teacher_or_redirect(request)
+    if redirect_resp:
+        return redirect_resp
+
+    response = HttpResponse(
+        build_template_xlsx(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+    response['Content-Disposition'] = 'attachment; filename="kahoot_import_template.xlsx"'
+    return response
 
 
 def kahoot_detail(request, pk):
