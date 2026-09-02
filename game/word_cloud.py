@@ -2,12 +2,14 @@
 
 from collections import Counter
 
-from .models import Answer, Question
+from .models import Answer, Question, Room
 from .room_cache import get_runtime
 from .text_utils import normalize_word_cloud_text
 
 
-def aggregate_word_cloud(room_id: int, question_id: int, runtime=None) -> list[dict]:
+def aggregate_word_cloud(room_code: str, question_id: int, runtime=None) -> list[dict]:
+    room = Room.objects.get(code=room_code)
+    room_id = room.id
     counts: Counter[str] = Counter()
 
     if runtime is not None:
@@ -37,5 +39,5 @@ def attach_word_cloud(state: dict, room) -> dict:
     if not question or question.get('question_type') != Question.TYPE_WORD_CLOUD:
         return state
     runtime = get_runtime(room)
-    question['word_cloud'] = aggregate_word_cloud(room.id, question['id'], runtime)
+    question['word_cloud'] = aggregate_word_cloud(room.code, question['id'], runtime)
     return state

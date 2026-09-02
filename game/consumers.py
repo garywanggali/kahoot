@@ -18,7 +18,7 @@ from .room_cache import (
     flush_runtime_force,
     get_answer_count as cache_get_answer_count,
     get_player_nickname,
-    get_runtime,
+    get_runtime_for_code,
     join_player,
     maybe_flush,
     record_answer,
@@ -115,7 +115,7 @@ class RoomConsumer(AsyncWebsocketConsumer):
             session_id = str(uuid.uuid4())
 
         room = await self.get_room()
-        runtime = await database_sync_to_async(get_runtime)(room)
+        runtime = await database_sync_to_async(get_runtime_for_code)(self.room_code)
         player, _created, error = await database_sync_to_async(join_player)(
             runtime, nickname, session_id,
         )
@@ -170,7 +170,7 @@ class RoomConsumer(AsyncWebsocketConsumer):
         room = await self.get_room()
         questions_count = await self.get_questions_count()
 
-        runtime = await database_sync_to_async(get_runtime)(room)
+        runtime = await database_sync_to_async(get_runtime_for_code)(self.room_code)
         await self._flush_runtime_async(runtime, force=True)
 
         if room.current_question_index + 1 >= questions_count:
@@ -209,29 +209,26 @@ class RoomConsumer(AsyncWebsocketConsumer):
         if selected is None:
             return
 
-        runtime = await database_sync_to_async(get_runtime)(room)
+        question_id = question.pk
+        question_type = question.question_type
+        time_limit = question.time_limit
+
+        runtime = await database_sync_to_async(get_runtime_for_code)(self.room_code)
         exists = await database_sync_to_async(cache_answer_exists)(
-            runtime, self.session_id, question.id,
+            runtime, self.session_id, question_id,
         )
         if exists:
             return
 
         response_time_ms = data.get('response_time_ms', 0)
-        if question.question_type == Question.TYPE_WORD_CLOUD:
-            is_correct = False
-            points = 0
-        elif question.question_type == Question.TYPE_SHORT_ANSWER:
-            is_correct = question.is_text_answer_correct(selected)
-        elif question.question_type == Question.TYPE_MULTIPLE:
-            is_correct = question.is_multiple_choice_correct(selected)
-        else:
-            is_correct = question.is_answer_correct(selected)
-        points = calculate_points(question.time_limit, response_time_ms, is_correct)
+        is_correct, points = await database_sync_to_async(score_answer)(
+            question_id, selected, response_time_ms,
+        )
 
         recorded = await database_sync_to_async(record_answer)(
             runtime,
             self.session_id,
-            question.id,
+            question_id,
             selected,
             is_correct,
             points,
@@ -247,15 +244,21 @@ class RoomConsumer(AsyncWebsocketConsumer):
             'data': {
                 'is_correct': is_correct,
                 'points': points,
-                'no_score': question.question_type == Question.TYPE_WORD_CLOUD,
+                'no_score': question_type == Question.TYPE_WORD_CLOUD,
                 'selected_option': selected,
                 'answer_text': selected,
             },
         }))
 
-        if question.question_type == Question.TYPE_WORD_CLOUD:
+        try:
+            await self._after_answer_recorded(question_id, question_type, runtime)
+        except Exception:
+            logger.exception('Post-answer processing failed room=%s', self.room_code)
+
+    async def _after_answer_recorded(self, question_id: int, question_type: str, runtime):
+        if question_type == Question.TYPE_WORD_CLOUD:
             cloud = await database_sync_to_async(aggregate_word_cloud)(
-                room.id, question.id, runtime,
+                self.room_code, question_id, runtime,
             )
             await self.channel_layer.group_send(
                 self.room_group_name,
@@ -266,25 +269,23 @@ class RoomConsumer(AsyncWebsocketConsumer):
                 },
             )
 
-        answer_count = await database_sync_to_async(cache_get_answer_count)(runtime, question.id)
-        player_count = (await self.get_room_state_async())['player_count']
+        answer_count = await database_sync_to_async(cache_get_answer_count)(runtime, question_id)
+        state = await self.get_room_state_async()
+        player_count = state['player_count']
         if answer_count >= player_count and player_count > 0:
             await self.handle_end_question()
 
     async def handle_end_question(self):
-        room = await self.get_room()
-        if room.status != Room.STATUS_PLAYING:
-            return
-
-        runtime = await database_sync_to_async(get_runtime)(room)
-        await self._flush_runtime_async(runtime, force=True)
-
-        await self.update_room(status=Room.STATUS_LEADERBOARD)
-        state = await self.get_room_state_async()
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {'type': 'room_message', 'event': 'question_ended', 'data': state},
-        )
+        try:
+            state = await database_sync_to_async(end_question_for_room)(self.room_code)
+            if state is None:
+                return
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {'type': 'room_message', 'event': 'question_ended', 'data': state},
+            )
+        except Exception:
+            logger.exception('Failed to end question room=%s', self.room_code)
 
     async def handle_send_danmaku(self, data):
         if not hasattr(self, 'session_id'):
@@ -309,7 +310,7 @@ class RoomConsumer(AsyncWebsocketConsumer):
             return
         _danmaku_cooldown[self.session_id] = now
 
-        runtime = await database_sync_to_async(get_runtime)(room)
+        runtime = await database_sync_to_async(get_runtime_for_code)(self.room_code)
         nickname = await database_sync_to_async(get_player_nickname)(runtime, self.session_id)
         if not nickname and self.player_id:
             player = await Player.objects.aget(id=self.player_id)
@@ -387,6 +388,34 @@ class RoomConsumer(AsyncWebsocketConsumer):
         return selected
 
 
+def score_answer(question_id: int, selected: str, response_time_ms: int) -> tuple[bool, int]:
+    question = Question.objects.get(pk=question_id)
+    if question.question_type == Question.TYPE_WORD_CLOUD:
+        return False, 0
+    if question.question_type == Question.TYPE_SHORT_ANSWER:
+        is_correct = question.is_text_answer_correct(selected)
+    elif question.question_type == Question.TYPE_MULTIPLE:
+        is_correct = question.is_multiple_choice_correct(selected)
+    else:
+        is_correct = question.is_answer_correct(selected)
+    points = calculate_points(question.time_limit, response_time_ms, is_correct)
+    return is_correct, points
+
+
+def end_question_for_room(room_code: str) -> dict | None:
+    room = Room.objects.get(code=room_code)
+    if room.status != Room.STATUS_PLAYING:
+        return None
+    runtime = get_runtime_for_code(room_code)
+    try:
+        flush_runtime_force(runtime)
+    except Exception:
+        logger.exception('Flush failed before end question room=%s', room_code)
+    room.status = Room.STATUS_LEADERBOARD
+    room.save(update_fields=['status'])
+    return get_room_state(room, runtime=runtime)
+
+
 def start_game_for_room(room_code: str) -> tuple[dict | None, str | None]:
     """Start game: update DB and broadcast state; flush players in background-safe order."""
     room = Room.objects.get(code=room_code)
@@ -400,7 +429,7 @@ def start_game_for_room(room_code: str) -> tuple[dict | None, str | None]:
     room.question_started_at = timezone.now()
     room.save(update_fields=['status', 'current_question_index', 'question_started_at'])
 
-    runtime = get_runtime(room)
+    runtime = get_runtime_for_code(room_code)
     try:
         flush_runtime_force(runtime)
     except Exception:
@@ -411,5 +440,5 @@ def start_game_for_room(room_code: str) -> tuple[dict | None, str | None]:
 
 def get_room_state_by_code(room_code):
     room = Room.objects.get(code=room_code)
-    runtime = get_runtime(room)
+    runtime = get_runtime_for_code(room_code)
     return get_room_state(room, runtime=runtime)

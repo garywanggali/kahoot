@@ -96,6 +96,11 @@ def get_runtime(room: Room) -> RoomRuntime:
         return runtime
 
 
+def get_runtime_for_code(room_code: str) -> RoomRuntime:
+    room = Room.objects.get(code=room_code)
+    return get_runtime(room)
+
+
 def drop_runtime(room_code: str) -> None:
     with _registry_lock:
         _runtimes.pop(room_code, None)

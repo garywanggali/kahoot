@@ -159,7 +159,14 @@ function handleEvent(event, data) {
             showDanmakuHint(data.message);
             break;
         case 'error':
-            alert(data.message);
+            if (hasAnswered) {
+                const fb = document.getElementById('answer-feedback');
+                if (fb && !fb.textContent) {
+                    fb.textContent = '已提交';
+                }
+            } else {
+                alert(data.message);
+            }
             break;
     }
 }
