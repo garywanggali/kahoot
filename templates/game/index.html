@@ -1,73 +1,140 @@
 {% extends "base.html" %}
 
-{% block title %}Kahoot - 互动课堂{% endblock %}
+{% block title %}Kahoot Studio - every question. every answer.{% endblock %}
 
 {% block content %}
-<div class="logo">Ka<span>hoo</span>t!</div>
+<!-- 顶部 MK-78 极简工业微导航栏 -->
+<div class="mk-topbar">
+    <div class="mk-brand">
+        <span class="mk-dot"></span>
+        <span class="mk-label">KAHOOT · STUDIO</span>
+    </div>
+    <div class="mk-terminal-hint">
+        $ quiz --ready · 6-digit pin ok
+    </div>
+    <div class="mk-actions">
+        <button type="button" class="btn-mk-pill" onclick="toggleCardFlip(true)">
+            <span>老师控制台</span>
+            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+        </button>
+    </div>
+</div>
 
+<!-- 空间漂浮的 3D 机械键帽与几何图标 -->
+<div class="floating-keycaps-stage">
+    <div class="keycap keycap-orange keycap-pos-1"><span>ESC</span></div>
+    <div class="keycap keycap-dark keycap-pos-2"><span>▲ A</span></div>
+    <div class="keycap keycap-dark keycap-pos-3"><span>◆ B</span></div>
+    <div class="keycap keycap-dark keycap-pos-4"><span>● C</span></div>
+    <div class="keycap keycap-dark keycap-pos-5"><span>■ D</span></div>
+    <div class="keycap keycap-dark keycap-pos-6"><span>⌘ CMD</span></div>
+    <div class="keycap keycap-dark keycap-pos-7"><span>↵</span></div>
+</div>
+
+<!-- 核心 Hero 大标题区 -->
+<div class="hero-section">
+    <div class="hero-code-badge">$ kahoot.live --init</div>
+    <h1 class="hero-headline">
+        <span class="headline-black">every question.</span>
+        <span class="headline-orange">every answer.</span>
+    </h1>
+    <p class="hero-subtext">
+        Real-time interactive classroom quiz, drawn entirely in code.<br>
+        Enter your 6-digit Game PIN to step right in.
+    </p>
+</div>
+
+<!-- 3D 翻转控制台 -->
 <div class="flip-wrapper">
     <div class="flip-card" id="main-flip-card">
         
-        <!-- 正面：学生端（直接输入醒目房间号与昵称） -->
-        <div class="flip-card-side flip-card-front card">
-            <div class="card-badge">参与者通道</div>
-            <h2 class="page-title text-center">加入测验房间</h2>
+        <!-- 正面：学生端加入 -->
+        <div class="flip-card-side flip-card-front card-industrial">
+            <div class="card-chip-header">
+                <span class="mono-badge">PLAYER_LOGIN // v2.0</span>
+                <span class="status-indicator">READY</span>
+            </div>
             
             <form method="post" action="{% url 'join_room' %}">
                 {% csrf_token %}
-                <div class="form-group">
-                    <label for="code">6 位房间号 (GAME PIN)</label>
-                    <input type="text" id="code" name="code" class="form-control room-code-input"
+                <div class="form-group-industrial">
+                    <label for="code">房间号 (GAME PIN)</label>
+                    <input type="text" id="code" name="code" class="input-industrial input-pin"
                            placeholder="0 0 0 0 0 0" maxlength="6" pattern="[0-9]{6}"
                            value="{{ code|default:'' }}" required autofocus autocomplete="off">
                 </div>
-                <div class="form-group">
-                    <label for="nickname">你的昵称</label>
-                    <input type="text" id="nickname" name="nickname" class="form-control form-control-lg"
-                           placeholder="输入你的昵称 / 姓名" maxlength="50"
+                <div class="form-group-industrial">
+                    <label for="nickname">你的昵称 / NICKNAME</label>
+                    <input type="text" id="nickname" name="nickname" class="input-industrial"
+                           placeholder="输入你的昵称" maxlength="50"
                            value="{{ nickname|default:'' }}" required autocomplete="nickname">
                 </div>
-                <button type="submit" class="btn btn-primary btn-block btn-lg entrance-submit-btn">进入游戏 →</button>
+                <button type="submit" class="btn-industrial-primary">
+                    <span>进入游戏</span>
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
             </form>
             
-            <div class="flip-switch-divider">
-                <button type="button" class="flip-trigger-btn" onclick="toggleCardFlip(true)">
-                    你是出题人？<strong>切换至老师端 ↻</strong>
+            <div class="flip-footer-switch">
+                <button type="button" class="flip-switch-action" onclick="toggleCardFlip(true)">
+                    <span>你是出题人？切换至老师管理端</span>
+                    <span class="switch-icon">↻</span>
                 </button>
             </div>
         </div>
 
-        <!-- 背面：老师端（输入密码进入控制台） -->
-        <div class="flip-card-side flip-card-back card">
-            <div class="card-badge teacher-badge">主持与题库</div>
-            <h2 class="page-title text-center">老师管理后台</h2>
+        <!-- 背面：老师端登录 -->
+        <div class="flip-card-side flip-card-back card-industrial">
+            <div class="card-chip-header">
+                <span class="mono-badge badge-orange">TEACHER_AUTH // ADMIN</span>
+                <span class="status-indicator">SECURE</span>
+            </div>
             
             <form method="post" action="{% url 'teacher_login' %}">
                 {% csrf_token %}
-                <div class="form-group">
-                    <label for="teacher_username">用户名</label>
-                    <input type="text" id="teacher_username" name="username" class="form-control form-control-lg"
-                           placeholder="输入用户名" required autocomplete="username">
+                <div class="form-group-industrial">
+                    <label for="teacher_username">用户名 / USERNAME</label>
+                    <input type="text" id="teacher_username" name="username" class="input-industrial"
+                           placeholder="输入老师用户名" required autocomplete="username">
                 </div>
-                <div class="form-group">
-                    <label for="password">密码</label>
-                    <input type="password" id="password" name="password" class="form-control form-control-lg"
-                           placeholder="输入密码" required autocomplete="current-password">
+                <div class="form-group-industrial">
+                    <label for="password">管理密码 / PASSWORD</label>
+                    <input type="password" id="password" name="password" class="input-industrial"
+                           placeholder="输入管理密码" required autocomplete="current-password">
                 </div>
-                <button type="submit" class="btn btn-primary btn-block btn-lg entrance-submit-btn">登录控制台 →</button>
+                <button type="submit" class="btn-industrial-primary">
+                    <span>登录老师控制台</span>
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
             </form>
-            <p class="text-center section-gap">
-                <a href="{% url 'teacher_register' %}">邀请码注册老师账号</a>
-            </p>
             
-            <div class="flip-switch-divider">
-                <button type="button" class="flip-trigger-btn" onclick="toggleCardFlip(false)">
-                    ← <strong>返回学生加入通道</strong>
+            <div class="teacher-extra-links">
+                <a href="{% url 'teacher_register' %}" class="link-mono">邀请码注册新账号 →</a>
+            </div>
+            
+            <div class="flip-footer-switch">
+                <button type="button" class="flip-switch-action" onclick="toggleCardFlip(false)">
+                    <span>← 返回学生加入通道</span>
                 </button>
             </div>
         </div>
 
     </div>
+</div>
+
+<!-- 底部微元数据 -->
+<div class="mk-bottom-bar">
+    <div class="mk-footer-left">TYPE · CODE · PLAY</div>
+    <div class="mk-footer-right">KAHOOT STUDIO 2026</div>
 </div>
 {% endblock %}
 
@@ -80,8 +147,8 @@ function toggleCardFlip(flipToTeacher) {
     } else if (flipToTeacher) {
         card.classList.add('is-flipped');
         setTimeout(() => {
-            const userInput = document.getElementById('teacher_username');
-            if (userInput) userInput.focus();
+            const u = document.getElementById('teacher_username');
+            if (u) u.focus();
         }, 350);
     } else {
         card.classList.remove('is-flipped');
