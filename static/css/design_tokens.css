@@ -1,0 +1,259 @@
+/* ==========================================================================
+   MK-78 INDUSTRIAL CRAFT DESIGN TOKEN SYSTEM
+   全局统一设计规范与 Token 字典 (Design Tokens & Utility Primitives)
+   ========================================================================== */
+
+:root {
+    /* --------------------------------------------------------------------------
+       1. Color Palette Tokens (色彩层级规范)
+       -------------------------------------------------------------------------- */
+    /* 基础主色 */
+    --token-color-pitch-black: #111111;        /* 纯黑实体描边/主标题/高对比文字 */
+    --token-color-alabaster: #F6F6F4;          /* 温暖工业浅灰主底色 */
+    --token-color-surface-pure: #FFFFFF;       /* 纯白卡片/输入框底色 */
+    --token-color-surface-frosted: rgba(255, 255, 255, 0.76); /* 默认轻透磨砂玻璃 */
+    --token-color-surface-subtle: #F0F0ED;     /* 内嵌区块浅灰底色 */
+    
+    /* 品牌高能电光橙 (Primary CTA / Accent) */
+    --token-color-orange: #FF4F00;
+    --token-color-orange-hover: #E64500;
+    --token-color-orange-subtle: rgba(255, 79, 0, 0.08);
+    --token-color-orange-glow: rgba(255, 79, 0, 0.25);
+
+    /* 4色互动出题规范色 */
+    --token-color-choice-a: #FF4F00;           /* 红色/橙色选项 (▲) */
+    --token-color-choice-b: #2563EB;           /* 电光蓝选项 (◆) */
+    --token-color-choice-c: #F59E0B;           /* 琥珀金选项 (●) */
+    --token-color-choice-d: #1F2937;           /* 玄武黑选项 (■) */
+
+    /* 状态反馈语义色 */
+    --token-color-success: #10B981;            /* 绿色 (保存成功 / 正确答案) */
+    --token-color-success-hover: #059669;
+    --token-color-danger: #EF4444;             /* 红色 (删除 / 错误) */
+    --token-color-danger-hover: #DC2626;
+
+    /* 文字排版色彩 */
+    --token-text-primary: #111111;             /* 一级大标题 / 输入框核心文字 */
+    --token-text-secondary: #555555;           /* 副标题 / 描述说明文字 */
+    --token-text-muted: #888888;               /* 辅助序号 / 提示信息 */
+    --token-text-on-dark: #FFFFFF;             /* 深色背景上的反白文字 */
+
+    /* 边框色彩规范 */
+    --token-border-solid: #111111;             /* 3D 实体黑边 */
+    --token-border-subtle: rgba(0, 0, 0, 0.08);/* 轻柔低对比浅灰描边 */
+    --token-border-frosted: rgba(255, 255, 255, 0.9); /* 磨砂玻璃外边框白光 */
+
+    /* --------------------------------------------------------------------------
+       2. Typography Tokens (字体与排版层级)
+       -------------------------------------------------------------------------- */
+    --token-font-hero: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --token-font-body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --token-font-mono: 'JetBrains Mono', monospace;
+
+    /* --------------------------------------------------------------------------
+       3. 3D Tactile Physics Tokens (实体边框与 3D 触感阴影)
+       -------------------------------------------------------------------------- */
+    /* 默认轻透阴影 (静止态) */
+    --token-shadow-card-default: 0 16px 36px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    --token-shadow-btn-default: 0 4px 14px rgba(0, 0, 0, 0.06);
+    --token-shadow-btn-orange: 0 4px 14px var(--token-color-orange-glow);
+
+    /* 悬停激活 3D 实体阴影 (Hover Activated) */
+    --token-shadow-card-hover: 0 8px 0 #111111, 0 24px 48px rgba(0, 0, 0, 0.08);
+    --token-shadow-btn-hover: 0 4px 0 #111111;
+    --token-shadow-tag-tactile: 0 2px 0 #111111;
+
+    /* --------------------------------------------------------------------------
+       4. Border Radius Tokens (圆角体系)
+       -------------------------------------------------------------------------- */
+    --token-radius-card: 32px;                 /* 页面主大卡片圆角 */
+    --token-radius-inner: 20px;                /* 内嵌子卡片/选项块圆角 */
+    --token-radius-input: 18px;                /* 工业输入框圆角 */
+    --token-radius-pill: 9999px;               /* 胶囊按键/标签完全圆角 */
+    --token-radius-tag: 8px;                   /* 序号/题数小徽章圆角 */
+
+    /* --------------------------------------------------------------------------
+       5. Motion & Transitions (动效与过渡)
+       -------------------------------------------------------------------------- */
+    --token-transition-fast: all 0.15s cubic-bezier(0.2, 0, 0, 1);
+    --token-transition-smooth: all 0.22s cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* ==========================================================================
+   Standard Component Token Utility Classes (组件化标准类)
+   ========================================================================== */
+
+/* 1. 主视觉大卡片 (默认轻透磨砂，悬停点亮 3D 黑边) */
+.token-card {
+    background: var(--token-color-surface-frosted);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1.5px solid var(--token-border-frosted);
+    border-radius: var(--token-radius-card);
+    box-shadow: var(--token-shadow-card-default);
+    transition: var(--token-transition-smooth);
+    box-sizing: border-box;
+}
+
+.token-card:hover {
+    background: var(--token-color-surface-pure);
+    border-color: var(--token-border-solid);
+    box-shadow: var(--token-shadow-card-hover);
+    transform: translateY(-4px);
+}
+
+/* 2. 核心 CTA 橙色主按键 */
+.token-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 1.1rem 2.5rem;
+    background: var(--token-color-orange);
+    color: var(--token-text-on-dark);
+    border: 2px solid var(--token-color-orange);
+    border-radius: var(--token-radius-pill);
+    font-family: var(--token-font-hero);
+    font-size: 1.12rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: var(--token-shadow-btn-orange);
+    transition: var(--token-transition-fast);
+    text-decoration: none;
+    user-select: none;
+}
+
+.token-btn-primary:hover {
+    background: var(--token-color-orange);
+    color: var(--token-text-on-dark);
+    border-color: var(--token-border-solid);
+    box-shadow: var(--token-shadow-btn-hover);
+    transform: translateY(-2px);
+}
+
+/* 3. 纯黑实体按键 (Pitch Black Button) */
+.token-btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 1rem 2.25rem;
+    background: var(--token-color-pitch-black);
+    color: var(--token-text-on-dark);
+    border: 2px solid var(--token-color-pitch-black);
+    border-radius: var(--token-radius-pill);
+    font-family: var(--token-font-hero);
+    font-size: 1.05rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: var(--token-shadow-btn-default);
+    transition: var(--token-transition-fast);
+    text-decoration: none;
+    user-select: none;
+}
+
+.token-btn-secondary:hover {
+    background: var(--token-color-pitch-black);
+    color: var(--token-text-on-dark);
+    border-color: var(--token-border-solid);
+    box-shadow: var(--token-shadow-btn-hover);
+    transform: translateY(-2px);
+}
+
+/* 4. 纯白边框按键 (Outline Button) */
+.token-btn-outline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.95rem 2rem;
+    background: rgba(255, 255, 255, 0.85);
+    color: var(--token-text-primary);
+    border: 1.5px solid rgba(0, 0, 0, 0.15);
+    border-radius: var(--token-radius-pill);
+    font-family: var(--token-font-hero);
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    transition: var(--token-transition-fast);
+    text-decoration: none;
+    user-select: none;
+}
+
+.token-btn-outline:hover {
+    background: var(--token-color-surface-pure);
+    border: 2px solid var(--token-border-solid);
+    color: var(--token-text-primary);
+    box-shadow: var(--token-shadow-btn-hover);
+    transform: translateY(-2px);
+}
+
+/* 5. 高对比工业输入框 (High-Contrast Input) */
+.token-input {
+    width: 100%;
+    background: var(--token-color-surface-pure) !important;
+    border: 2px solid var(--token-border-solid) !important;
+    border-radius: var(--token-radius-input) !important;
+    padding: 1.35rem 1.75rem !important;
+    font-family: var(--token-font-hero) !important;
+    font-size: 1.4rem !important;
+    font-weight: 700 !important;
+    color: var(--token-text-primary) !important;
+    box-shadow: 0 4px 0 var(--token-border-solid) !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+    box-sizing: border-box;
+}
+
+.token-input:focus {
+    border-color: var(--token-color-orange) !important;
+    box-shadow: 0 4px 0 var(--token-color-orange), 0 8px 24px var(--token-color-orange-glow) !important;
+    outline: none !important;
+}
+
+.token-input::placeholder {
+    color: rgba(0, 0, 0, 0.35);
+    font-weight: 500;
+}
+
+/* 6. 3D 实体等宽题数/序号徽章 (Mono Tag) */
+.token-badge-mono {
+    font-family: var(--token-font-mono);
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: var(--token-text-primary);
+    background: var(--token-color-surface-pure);
+    border: 1.5px solid var(--token-border-solid);
+    box-shadow: var(--token-shadow-tag-tactile);
+    padding: 0.18rem 0.55rem;
+    border-radius: var(--token-radius-tag);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 7. 分类切换胶囊 (Tab Switcher Pill) */
+.token-tab-pill {
+    background: rgba(0, 0, 0, 0.05);
+    border: none;
+    border-radius: var(--token-radius-pill);
+    padding: 0.4rem 1rem;
+    font-family: var(--token-font-body);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--token-text-muted);
+    cursor: pointer;
+    transition: var(--token-transition-fast);
+    outline: none;
+}
+
+.token-tab-pill:hover:not(.active) {
+    background: rgba(0, 0, 0, 0.1);
+    color: var(--token-text-primary);
+    transform: translateY(-1px);
+}
+
+.token-tab-pill.active {
+    background: var(--token-color-pitch-black);
+    color: var(--token-text-on-dark);
+}
