@@ -575,10 +575,15 @@ def kahoot_editor_meta(request, pk):
         return JsonResponse({'error': '无效请求'}, status=405)
 
     title = request.POST.get('title', '').strip()
+    update_fields = []
     if title:
         quiz_set.title = title[:200]
-    quiz_set.is_public = request.POST.get('is_public') == '1'
-    quiz_set.save(update_fields=['title', 'is_public'])
+        update_fields.append('title')
+    if 'is_public' in request.POST:
+        quiz_set.is_public = request.POST.get('is_public') == '1'
+        update_fields.append('is_public')
+    if update_fields:
+        quiz_set.save(update_fields=update_fields)
     return JsonResponse({'ok': True, 'title': quiz_set.title, 'is_public': quiz_set.is_public})
 
 

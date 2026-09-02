@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% block body_attrs %}data-turbo="false"{% endblock %}
+
 {% block title %}游戏 - {{ room.code }}{% endblock %}
 
 {% block content %}
@@ -171,6 +173,20 @@ function handleEvent(event, data) {
     }
 }
 
+function hideQuestionInputUi() {
+    const container = document.getElementById('options-container');
+    container.innerHTML = '';
+    container.classList.add('hidden');
+    document.getElementById('text-answer-group').classList.add('hidden');
+    document.getElementById('submit-multi-btn').classList.add('hidden');
+    document.getElementById('timer-bar').classList.add('hidden');
+}
+
+function showInterQuestionWaiting() {
+    hideQuestionInputUi();
+    document.getElementById('inter-question-hint').classList.remove('hidden');
+}
+
 function applyState(state) {
     document.getElementById('player-count').textContent = state.player_count;
     updateDanmakuBar(state.status);
@@ -195,9 +211,8 @@ function applyState(state) {
         showQuestion(state);
     } else if (state.status === 'leaderboard') {
         document.getElementById('play-screen').classList.remove('hidden');
-        document.getElementById('inter-question-hint').classList.remove('hidden');
+        showInterQuestionWaiting();
         clearTimer();
-        document.getElementById('timer-bar').classList.add('hidden');
     }
 }
 
@@ -394,7 +409,7 @@ function clearResultRevealTimer() {
 function showQuestionResult(state) {
     clearResultRevealTimer();
     clearTimer();
-    document.getElementById('timer-bar').classList.add('hidden');
+    hideQuestionInputUi();
     lockAnswerUi();
 
     const correctKeys = getCorrectKeys(state);
@@ -421,7 +436,7 @@ function showQuestionResult(state) {
 
     resultRevealTimer = setTimeout(() => {
         resultRevealTimer = null;
-        document.getElementById('inter-question-hint').classList.remove('hidden');
+        showInterQuestionWaiting();
     }, 2500);
 }
 

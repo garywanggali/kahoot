@@ -4,12 +4,15 @@
 
     const quizId = root.dataset.quizId;
     const dashboardUrl = root.dataset.dashboardUrl || '/teacher/';
+    const AUTO_SAVE_DEBOUNCE_MS = 900;
+    const AUTO_SAVE_INTERVAL_MS = 60 * 1000;
+
     let questions = Array.isArray(INITIAL_QUESTIONS) ? INITIAL_QUESTIONS.slice() : [];
     let activeIndex = questions.length > 0 ? 0 : -1;
     let correctKeys = new Set();
     let dirty = false;
     let autoSaveTimer = null;
-    let saving = false;
+    let saveInFlight = null;
     let localImagePreviewUrl = null;
 
     function normalizeImageUrl(url) {
@@ -31,11 +34,24 @@
         const src = normalizeImageUrl(url);
         if (!src) {
             els.previewImage.removeAttribute('src');
+            els.previewImage.onerror = null;
             els.previewImage.classList.add('hidden');
             if (els.mediaPlaceholder) els.mediaPlaceholder.classList.remove('hidden');
             els.removeImage.classList.add('hidden');
             return;
         }
+        els.previewImage.onerror = () => {
+            if (localImagePreviewUrl && localImagePreviewUrl !== src) {
+                showQuestionImage(localImagePreviewUrl);
+                return;
+            }
+            setSaveStatus('图片加载失败，请重新上传');
+        };
+        els.previewImage.onload = () => {
+            if (src !== localImagePreviewUrl) {
+                revokeLocalImagePreview();
+            }
+        };
         els.previewImage.src = src;
         els.previewImage.classList.remove('hidden');
         if (els.mediaPlaceholder) els.mediaPlaceholder.classList.add('hidden');
@@ -64,7 +80,12 @@
         typeHint: document.getElementById('type-hint'),
         quizTitle: document.getElementById('quiz-title-input'),
         modalQuizPublic: document.getElementById('modal-quiz-public'),
+        modalSaveChanges: document.getElementById('modal-save-changes'),
     };
+
+    function setSaveStatus(msg) {
+        if (els.saveStatus) els.saveStatus.textContent = msg || '';
+    }
 
     function csrfToken() {
         const input = document.querySelector('#kahoot-editor input[name=csrfmiddlewaretoken]');
@@ -98,16 +119,16 @@
 
     function markDirty() {
         dirty = true;
-        scheduleAutoSave();
+        scheduleDebouncedAutoSave();
     }
 
-    function scheduleAutoSave() {
+    function scheduleDebouncedAutoSave() {
         if (autoSaveTimer) clearTimeout(autoSaveTimer);
         autoSaveTimer = setTimeout(() => {
             if (dirty && currentQuestion() && canAutoSaveCurrentQuestion()) {
-                saveQuestion({ silent: true });
+                void saveQuestion({ silent: true });
             }
-        }, 900);
+        }, AUTO_SAVE_DEBOUNCE_MS);
     }
 
     function renderList() {
@@ -187,16 +208,16 @@
         applyTypeUi(els.type.value);
         loadCorrectFromQuestion(q);
 
-        revokeLocalImagePreview();
         if (q.image_url) {
             showQuestionImage(q.image_url);
         } else {
+            revokeLocalImagePreview();
             showQuestionImage('');
         }
         els.previewNumber.textContent = questions.length
             ? `第 ${activeIndex + 1} / ${questions.length} 题（预览）`
             : '';
-        if (!saving) els.saveStatus.textContent = '';
+        if (!saveInFlight) setSaveStatus('');
     }
 
     async function selectQuestion(index) {
@@ -263,8 +284,10 @@
             appendCsrf(body);
             opts.body = body;
         } else {
+            const params = new URLSearchParams(body);
+            if (token) params.set('csrfmiddlewaretoken', token);
             opts.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-            opts.body = new URLSearchParams(body);
+            opts.body = params;
         }
         const res = await fetch(url, opts);
         const data = await res.json().catch(() => ({}));
@@ -277,38 +300,95 @@
 
     async function saveQuestion(options = {}) {
         const silent = options.silent;
-        const q = currentQuestion();
-        if (!q || saving) return;
-        saving = true;
-        if (!silent) els.saveStatus.textContent = '保存中…';
-        try {
-            const data = await apiPost(`/teacher/kahoot/${quizId}/questions/save/`, readFormToPayload());
-            questions[activeIndex] = data.question;
-            els.imageInput.value = '';
-            els.removeImage.dataset.pendingRemove = '0';
-            dirty = false;
-            if (data.question.image_url) {
-                revokeLocalImagePreview();
-                fillForm(data.question);
-            } else if (localImagePreviewUrl) {
-                showQuestionImage(localImagePreviewUrl);
-            } else {
-                fillForm(data.question);
+        const force = options.force;
+
+        if (saveInFlight) {
+            await saveInFlight;
+            if (!force && silent) {
+                return true;
             }
-            renderList();
-            if (silent) {
-                els.saveStatus.textContent = '已自动保存';
-                showTopSaveToast('已快速保存');
-            } else {
-                els.saveStatus.textContent = '已保存';
-                showTopSaveToast('已快速保存');
-            }
-        } catch (e) {
-            els.saveStatus.textContent = e.message;
-            if (!silent) throw e;
-        } finally {
-            saving = false;
         }
+
+        const q = currentQuestion();
+        if (!q) return true;
+
+        const task = (async () => {
+            if (!silent) setSaveStatus('保存中…');
+            try {
+                const data = await apiPost(
+                    `/teacher/kahoot/${quizId}/questions/save/`,
+                    readFormToPayload(),
+                );
+                questions[activeIndex] = data.question;
+                els.imageInput.value = '';
+                els.removeImage.dataset.pendingRemove = '0';
+                dirty = false;
+                fillForm(data.question);
+                renderList();
+                if (silent) {
+                    setSaveStatus('已自动保存');
+                    showTopSaveToast('已快速保存');
+                } else {
+                    setSaveStatus('已保存');
+                    showTopSaveToast('已保存');
+                }
+                return true;
+            } catch (e) {
+                setSaveStatus(e.message);
+                if (!silent) throw e;
+                return false;
+            }
+        })();
+
+        saveInFlight = task;
+        try {
+            return await task;
+        } finally {
+            if (saveInFlight === task) {
+                saveInFlight = null;
+            }
+        }
+    }
+
+    async function saveQuizMeta(options = {}) {
+        const silent = options.silent;
+        const includePublic = options.includePublic === true;
+        const payload = {
+            title: els.quizTitle.value.trim(),
+        };
+        if (includePublic) {
+            payload.is_public = els.modalQuizPublic && els.modalQuizPublic.checked ? '1' : '0';
+        }
+        try {
+            await apiPost(`/teacher/kahoot/${quizId}/meta/`, payload);
+            return true;
+        } catch (e) {
+            if (!silent) throw e;
+            setSaveStatus(e.message);
+            return false;
+        }
+    }
+
+    async function saveAllChanges(options = {}) {
+        const silent = options.silent;
+        const forceQuestion = options.forceQuestion;
+        const includePublic = options.includePublic === true;
+        let questionHandled = !currentQuestion();
+
+        if (currentQuestion()) {
+            const shouldSaveQuestion = forceQuestion || canAutoSaveCurrentQuestion();
+            if (shouldSaveQuestion) {
+                await saveQuestion({ silent, force: forceQuestion });
+                questionHandled = true;
+            }
+        }
+
+        await saveQuizMeta({ silent, includePublic });
+
+        if (questionHandled || !currentQuestion()) {
+            dirty = false;
+        }
+        return true;
     }
 
     async function addQuestion() {
@@ -363,25 +443,35 @@
     }
 
     async function saveOnly() {
-        if (saving) return;
-        saving = true;
+        const btn = document.getElementById('btn-save-quiz');
+        const label = btn ? btn.textContent : '';
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = '保存中…';
+        }
         setSaveStatus('正在保存…');
         try {
-            if (dirty && currentQuestion()) {
-                await saveQuestion({ silent: true });
-            }
-            const publicVal = els.modalQuizPublic ? (els.modalQuizPublic.checked ? '1' : '0') : '0';
-            await apiPost(`/teacher/kahoot/${quizId}/meta/`, {
-                title: els.quizTitle.value.trim(),
-                is_public: publicVal,
-            });
+            await saveAllChanges({ silent: false, forceQuestion: true });
             setSaveStatus('✓ 已保存全部更改');
-            showTopSaveToast('已快速保存');
+            showTopSaveToast('已保存');
             setTimeout(() => setSaveStatus(''), 2500);
         } catch (e) {
-            setSaveStatus('保存失败：' + e.message);
+            const msg = e.message || '保存失败';
+            setSaveStatus('保存失败：' + msg);
+            alert(msg);
         } finally {
-            saving = false;
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = label;
+            }
+        }
+    }
+
+    async function saveCurrentQuestion() {
+        try {
+            await saveQuestion({ silent: false });
+        } catch (e) {
+            alert(e.message || '保存失败');
         }
     }
 
@@ -394,6 +484,9 @@
 
     function openExitModal(e) {
         if (e) e.preventDefault();
+        if (els.modalSaveChanges) {
+            els.modalSaveChanges.checked = dirty;
+        }
         if (exitModal) exitModal.classList.remove('hidden');
     }
 
@@ -401,37 +494,48 @@
         if (exitModal) exitModal.classList.add('hidden');
     }
 
-    async function confirmExit() {
+    async function confirmLeave() {
+        const shouldSave = els.modalSaveChanges ? els.modalSaveChanges.checked : false;
+        const label = btnConfirmExit ? btnConfirmExit.textContent : '确认离开';
+
         try {
             if (btnConfirmExit) {
                 btnConfirmExit.disabled = true;
-                btnConfirmExit.textContent = '保存中…';
+                btnConfirmExit.textContent = '处理中…';
             }
-            if (dirty && currentQuestion()) {
-                await saveQuestion({ silent: true });
+
+            if (shouldSave) {
+                await saveAllChanges({
+                    silent: false,
+                    forceQuestion: true,
+                    includePublic: true,
+                });
+            } else {
+                await saveQuizMeta({ silent: false, includePublic: true });
             }
-            const publicVal = els.modalQuizPublic ? (els.modalQuizPublic.checked ? '1' : '0') : '0';
-            await apiPost(`/teacher/kahoot/${quizId}/meta/`, {
-                title: els.quizTitle.value.trim(),
-                is_public: publicVal,
-            });
+
             window.location.href = dashboardUrl;
         } catch (e) {
-            alert('退出保存失败: ' + e.message);
+            alert('离开失败：' + (e.message || '操作失败'));
             if (btnConfirmExit) {
                 btnConfirmExit.disabled = false;
-                btnConfirmExit.textContent = '保存并退出';
+                btnConfirmExit.textContent = label;
             }
         }
     }
 
     document.getElementById('btn-add-question').addEventListener('click', addQuestion);
     document.getElementById('btn-delete-question').addEventListener('click', deleteQuestion);
-    if (btnSaveQuiz) btnSaveQuiz.addEventListener('click', saveOnly);
+    if (btnSaveQuiz) btnSaveQuiz.addEventListener('click', () => { void saveOnly(); });
     if (btnExitQuiz) btnExitQuiz.addEventListener('click', openExitModal);
     if (btnTopBack) btnTopBack.addEventListener('click', openExitModal);
     if (btnCancelExit) btnCancelExit.addEventListener('click', closeExitModal);
-    if (btnConfirmExit) btnConfirmExit.addEventListener('click', confirmExit);
+    if (btnConfirmExit) btnConfirmExit.addEventListener('click', () => { void confirmLeave(); });
+
+    const saveQuestionBtn = document.getElementById('btn-save-question');
+    if (saveQuestionBtn) {
+        saveQuestionBtn.addEventListener('click', () => { void saveCurrentQuestion(); });
+    }
 
     if (exitModal) {
         exitModal.addEventListener('click', (e) => {
@@ -442,9 +546,10 @@
     const watchEls = [
         els.text, els.type, els.time,
         els.optionA, els.optionB, els.optionC, els.optionD,
-        els.shortCorrect,
+        els.shortCorrect, els.quizTitle,
     ];
     watchEls.forEach(el => {
+        if (!el) return;
         el.addEventListener('input', markDirty);
         el.addEventListener('change', markDirty);
     });
@@ -504,23 +609,19 @@
     });
 
     function canAutoSaveCurrentQuestion() {
-        const type = els.type.value;
-        const text = els.text.value.trim();
-        if (!text) return false;
-        if (type === 'short_answer') {
-            return els.shortCorrect.value.trim().length > 0;
-        }
-        if (type === 'word_cloud') return true;
-        if (type === 'judgment') {
-            return els.optionA.value.trim() && els.optionB.value.trim();
-        }
-        return (
-            els.optionA.value.trim()
-            && els.optionB.value.trim()
-            && els.optionC.value.trim()
-            && els.optionD.value.trim()
-        );
+        return !!currentQuestion();
     }
+
+    async function runPeriodicAutoSave() {
+        if (!dirty) return;
+        try {
+            await saveAllChanges({ silent: true, forceQuestion: false });
+        } catch {
+            /* 定时保存失败不打断编辑 */
+        }
+    }
+
+    setInterval(runPeriodicAutoSave, AUTO_SAVE_INTERVAL_MS);
 
     renderList();
     if (questions.length) {

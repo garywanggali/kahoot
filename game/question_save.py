@@ -48,41 +48,40 @@ def parse_question_from_request(request, question=None) -> dict:
 
     if question_type == Question.TYPE_SHORT_ANSWER:
         option_a = request.POST.get('short_correct', '').strip() or option_a
-        if not text or not option_a:
-            raise QuestionFormError('简答题请填写题目和参考答案')
         option_b = Question.TEXT_OPTION_PLACEHOLDER
         option_c = Question.TEXT_OPTION_PLACEHOLDER
         option_d = Question.TEXT_OPTION_PLACEHOLDER
         correct_option = 'A'
     elif question_type == Question.TYPE_WORD_CLOUD:
-        if not text:
-            raise QuestionFormError('词云题请填写题目')
         option_a = Question.TEXT_OPTION_PLACEHOLDER
         option_b = Question.TEXT_OPTION_PLACEHOLDER
         option_c = Question.TEXT_OPTION_PLACEHOLDER
         option_d = Question.TEXT_OPTION_PLACEHOLDER
         correct_option = ''
     elif question_type == Question.TYPE_JUDGMENT:
-        if not text or not option_a or not option_b:
-            raise QuestionFormError('判断题请填写题目和正确/错误选项')
+        if not option_a:
+            option_a = '正确'
+        if not option_b:
+            option_b = '错误'
         option_c = Question.JUDGMENT_OPTION_PLACEHOLDER
         option_d = Question.JUDGMENT_OPTION_PLACEHOLDER
         correct_option = request.POST.get('judgment_correct', 'A').upper()
         if correct_option not in ('A', 'B'):
             correct_option = 'A'
     elif question_type == Question.TYPE_MULTIPLE:
-        if not all([text, option_a, option_b, option_c, option_d]):
-            raise QuestionFormError('请填写题目和所有选项')
         correct_options = sorted({
             opt.upper() for opt in request.POST.getlist('correct_options')
             if opt.upper() in ('A', 'B', 'C', 'D')
         })
-        if len(correct_options) < 2:
-            raise QuestionFormError('多选题请至少选择 2 个正确答案')
-        correct_option = ','.join(correct_options)
+        if len(correct_options) >= 2:
+            correct_option = ','.join(correct_options)
+        elif len(correct_options) == 1:
+            correct_option = correct_options[0]
+        elif question and question.correct_option:
+            correct_option = question.correct_option
+        else:
+            correct_option = 'A'
     else:
-        if not all([text, option_a, option_b, option_c, option_d]):
-            raise QuestionFormError('请填写题目和所有选项')
         correct_option = request.POST.get('correct_option', 'A').upper()
         if correct_option not in ('A', 'B', 'C', 'D'):
             correct_option = 'A'

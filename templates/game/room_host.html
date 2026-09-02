@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block body_attrs %}data-turbo="false"{% endblock %}
+
 {% block title %}主持游戏 - {{ room.code }} - 互动测验工作台{% endblock %}
 
 {% block content %}
@@ -239,11 +241,18 @@ function handleHostEvent(event, data) {
             renderWordCloud('host-word-cloud-display', data.words);
             break;
         case 'error':
-            setConnStatus(data.message || '操作失败');
+            const errMsg = data.message || '操作失败';
+            setConnStatus(errMsg);
+            alert(errMsg);
             const startBtn = document.getElementById('btn-start');
             if (startBtn) {
                 startBtn.disabled = false;
                 startBtn.innerHTML = '<span>开始游戏</span><span>→</span>';
+            }
+            const nextBtn = document.getElementById('btn-next');
+            if (nextBtn) {
+                nextBtn.disabled = false;
+                nextBtn.textContent = nextBtn.dataset.label || '下一题';
             }
             break;
     }
@@ -284,6 +293,8 @@ function applyHostState(state) {
         } else {
             btn.innerHTML = '<span>下一题</span><span>→</span>';
         }
+        btn.disabled = false;
+        btn.dataset.label = btn.textContent;
     } else if (state.status === 'ended') {
         document.getElementById('host-ended').classList.remove('hidden');
         renderAwardsCeremony(state.leaderboard, 'host-podium-container', 'host-final-leaderboard', 'host-final-rankings-title');
@@ -427,7 +438,16 @@ function startGame() {
     sendWs({ action: 'start_game' });
 }
 function endQuestion() { sendWs({ action: 'end_question' }); }
-function nextQuestion() { sendWs({ action: 'next_question' }); }
+function nextQuestion() {
+    const btn = document.getElementById('btn-next');
+    if (btn) {
+        btn.disabled = true;
+        const label = btn.textContent;
+        btn.dataset.label = label;
+        btn.textContent = label === '结束游戏' ? '正在结束…' : '正在切题…';
+    }
+    sendWs({ action: 'next_question' });
+}
 
 function showHostDanmaku(data) {
     const layer = document.getElementById('host-danmaku-layer');

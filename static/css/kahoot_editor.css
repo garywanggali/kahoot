@@ -587,6 +587,12 @@ button.kahoot-create-card {
     margin-bottom: 1.75rem;
 }
 
+.modal-card-body-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
 .modal-public-checkbox-label {
     display: flex;
     align-items: flex-start;

@@ -167,30 +167,15 @@ class RoomConsumer(AsyncWebsocketConsumer):
         )
 
     async def handle_next_question(self):
-        room = await self.get_room()
-        questions_count = await self.get_questions_count()
-
-        runtime = await database_sync_to_async(get_runtime_for_code)(self.room_code)
-        await self._flush_runtime_async(runtime, force=True)
-
-        if room.current_question_index + 1 >= questions_count:
-            await self.update_room(status=Room.STATUS_ENDED)
-            state = await self.get_room_state_async()
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {'type': 'room_message', 'event': 'game_ended', 'data': state},
-            )
+        state, event, error = await database_sync_to_async(advance_question_for_room)(self.room_code)
+        if error:
+            await self._send_error(error)
             return
-
-        await self.update_room(
-            status=Room.STATUS_PLAYING,
-            current_question_index=room.current_question_index + 1,
-            question_started_at=timezone.now(),
-        )
-        state = await self.get_room_state_async()
+        if not state or not event:
+            return
         await self.channel_layer.group_send(
             self.room_group_name,
-            {'type': 'room_message', 'event': 'question_started', 'data': state},
+            {'type': 'room_message', 'event': event, 'data': state},
         )
 
     async def handle_submit_answer(self, data):
@@ -414,6 +399,30 @@ def end_question_for_room(room_code: str) -> dict | None:
     room.status = Room.STATUS_LEADERBOARD
     room.save(update_fields=['status'])
     return get_room_state(room, runtime=runtime)
+
+
+def advance_question_for_room(room_code: str) -> tuple[dict | None, str | None, str | None]:
+    room = Room.objects.get(code=room_code)
+    if room.status != Room.STATUS_LEADERBOARD:
+        return None, None, '当前不是题目结算阶段，请稍候再试'
+
+    questions_count = room.room_questions.count()
+    runtime = get_runtime_for_code(room_code)
+    try:
+        flush_runtime_force(runtime)
+    except Exception:
+        logger.exception('Flush failed before next question room=%s', room_code)
+
+    if room.current_question_index + 1 >= questions_count:
+        room.status = Room.STATUS_ENDED
+        room.save(update_fields=['status'])
+        return get_room_state(room, runtime=runtime), 'game_ended', None
+
+    room.status = Room.STATUS_PLAYING
+    room.current_question_index += 1
+    room.question_started_at = timezone.now()
+    room.save(update_fields=['status', 'current_question_index', 'question_started_at'])
+    return get_room_state(room, runtime=runtime), 'question_started', None
 
 
 def start_game_for_room(room_code: str) -> tuple[dict | None, str | None]:

@@ -1,10 +1,12 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block body_attrs %}data-turbo="false"{% endblock %}
+
 {% block title %}编辑 {{ quiz_set.title }} - Kahoot Studio{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/kahoot_editor.css' %}?v=16">
+<link rel="stylesheet" href="{% static 'css/kahoot_editor.css' %}?v=18">
 {% endblock %}
 
 {% block content %}
@@ -29,7 +31,7 @@
         <!-- 右侧并列：保存键 + 退出键 -->
         <div class="kahoot-editor-topbar-right">
             <button type="button" class="btn btn-outline" id="btn-save-quiz">保存</button>
-            <button type="button" class="btn btn-primary" id="btn-exit-quiz">退出</button>
+            <button type="button" class="btn btn-primary" id="btn-exit-quiz">离开</button>
         </div>
     </header>
 
@@ -126,20 +128,28 @@
             </div>
             <p class="form-hint" id="type-hint">单选：点击右侧 ✓ 标记唯一正确答案</p>
             <div class="kahoot-editor-props-actions">
+                <button type="button" class="btn btn-primary btn-block" id="btn-save-question">保存本题</button>
                 <button type="button" class="btn btn-outline btn-block" id="btn-delete-question">删除本题</button>
             </div>
         </aside>
     </div>
 
-    <!-- 退出确认选项卡 (支持在此处勾选是否公开套题) -->
+    <!-- 离开确认：是否保存、是否公开 -->
     <div class="modal-overlay hidden" id="exit-modal">
         <div class="modal-card modal-card-industrial">
             <div class="modal-card-header">
-                <h3 class="modal-card-title">确定要退出吗？</h3>
-                <p class="modal-card-desc">退出前系统将为您自动保存当前的全部试题与修改内容。</p>
+                <h3 class="modal-card-title">离开编辑？</h3>
+                <p class="modal-card-desc">离开前请选择是否保存修改，以及是否将套题公开到题库。</p>
             </div>
-            
-            <div class="modal-card-body">
+
+            <div class="modal-card-body modal-card-body-stack">
+                <label class="modal-public-checkbox-label">
+                    <input type="checkbox" id="modal-save-changes" class="modal-checkbox-industrial">
+                    <div class="modal-checkbox-text">
+                        <strong>保存当前修改</strong>
+                        <p>保存题目、选项、配图和套题名称等编辑内容。</p>
+                    </div>
+                </label>
                 <label class="modal-public-checkbox-label">
                     <input type="checkbox" id="modal-quiz-public" class="modal-checkbox-industrial" {% if quiz_set.is_public %}checked{% endif %}>
                     <div class="modal-checkbox-text">
@@ -151,7 +161,7 @@
 
             <div class="modal-card-footer">
                 <button type="button" class="btn btn-outline" id="btn-cancel-exit">取消</button>
-                <button type="button" class="btn btn-primary" id="btn-confirm-exit">保存并退出</button>
+                <button type="button" class="btn btn-primary" id="btn-confirm-exit">确认离开</button>
             </div>
         </div>
     </div>
@@ -164,5 +174,5 @@
 const INITIAL_QUESTIONS = {{ questions_json|safe }};
 const MAX_IMAGE_MB = {{ max_image_mb }};
 </script>
-<script src="{% static 'js/kahoot_editor.js' %}?v=16"></script>
+<script src="{% static 'js/kahoot_editor.js' %}?v=20"></script>
 {% endblock %}
