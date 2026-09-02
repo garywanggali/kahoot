@@ -218,7 +218,8 @@ class RoomConsumer(AsyncWebsocketConsumer):
 
         response_time_ms = data.get('response_time_ms', 0)
         if question.question_type == Question.TYPE_WORD_CLOUD:
-            is_correct = True
+            is_correct = False
+            points = 0
         elif question.question_type == Question.TYPE_SHORT_ANSWER:
             is_correct = question.is_text_answer_correct(selected)
         elif question.question_type == Question.TYPE_MULTIPLE:
@@ -246,6 +247,7 @@ class RoomConsumer(AsyncWebsocketConsumer):
             'data': {
                 'is_correct': is_correct,
                 'points': points,
+                'no_score': question.question_type == Question.TYPE_WORD_CLOUD,
                 'selected_option': selected,
                 'answer_text': selected,
             },
@@ -253,7 +255,7 @@ class RoomConsumer(AsyncWebsocketConsumer):
 
         if question.question_type == Question.TYPE_WORD_CLOUD:
             cloud = await database_sync_to_async(aggregate_word_cloud)(
-                room, question.id, runtime,
+                room.id, question.id, runtime,
             )
             await self.channel_layer.group_send(
                 self.room_group_name,
