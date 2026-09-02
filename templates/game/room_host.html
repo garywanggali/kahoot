@@ -15,10 +15,6 @@
         <div id="host-waiting-leaderboard" class="section-gap"></div>
         <div class="host-controls">
             <button id="btn-start" class="btn btn-primary" onclick="startGame()">开始游戏</button>
-            <form method="post" action="{% url 'room_reset' room.pk %}" style="display:inline;">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-outline" onclick="return confirm('重置房间？将清空分数和答题记录')">重置房间</button>
-            </form>
         </div>
         <p id="conn-status" class="conn-status">连接中...</p>
     </div>
@@ -149,6 +145,14 @@ function handleHostEvent(event, data) {
         case 'word_cloud_updated':
             renderWordCloud('host-word-cloud-display', data.words);
             break;
+        case 'error':
+            setConnStatus(data.message || '操作失败');
+            const startBtn = document.getElementById('btn-start');
+            if (startBtn) {
+                startBtn.disabled = false;
+                startBtn.textContent = '开始游戏';
+            }
+            break;
     }
 }
 
@@ -163,6 +167,11 @@ function applyHostState(state) {
         renderLeaderboard(state.leaderboard, 'host-waiting-leaderboard');
     } else if (state.status === 'playing' && state.question) {
         document.getElementById('host-playing').classList.remove('hidden');
+        const startBtn = document.getElementById('btn-start');
+        if (startBtn) {
+            startBtn.disabled = false;
+            startBtn.textContent = '开始游戏';
+        }
         showHostQuestion(state);
     } else if (state.status === 'leaderboard') {
         currentHostQuestionId = null;
@@ -283,7 +292,14 @@ function renderLeaderboard(leaderboard, containerId) {
     `).join('');
 }
 
-function startGame() { sendWs({ action: 'start_game' }); }
+function startGame() {
+    const btn = document.getElementById('btn-start');
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = '正在开始…';
+    }
+    sendWs({ action: 'start_game' });
+}
 function endQuestion() { sendWs({ action: 'end_question' }); }
 function nextQuestion() { sendWs({ action: 'next_question' }); }
 

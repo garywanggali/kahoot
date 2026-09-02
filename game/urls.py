@@ -32,7 +32,6 @@ urlpatterns = [
     path('teacher/questions/<int:pk>/edit/', views.question_edit, name='question_edit'),
     path('teacher/questions/<int:pk>/delete/', views.question_delete, name='question_delete'),
     path('teacher/rooms/create/', views.room_create, name='room_create'),
-    path('teacher/rooms/<int:pk>/reset/', views.room_reset, name='room_reset'),
     path('teacher/rooms/<int:pk>/', views.room_host, name='room_host'),
     path('api/room/<str:room_code>/state/', views.room_state_api, name='room_state_api'),
 ]

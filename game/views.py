@@ -467,7 +467,7 @@ def kahoot_start(request):
 
     # manual action
     quiz_set = QuizSet.objects.create(title=title[:200], teacher=teacher)
-    messages.success(request, f'已创建「{quiz_set.title}」，请添加题目')
+    messages.success(request, f'已创建「{quiz_set.title}」，请编辑第一道题')
     return redirect('kahoot_editor', pk=quiz_set.pk)
 
 
@@ -536,7 +536,23 @@ def kahoot_editor(request, pk):
         messages.error(request, '只能编辑自己的套题')
         return redirect('question_list')
 
-    questions = quiz_set.get_questions()
+    questions = list(quiz_set.get_questions())
+    if not questions:
+        question = Question.objects.create(
+            text='',
+            question_type=Question.TYPE_SINGLE,
+            option_a='',
+            option_b='',
+            option_c='',
+            option_d='',
+            correct_option='A',
+            time_limit=20,
+            teacher=teacher,
+            is_public=False,
+        )
+        add_question_to_quiz_set(quiz_set, question)
+        questions = [question]
+
     questions_json = json.dumps(
         [question_to_editor_dict(q) for q in questions],
         ensure_ascii=False,
@@ -926,28 +942,6 @@ def room_create(request):
         'public_quiz_sets': public_sets,
         'preselect_id': preselect_id,
     })
-
-
-def room_reset(request, pk):
-    teacher, redirect_resp = require_teacher_or_redirect(request)
-    if redirect_resp:
-        return redirect_resp
-    room = get_object_or_404(Room, pk=pk)
-    if not can_host_room(teacher, room):
-        messages.error(request, '无权操作该房间')
-        return redirect('teacher_dashboard')
-    if request.method == 'POST':
-        runtime = get_runtime(room)
-        flush_runtime_force(runtime)
-        drop_runtime(room.code)
-        room.status = Room.STATUS_WAITING
-        room.current_question_index = -1
-        room.question_started_at = None
-        room.save(update_fields=['status', 'current_question_index', 'question_started_at'])
-        Answer.objects.filter(room=room).delete()
-        Player.objects.filter(room=room).update(score=0)
-        messages.success(request, '房间已重置')
-    return redirect('room_host', pk=pk)
 
 
 def room_host(request, pk):

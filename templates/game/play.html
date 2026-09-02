@@ -71,6 +71,20 @@ let resultRevealTimer = null;
 let danmakuEnabled = false;
 let joinedReady = false;
 const pendingActions = [];
+let waitingStatePollTimer = null;
+
+function startWaitingStatePoll() {
+    if (waitingStatePollTimer) return;
+    waitingStatePollTimer = setInterval(() => {
+        if (joinedReady) sendWs({ action: 'get_state' });
+    }, 2000);
+}
+
+function stopWaitingStatePoll() {
+    if (!waitingStatePollTimer) return;
+    clearInterval(waitingStatePollTimer);
+    waitingStatePollTimer = null;
+}
 
 const CHOICE_TYPES = new Set(['single', 'multiple', 'judgment']);
 const TEXT_TYPES = new Set(['short_answer', 'word_cloud']);
@@ -120,6 +134,9 @@ function handleEvent(event, data) {
         case 'player_joined':
             document.getElementById('player-count').textContent = data.player_count;
             break;
+        case 'state':
+            if (joinedReady) applyState(data);
+            break;
         case 'game_started':
         case 'question_started':
             clearResultRevealTimer();
@@ -154,7 +171,16 @@ function applyState(state) {
 
     if (state.status === 'waiting') {
         document.getElementById('waiting-screen').classList.remove('hidden');
-    } else if (state.status === 'ended') {
+        startWaitingStatePoll();
+    } else {
+        stopWaitingStatePoll();
+    }
+
+    if (state.status === 'waiting') {
+        return;
+    }
+
+    if (state.status === 'ended') {
         document.getElementById('ended-screen').classList.remove('hidden');
         clearTimer();
     } else if (state.status === 'playing' && state.question) {

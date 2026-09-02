@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 import time
 import uuid
 
@@ -26,6 +27,8 @@ from .text_utils import (
 )
 from .utils import calculate_points, get_room_state
 from .word_cloud import aggregate_word_cloud
+
+logger = logging.getLogger(__name__)
 
 DANMAKU_MAX_LENGTH = 40
 DANMAKU_COOLDOWN_SEC = 2
@@ -59,23 +62,35 @@ class RoomConsumer(AsyncWebsocketConsumer):
             await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
     async def receive(self, text_data):
-        data = json.loads(text_data)
-        action = data.get('action')
+        try:
+            data = json.loads(text_data)
+            action = data.get('action')
 
-        if action == 'join':
-            await self.handle_join(data)
-        elif action == 'start_game':
-            await self.handle_start_game()
-        elif action == 'next_question':
-            await self.handle_next_question()
-        elif action == 'submit_answer':
-            await self.handle_submit_answer(data)
-        elif action == 'end_question':
-            await self.handle_end_question()
-        elif action == 'get_state':
-            await self.send_state()
-        elif action == 'send_danmaku':
-            await self.handle_send_danmaku(data)
+            if action == 'join':
+                await self.handle_join(data)
+            elif action == 'start_game':
+                await self.handle_start_game()
+            elif action == 'next_question':
+                await self.handle_next_question()
+            elif action == 'submit_answer':
+                await self.handle_submit_answer(data)
+            elif action == 'end_question':
+                await self.handle_end_question()
+            elif action == 'get_state':
+                await self.send_state()
+            elif action == 'send_danmaku':
+                await self.handle_send_danmaku(data)
+        except json.JSONDecodeError:
+            await self._send_error('无效的消息格式')
+        except Exception:
+            logger.exception('WebSocket action failed room=%s', getattr(self, 'room_code', '?'))
+            await self._send_error('服务器处理失败，请刷新页面后重试')
+
+    async def _send_error(self, message: str):
+        await self.send(text_data=json.dumps({
+            'event': 'error',
+            'data': {'message': message},
+        }))
 
     async def room_message(self, event):
         await self.send(text_data=json.dumps({
@@ -140,22 +155,10 @@ class RoomConsumer(AsyncWebsocketConsumer):
         }))
 
     async def handle_start_game(self):
-        room = await self.get_room()
-        if room.status != Room.STATUS_WAITING:
+        state, error = await database_sync_to_async(start_game_for_room)(self.room_code)
+        if error:
+            await self._send_error(error)
             return
-        questions = await self.get_questions_count()
-        if questions == 0:
-            return
-
-        runtime = await database_sync_to_async(get_runtime)(room)
-        await self._flush_runtime_async(runtime, force=True)
-
-        await self.update_room(
-            status=Room.STATUS_PLAYING,
-            current_question_index=0,
-            question_started_at=timezone.now(),
-        )
-        state = await self.get_room_state_async()
         await self.channel_layer.group_send(
             self.room_group_name,
             {'type': 'room_message', 'event': 'game_started', 'data': state},
@@ -378,6 +381,28 @@ class RoomConsumer(AsyncWebsocketConsumer):
         if selected not in ('A', 'B', 'C', 'D'):
             return None
         return selected
+
+
+def start_game_for_room(room_code: str) -> tuple[dict | None, str | None]:
+    """Start game: update DB and broadcast state; flush players in background-safe order."""
+    room = Room.objects.get(code=room_code)
+    if room.status != Room.STATUS_WAITING:
+        return None, '游戏已开始或已结束'
+    if room.room_questions.count() == 0:
+        return None, '房间内没有题目，无法开始游戏'
+
+    room.status = Room.STATUS_PLAYING
+    room.current_question_index = 0
+    room.question_started_at = timezone.now()
+    room.save(update_fields=['status', 'current_question_index', 'question_started_at'])
+
+    runtime = get_runtime(room)
+    try:
+        flush_runtime_force(runtime)
+    except Exception:
+        logger.exception('Player flush failed when starting room %s', room_code)
+
+    return get_room_state(room, runtime=runtime), None
 
 
 def get_room_state_by_code(room_code):

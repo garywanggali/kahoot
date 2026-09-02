@@ -1605,6 +1605,16 @@ button.kahoot-choice-button:focus-visible {
     display: inline;
 }
 
+.quiz-set-delete-link {
+    color: var(--error);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.quiz-set-delete-link:hover {
+    text-decoration: underline;
+}
+
 .ai-loading-overlay {
     position: fixed;
     inset: 0;
