@@ -17,6 +17,7 @@ rsync -avz --delete \
   --exclude db.sqlite3 \
   --exclude .git \
   --exclude logs \
+  --exclude local.env \
   --exclude staticfiles \
   --exclude media \
   ./ "${SERVER}:${REMOTE_DIR}/"

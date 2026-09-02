@@ -7,13 +7,16 @@ if ! [[ "$PORT" =~ ^[0-9]+$ ]]; then
   exit 1
 fi
 
+# 服务器本地配置（不提交 git）：STEPFUN_API_KEY 等
+if [ -f "local.env" ]; then
+  # shellcheck disable=SC1091
+  source local.env
+fi
+
 export DJANGO_DEBUG=False
 export ALLOWED_HOSTS="110.40.153.38,localhost,127.0.0.1"
 export CSRF_TRUSTED_ORIGINS="http://110.40.153.38:${PORT},http://localhost:${PORT}"
 export TEACHER_PASSWORD="${TEACHER_PASSWORD:-teacher123}"
-# 可选：AI 生成 Kahoot（阶跃星辰 API Key）
-# export STEPFUN_API_KEY="your-api-key"
-# export STEPFUN_MODEL="step-3.7-flash"
 
 mkdir -p logs
 
