@@ -37,6 +37,27 @@
                            maxlength="200" autocomplete="off" autofocus>
                 </div>
 
+                <div class="room-form-section" style="margin-bottom: 1.75rem;">
+                    <label class="room-section-label">
+                        <span>学生端是否显示题干</span>
+                        <span class="room-label-hint">（公共屏幕始终显示完整题目）</span>
+                    </label>
+                    <div class="room-stem-choice">
+                        <label class="room-stem-card {% if show_question_stem != False %}is-selected{% endif %}">
+                            <input type="radio" name="show_question_stem" value="1" class="room-stem-radio"
+                                   {% if show_question_stem != False %}checked{% endif %}>
+                            <span class="room-stem-card-title">显示题干和图片</span>
+                            <span class="room-stem-card-desc">学生手机上能看到题目文字和配图，再作答</span>
+                        </label>
+                        <label class="room-stem-card {% if show_question_stem == False %}is-selected{% endif %}">
+                            <input type="radio" name="show_question_stem" value="0" class="room-stem-radio"
+                                   {% if show_question_stem == False %}checked{% endif %}>
+                            <span class="room-stem-card-title">不显示，只出选项</span>
+                            <span class="room-stem-card-desc">学生端铺满选项或输入框，题干看教室大屏</span>
+                        </label>
+                    </div>
+                </div>
+
                 <!-- 测验套题选择区 -->
                 <div class="room-form-section">
                     <div class="room-quiz-section-header">
@@ -178,6 +199,16 @@ document.querySelectorAll('.room-quiz-radio').forEach(radio => {
         document.querySelectorAll('.room-quiz-card').forEach(card => card.classList.remove('is-selected'));
         if (radio.checked) {
             const parentCard = radio.closest('.room-quiz-card');
+            if (parentCard) parentCard.classList.add('is-selected');
+        }
+    });
+});
+
+document.querySelectorAll('.room-stem-radio').forEach(radio => {
+    radio.addEventListener('change', () => {
+        document.querySelectorAll('.room-stem-card').forEach(card => card.classList.remove('is-selected'));
+        if (radio.checked) {
+            const parentCard = radio.closest('.room-stem-card');
             if (parentCard) parentCard.classList.add('is-selected');
         }
     });

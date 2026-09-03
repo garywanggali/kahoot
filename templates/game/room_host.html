@@ -110,17 +110,28 @@
         <!-- 底部操作栏 -->
         <div class="host-playing-foot">
             <button class="token-btn-secondary btn-host-end-q" onclick="endQuestion()">
-                <span>结束本题 & 显示排行</span>
+                <span>结束本题</span>
                 <span>→</span>
             </button>
         </div>
     </div>
 
-    <!-- 3. 本题排行榜 (Leaderboard) -->
+    <!-- 3. 本题揭晓 (答案统计) -->
     <div id="host-leaderboard" class="host-stage-card token-card hidden">
         <div class="host-stage-title-wrap">
-            <h2 class="host-stage-title">本题得分排行</h2>
-            <p class="host-stage-subtitle">实时积分汇总与极速冲榜</p>
+            <p class="host-reveal-kicker" id="host-reveal-kicker">答题揭晓</p>
+            <h2 class="host-stage-title host-reveal-stem" id="host-reveal-title">本题统计</h2>
+            <p class="host-stage-subtitle" id="host-reveal-subtitle">各选项作答人数与正确答案</p>
+        </div>
+
+        <div id="host-reveal-chart" class="host-reveal-chart hidden"></div>
+
+        <div id="host-reveal-short" class="host-reveal-short hidden">
+            <div class="host-reveal-short-count">
+                <span class="host-reveal-short-num" id="host-reveal-correct-count">0</span>
+                <span class="host-reveal-short-label">人答对</span>
+            </div>
+            <p class="host-reveal-short-meta" id="host-reveal-short-meta"></p>
         </div>
 
         <div id="host-leaderboard-word-cloud-wrap" class="word-cloud-wrap hidden">
@@ -128,8 +139,10 @@
             <div id="host-leaderboard-word-cloud" class="word-cloud-display"></div>
         </div>
 
-        <!-- 积分排行榜列表 -->
-        <div id="host-leaderboard-list" class="host-leaderboard-scroll-list"></div>
+        <div id="host-reveal-answer" class="host-reveal-answer hidden">
+            <span class="host-reveal-answer-label">正确答案</span>
+            <span class="host-reveal-answer-text" id="host-reveal-answer-text"></span>
+        </div>
 
         <div class="host-stage-foot">
             <button id="btn-next" class="token-btn-primary btn-host-next-q" onclick="nextQuestion()">
@@ -331,15 +344,7 @@ function applyHostState(state) {
     } else if (state.status === 'leaderboard') {
         currentHostQuestionId = null;
         document.getElementById('host-leaderboard').classList.remove('hidden');
-        renderLeaderboard(state.leaderboard, 'host-leaderboard-list');
-        const cloudWrap = document.getElementById('host-leaderboard-word-cloud-wrap');
-        const q = state.question;
-        if (q && q.question_type === 'word_cloud') {
-            cloudWrap.classList.remove('hidden');
-            renderWordCloud('host-leaderboard-word-cloud', q.word_cloud || []);
-        } else {
-            cloudWrap.classList.add('hidden');
-        }
+        renderQuestionReveal(state);
         const btn = document.getElementById('btn-next');
         if (state.current_question_index + 1 >= state.total_questions) {
             btn.innerHTML = '<span>颁奖典礼</span><span>→</span>';
@@ -505,31 +510,78 @@ function renderWaitingLobbyPlayers(leaderboard) {
     }).join('');
 }
 
-function renderLeaderboard(leaderboard, containerId) {
-    const container = document.getElementById(containerId);
-    if (!leaderboard || leaderboard.length === 0) {
-        container.innerHTML = '<p class="text-muted-block" style="text-align: center; padding: 2rem;">暂无玩家答题数据</p>';
-        return;
-    }
-    container.innerHTML = leaderboard.map((p, idx) => {
-        const isTop1 = p.rank === 1;
-        const isTop2 = p.rank === 2;
-        const isTop3 = p.rank === 3;
-        const rankClass = isTop1 ? 'rank-1' : isTop2 ? 'rank-2' : isTop3 ? 'rank-3' : '';
-        const rankIcon = `#${p.rank}`;
-        const avatarSvg = window.AvatarSystem
-            ? window.AvatarSystem.renderSvg(p.avatar, 36, { nickname: p.nickname })
-            : escapeHtml(p.nickname.slice(0, 1).toUpperCase());
+function renderQuestionReveal(state) {
+    const q = state.question || {};
+    const reveal = q.reveal || {};
+    const typeLabels = {
+        multiple: '多选题',
+        judgment: '判断题',
+        short_answer: '问答题',
+        word_cloud: '词云题',
+        single: '选择题',
+    };
+    const typeLabel = typeLabels[q.question_type] || '选择题';
+    const kicker = document.getElementById('host-reveal-kicker');
+    const title = document.getElementById('host-reveal-title');
+    const subtitle = document.getElementById('host-reveal-subtitle');
+    kicker.textContent = `第 ${state.current_question_index + 1} / ${state.total_questions} 题 · ${typeLabel}`;
+    title.textContent = q.text || '本题统计';
+    subtitle.textContent = `${reveal.answered_count || 0} 人已作答 · ${reveal.player_count || state.player_count || 0} 人在场`;
 
-        return `
-            <div class="host-lb-row ${rankClass}">
-                <div class="host-lb-rank">${rankIcon}</div>
-                <div class="host-lb-avatar">${avatarSvg}</div>
-                <div class="host-lb-name">${escapeHtml(p.nickname)}</div>
-                <div class="host-lb-score">${p.score} <span class="score-unit">分</span></div>
-            </div>
-        `;
-    }).join('');
+    const chartEl = document.getElementById('host-reveal-chart');
+    const shortEl = document.getElementById('host-reveal-short');
+    const cloudWrap = document.getElementById('host-leaderboard-word-cloud-wrap');
+    const answerWrap = document.getElementById('host-reveal-answer');
+    const answerText = document.getElementById('host-reveal-answer-text');
+    const isWordCloud = q.question_type === 'word_cloud';
+    const isShort = q.question_type === 'short_answer';
+    const optionStats = reveal.option_stats || [];
+
+    chartEl.classList.add('hidden');
+    shortEl.classList.add('hidden');
+    cloudWrap.classList.add('hidden');
+    answerWrap.classList.add('hidden');
+
+    if (optionStats.length) {
+        const maxCount = Math.max(1, ...optionStats.map(s => s.count || 0));
+        const colors = ['host-opt-a', 'host-opt-b', 'host-opt-c', 'host-opt-d'];
+        chartEl.innerHTML = optionStats.map((stat, i) => {
+            const count = stat.count || 0;
+            const pct = Math.max(6, Math.round((count / maxCount) * 100));
+            const correctClass = stat.is_correct ? ' is-correct' : '';
+            return `
+                <div class="host-reveal-bar-col${correctClass}">
+                    <div class="host-reveal-bar-count">${count}</div>
+                    <div class="host-reveal-bar-track">
+                        <div class="host-reveal-bar-fill ${colors[i] || 'host-opt-a'}" style="height: ${pct}%;"></div>
+                    </div>
+                    <div class="host-reveal-bar-label">
+                        <span class="host-reveal-bar-key">${escapeHtml(stat.key)}</span>
+                        <span class="host-reveal-bar-text">${escapeHtml(stat.text || '')}</span>
+                    </div>
+                    ${stat.is_correct ? '<span class="host-reveal-bar-badge">正确答案</span>' : ''}
+                </div>
+            `;
+        }).join('');
+        chartEl.classList.remove('hidden');
+    } else if (isShort) {
+        document.getElementById('host-reveal-correct-count').textContent = reveal.correct_count || 0;
+        const answered = reveal.answered_count || 0;
+        const unanswered = reveal.unanswered_count || 0;
+        document.getElementById('host-reveal-short-meta').textContent =
+            `共 ${answered} 人作答 · ${unanswered} 人未作答`;
+        shortEl.classList.remove('hidden');
+    }
+
+    if (isWordCloud) {
+        cloudWrap.classList.remove('hidden');
+        renderWordCloud('host-leaderboard-word-cloud', q.word_cloud || []);
+    }
+
+    if (!isWordCloud && reveal.correct_answer_display) {
+        answerText.textContent = reveal.correct_answer_display;
+        answerWrap.classList.remove('hidden');
+    }
 }
 
 function startGame() {

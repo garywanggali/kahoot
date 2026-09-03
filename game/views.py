@@ -35,7 +35,12 @@ from .models import (
     Teacher,
     TeacherInviteCode,
 )
-from .quiz_set_utils import add_question_to_quiz_set, clone_quiz_set, create_room_from_quiz_set
+from .quiz_set_utils import (
+    add_question_to_quiz_set,
+    clone_quiz_set,
+    create_room_from_quiz_set,
+    parse_show_question_stem,
+)
 from .analytics import get_room_analytics_data
 from .question_save import (
     QuestionFormError,
@@ -749,12 +754,16 @@ def kahoot_create_room(request, pk):
 
     room_name = request.POST.get('name', '').strip()
     try:
-        room = create_room_from_quiz_set(quiz_set, teacher, name=room_name)
+        room = create_room_from_quiz_set(
+            quiz_set,
+            teacher,
+            name=room_name,
+            show_question_stem=parse_show_question_stem(request.POST),
+        )
     except ValueError:
         messages.error(request, '套题中还没有题目，请先添加题目')
         return redirect('kahoot_editor', pk=pk)
 
-    messages.success(request, f'房间已创建，房间号: {room.code}')
     return redirect('room_host', pk=room.pk)
 
 
@@ -914,32 +923,33 @@ def room_create(request):
     if request.method == 'POST':
         name = request.POST.get('name', '').strip()
         quiz_set_id = request.POST.get('quiz_set_id', '').strip()
+        show_question_stem = parse_show_question_stem(request.POST)
+        form_ctx = {
+            'my_quiz_sets': my_sets,
+            'public_quiz_sets': public_sets,
+            'show_question_stem': show_question_stem,
+        }
 
         if not quiz_set_id:
             messages.error(request, '请选择一套 Kahoot 题目')
-            return render(request, 'game/room_create.html', {
-                'my_quiz_sets': my_sets,
-                'public_quiz_sets': public_sets,
-            })
+            return render(request, 'game/room_create.html', form_ctx)
 
         quiz_set = get_object_or_404(QuizSet, pk=quiz_set_id)
         if not can_use_quiz_set(teacher, quiz_set):
             messages.error(request, '所选套题无效或无权使用')
-            return render(request, 'game/room_create.html', {
-                'my_quiz_sets': my_sets,
-                'public_quiz_sets': public_sets,
-            })
+            return render(request, 'game/room_create.html', form_ctx)
 
         try:
-            room = create_room_from_quiz_set(quiz_set, teacher, name=name)
+            room = create_room_from_quiz_set(
+                quiz_set,
+                teacher,
+                name=name,
+                show_question_stem=show_question_stem,
+            )
         except ValueError:
             messages.error(request, '该套题还没有题目')
-            return render(request, 'game/room_create.html', {
-                'my_quiz_sets': my_sets,
-                'public_quiz_sets': public_sets,
-            })
+            return render(request, 'game/room_create.html', form_ctx)
 
-        messages.success(request, f'房间已创建，房间号: {room.code}')
         return redirect('room_host', pk=room.pk)
 
     preselect_id = request.GET.get('quiz_set')
@@ -947,6 +957,7 @@ def room_create(request):
         'my_quiz_sets': my_sets,
         'public_quiz_sets': public_sets,
         'preselect_id': preselect_id,
+        'show_question_stem': True,
     })
 
 

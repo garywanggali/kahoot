@@ -16,7 +16,6 @@ from .models import Answer, Player, Question, Room
 from .room_cache import (
     answer_exists as cache_answer_exists,
     flush_runtime_force,
-    get_answer_count as cache_get_answer_count,
     get_player_nickname,
     get_runtime_for_code,
     join_player,
@@ -28,7 +27,7 @@ from .text_utils import (
     SHORT_ANSWER_MAX_LENGTH,
     normalize_word_cloud_text,
 )
-from .utils import calculate_points, get_room_state
+from .utils import calculate_points, get_my_result, get_room_state
 from .word_cloud import aggregate_word_cloud
 
 logger = logging.getLogger(__name__)
@@ -98,9 +97,25 @@ class RoomConsumer(AsyncWebsocketConsumer):
         }))
 
     async def room_message(self, event):
+        data = event['data']
+        if event['event'] == 'question_ended' and getattr(self, 'session_id', None):
+            question = (data or {}).get('question') or {}
+            question_id = question.get('id')
+            if question_id:
+                try:
+                    runtime = await database_sync_to_async(get_runtime_for_code)(self.room_code)
+                    my_result = await database_sync_to_async(get_my_result)(
+                        runtime, self.session_id, question_id,
+                    )
+                    data = dict(data or {})
+                    data['my_result'] = my_result
+                except Exception:
+                    logger.exception(
+                        'Failed to attach my_result room=%s', self.room_code,
+                    )
         await self.send(text_data=json.dumps({
             'event': event['event'],
-            'data': event['data'],
+            'data': data,
         }))
 
     async def handle_join(self, data):
@@ -150,6 +165,13 @@ class RoomConsumer(AsyncWebsocketConsumer):
                 },
             )
 
+        my_result = None
+        question = state.get('question') or {}
+        if state.get('status') == Room.STATUS_LEADERBOARD and question.get('id'):
+            my_result = await database_sync_to_async(get_my_result)(
+                runtime, session_id, question['id'],
+            )
+
         await self.send(text_data=json.dumps({
             'event': 'joined',
             'data': {
@@ -158,6 +180,7 @@ class RoomConsumer(AsyncWebsocketConsumer):
                 'nickname': player.nickname,
                 'avatar': player.avatar,
                 'state': state,
+                'my_result': my_result,
             },
         }))
 
@@ -263,8 +286,6 @@ class RoomConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             'event': 'answer_received',
             'data': {
-                'is_correct': is_correct,
-                'points': points,
                 'no_score': question_type == Question.TYPE_WORD_CLOUD,
                 'selected_option': selected,
                 'answer_text': selected,
@@ -290,11 +311,7 @@ class RoomConsumer(AsyncWebsocketConsumer):
                 },
             )
 
-        answer_count = await database_sync_to_async(cache_get_answer_count)(runtime, question_id)
-        state = await self.get_room_state_async()
-        player_count = state['player_count']
-        if answer_count >= player_count and player_count > 0:
-            await self.handle_end_question()
+        # 全员作答后仍由老师手动结束本题，不自动揭晓。
 
     async def handle_end_question(self):
         try:
@@ -350,6 +367,23 @@ class RoomConsumer(AsyncWebsocketConsumer):
 
     async def send_state(self):
         state = await self.get_room_state_async()
+        if (
+            getattr(self, 'session_id', None)
+            and state.get('status') == Room.STATUS_LEADERBOARD
+        ):
+            question = state.get('question') or {}
+            question_id = question.get('id')
+            if question_id:
+                try:
+                    runtime = await database_sync_to_async(get_runtime_for_code)(self.room_code)
+                    state = dict(state)
+                    state['my_result'] = await database_sync_to_async(get_my_result)(
+                        runtime, self.session_id, question_id,
+                    )
+                except Exception:
+                    logger.exception(
+                        'Failed to attach my_result on get_state room=%s', self.room_code,
+                    )
         await self.send(text_data=json.dumps({'event': 'state', 'data': state}))
 
     async def _flush_runtime_async(self, runtime, force=False):

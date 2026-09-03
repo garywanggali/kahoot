@@ -272,6 +272,11 @@ class Room(models.Model):
         null=True,
         blank=True,
     )
+    show_question_stem = models.BooleanField(
+        '学生端显示题干和图片',
+        default=True,
+        help_text='关闭后学生端只显示铺满屏幕的选项或输入框，题干由公共屏幕展示。',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

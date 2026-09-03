@@ -307,6 +307,9 @@ function handleEvent(event, data) {
                 saveMyAvatar();
                 updateAvatarUi();
             }
+            if (data.my_result) {
+                applyMyResult(data.my_result);
+            }
             applyState(data.state);
             updateDanmakuBar(data.state.status);
             break;
@@ -385,6 +388,7 @@ function applyState(state) {
     document.getElementById('player-count').textContent = state.player_count;
     updateDanmakuBar(state.status);
     hideAllScreens();
+    applyStemMode(state);
 
     if (state.status === 'waiting') {
         document.getElementById('waiting-screen').classList.remove('hidden');
@@ -414,7 +418,7 @@ function applyState(state) {
         showQuestion(state);
     } else if (state.status === 'leaderboard') {
         document.getElementById('play-screen').classList.remove('hidden');
-        showInterQuestionWaiting();
+        showQuestionResult(state);
         clearTimer();
     }
 }
@@ -423,6 +427,18 @@ function hideAllScreens() {
     ['waiting-screen', 'play-screen', 'ended-screen'].forEach(id => {
         document.getElementById(id).classList.add('hidden');
     });
+}
+
+function shouldShowStem(state) {
+    return !state || state.show_question_stem !== false;
+}
+
+function applyStemMode(state) {
+    const play = document.getElementById('play-screen');
+    if (!play) return;
+    const show = shouldShowStem(state);
+    play.classList.toggle('play-show-stem', show);
+    play.classList.toggle('play-hide-stem', !show);
 }
 
 function showQuestion(state) {
@@ -444,10 +460,14 @@ function showQuestion(state) {
     const isText = TEXT_TYPES.has(q.question_type);
     const isMultiple = q.question_type === 'multiple';
     const isJudgment = q.question_type === 'judgment';
+    const showStem = shouldShowStem(state);
+    applyStemMode(state);
 
     document.getElementById('question-number').textContent =
         `第 ${state.current_question_index + 1} / ${state.total_questions} 题`;
+    document.getElementById('question-number').classList.toggle('hidden', !showStem);
     document.getElementById('question-text').textContent = q.text;
+    document.getElementById('question-text').classList.toggle('hidden', !showStem);
     document.getElementById('timer-bar').classList.remove('hidden');
 
     const submitMulti = document.getElementById('submit-multi-btn');
@@ -467,7 +487,7 @@ function showQuestion(state) {
 
     const imgWrap = document.getElementById('question-image-wrap');
     const imgEl = document.getElementById('question-image');
-    if (q.image_url) {
+    if (showStem && q.image_url) {
         imgEl.src = q.image_url;
         imgWrap.classList.remove('hidden');
     } else {
@@ -516,8 +536,13 @@ function startTimer(seconds) {
             clearTimer();
             if (!hasAnswered) {
                 hasAnswered = true;
-                document.getElementById('answer-feedback').textContent = '时间到';
                 lockAnswerUi();
+                hideQuestionInputUi();
+                renderFeedbackCard({
+                    type: 'waiting',
+                    title: '时间到，等待揭晓',
+                    showWaitingHint: true,
+                });
             }
         }
     }, 100);
@@ -672,34 +697,14 @@ function hideFeedbackStage() {
     if (stage) stage.classList.add('hidden');
 }
 
-function showAnswerFeedback(data) {
+function applyMyResult(result) {
+    if (!result) return;
     lastAnswerResult = {
-        answered: true,
-        is_correct: data.is_correct,
-        points: data.points,
-        no_score: data.no_score,
+        answered: !!result.answered,
+        is_correct: !!result.is_correct,
+        points: result.points || 0,
+        no_score: !!result.no_score,
     };
-    hideQuestionInputUi();
-    if (data.no_score) {
-        renderFeedbackCard({
-            type: 'submitted',
-            title: '答案已提交',
-            showWaitingHint: true,
-        });
-    } else if (data.is_correct) {
-        renderFeedbackCard({
-            type: 'correct',
-            title: '回答正确',
-            points: data.points,
-            showWaitingHint: true,
-        });
-    } else {
-        renderFeedbackCard({
-            type: 'wrong',
-            title: '回答错误',
-            showWaitingHint: true,
-        });
-    }
 }
 
 function clearResultRevealTimer() {
@@ -709,52 +714,54 @@ function clearResultRevealTimer() {
     }
 }
 
+function hideQuestionStemUi() {
+    document.getElementById('question-number').classList.add('hidden');
+    document.getElementById('question-text').classList.add('hidden');
+    document.getElementById('question-image-wrap').classList.add('hidden');
+}
+
+function showAnswerFeedback(data) {
+    lastAnswerResult = {
+        answered: true,
+        is_correct: false,
+        points: 0,
+        no_score: data.no_score,
+    };
+    clearTimer();
+    hideQuestionInputUi();
+    renderFeedbackCard({
+        type: 'submitted',
+        title: '已提交，等待揭晓',
+        showWaitingHint: true,
+    });
+}
+
 function showQuestionResult(state) {
+    applyMyResult(state.my_result);
     clearResultRevealTimer();
     clearTimer();
     hideQuestionInputUi();
+    hideQuestionStemUi();
     lockAnswerUi();
 
     const q = state.question;
     const isWordCloud = q && q.question_type === 'word_cloud';
-    const correctLabel = formatCorrectLabel(q);
 
-    if (lastAnswerResult.answered) {
-        if (isWordCloud || lastAnswerResult.no_score) {
-            renderFeedbackCard({
-                type: 'submitted',
-                title: '答案已提交',
-                detail: correctLabel ? `正确答案：${correctLabel}` : '',
-                showWaitingHint: true,
-            });
-        } else if (lastAnswerResult.is_correct) {
-            renderFeedbackCard({
-                type: 'correct',
-                title: '回答正确',
-                points: lastAnswerResult.points,
-                showWaitingHint: true,
-            });
-        } else {
-            renderFeedbackCard({
-                type: 'wrong',
-                title: '回答错误',
-                detail: correctLabel ? `正确答案：${correctLabel}` : '',
-                showWaitingHint: true,
-            });
-        }
-    } else {
+    if (isWordCloud || lastAnswerResult.no_score) {
         renderFeedbackCard({
-            type: 'timeup',
-            title: '时间到',
-            detail: correctLabel ? `正确答案：${correctLabel}` : '',
+            type: 'submitted',
+            title: lastAnswerResult.answered ? '已提交' : '本题已结束',
             showWaitingHint: true,
         });
+        return;
     }
 
-    resultRevealTimer = setTimeout(() => {
-        resultRevealTimer = null;
-        showInterQuestionWaiting();
-    }, 2500);
+    const isCorrect = lastAnswerResult.answered && lastAnswerResult.is_correct;
+    renderFeedbackCard({
+        type: isCorrect ? 'correct' : 'wrong',
+        title: isCorrect ? '对' : '错',
+        showWaitingHint: true,
+    });
 }
 
 function getCorrectKeys(state) {

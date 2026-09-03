@@ -7,7 +7,17 @@ from django.db import transaction
 from .models import Question, QuizSet, QuizSetQuestion, Room, RoomQuestion
 
 
-def create_room_from_quiz_set(quiz_set: QuizSet, teacher, name: str | None = None) -> Room:
+def parse_show_question_stem(post) -> bool:
+    raw = (post.get('show_question_stem') or '1').strip().lower()
+    return raw in ('1', 'true', 'on', 'yes')
+
+
+def create_room_from_quiz_set(
+    quiz_set: QuizSet,
+    teacher,
+    name: str | None = None,
+    show_question_stem: bool = True,
+) -> Room:
     questions = quiz_set.get_questions()
     if not questions:
         raise ValueError('套题中没有题目')
@@ -17,6 +27,7 @@ def create_room_from_quiz_set(quiz_set: QuizSet, teacher, name: str | None = Non
         name=(name or '').strip() or quiz_set.title or '课堂测验',
         teacher=teacher,
         source_quiz_set=quiz_set,
+        show_question_stem=bool(show_question_stem),
     )
     for order, question in enumerate(questions):
         RoomQuestion.objects.create(

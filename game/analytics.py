@@ -2,11 +2,17 @@
 
 from __future__ import annotations
 
+import json
 import logging
 from typing import Any
 
 from .models import Answer, Player, Question, Room
-from .room_cache import drop_runtime, flush_runtime_force, get_runtime
+from .room_cache import (
+    flush_runtime_force,
+    get_runtime,
+    get_runtime_pending_answers,
+    get_runtime_players,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -53,11 +59,69 @@ def get_room_analytics_data(room: Room) -> dict[str, Any]:
     players = list(Player.objects.filter(room=room).order_by('-score', 'joined_at'))
     answers = list(Answer.objects.filter(room=room).select_related('player', 'question'))
 
+    # Overlay in-memory cache so a failed/partial flush still shows live results.
+    try:
+        runtime = get_runtime(room)
+        cached_players = get_runtime_players(runtime)
+        pending_answers = get_runtime_pending_answers(runtime)
+        db_by_nick = {p.nickname: p for p in players}
+        for cached in cached_players:
+            existing = db_by_nick.get(cached.nickname)
+            if existing is None:
+                # Player answered in-memory but is not in DB yet.
+                ghost = Player(
+                    nickname=cached.nickname,
+                    score=cached.score,
+                    session_id=cached.session_id,
+                    avatar=json.dumps(cached.avatar) if isinstance(cached.avatar, dict) else cached.avatar,
+                )
+                ghost.id = cached.db_id or (-abs(hash(cached.session_id)) or -1)
+                ghost._avatar_dict = cached.avatar
+                players.append(ghost)
+                db_by_nick[cached.nickname] = ghost
+            else:
+                if cached.score > existing.score:
+                    existing.score = cached.score
+        players.sort(key=lambda p: (-p.score, p.pk or 0))
+
+        nick_to_player = {p.nickname: p for p in players}
+        sid_to_player = {}
+        for cached in cached_players:
+            mapped = nick_to_player.get(cached.nickname)
+            if mapped is not None:
+                sid_to_player[cached.session_id] = mapped
+
+        class _MemAnswer:
+            def __init__(self, player_id, question_id, selected, is_correct, points, response_time_ms):
+                self.player_id = player_id
+                self.question_id = question_id
+                self.selected_option = selected
+                self.is_correct = is_correct
+                self.points = points
+                self.response_time_ms = response_time_ms
+
+        extra_answers = []
+        for pending in pending_answers:
+            mapped = sid_to_player.get(pending.session_id)
+            if mapped is None or not mapped.id:
+                continue
+            extra_answers.append(_MemAnswer(
+                mapped.id,
+                pending.question_id,
+                pending.selected,
+                pending.is_correct,
+                pending.points,
+                pending.response_time_ms,
+            ))
+        answers = list(answers) + extra_answers
+    except Exception:
+        logger.exception('Failed to overlay runtime cache for analytics room %s', room.code)
+
     player_count = len(players)
     question_count = len(questions)
 
     # Keyed by (player_id, question_id)
-    answer_map: dict[tuple[int, int], Answer] = {
+    answer_map: dict[tuple[int, int], object] = {
         (a.player_id, a.question_id): a for a in answers
     }
 

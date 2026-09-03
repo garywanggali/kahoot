@@ -45,13 +45,13 @@
                 <div class="flip-card-side flip-card-front card-industrial">
                     <form method="post" action="{% url 'join_room' %}" id="student-join-form">
                         {% csrf_token %}
-                        {% if messages %}
+                        {% for message in messages %}
+                        {% if 'error' in message.tags %}
                         <div class="join-inline-error">
-                            {% for message in messages %}
                             <p>{{ message }}</p>
-                            {% endfor %}
                         </div>
                         {% endif %}
+                        {% endfor %}
                         <div class="form-group-industrial">
                             <label for="code">房间号</label>
                             <input type="text" id="code" name="code" class="input-industrial input-pin"

@@ -9,7 +9,7 @@ import time
 from dataclasses import dataclass, field
 
 from django.conf import settings
-from django.db import transaction
+from django.db import IntegrityError, transaction
 
 from .models import Answer, Player, Room
 
@@ -48,6 +48,7 @@ class RoomRuntime:
         self.players: dict[str, CachedPlayer] = {}
         self.nicknames: dict[str, str] = {}
         self.answers: set[tuple[str, int]] = set()
+        self.answer_records: dict[tuple[str, int], PendingAnswer] = {}
         self.answer_counts: dict[int, int] = {}
         self.pending_players: list[CachedPlayer] = []
         self.pending_answers: list[PendingAnswer] = []
@@ -143,13 +144,22 @@ def _hydrate_from_db(runtime: RoomRuntime) -> None:
         runtime.nicknames[player.nickname] = player.session_id
 
     player_ids = {p.db_id: p.session_id for p in runtime.players.values() if p.db_id}
-    for answer in Answer.objects.filter(room_id=runtime.room_id).values('player_id', 'question_id'):
-        session_id = player_ids.get(answer['player_id'])
+    for answer in Answer.objects.filter(room_id=runtime.room_id):
+        session_id = player_ids.get(answer.player_id)
         if not session_id:
             continue
-        runtime.answers.add((session_id, answer['question_id']))
-        runtime.answer_counts[answer['question_id']] = (
-            runtime.answer_counts.get(answer['question_id'], 0) + 1
+        key = (session_id, answer.question_id)
+        runtime.answers.add(key)
+        runtime.answer_records[key] = PendingAnswer(
+            session_id=session_id,
+            question_id=answer.question_id,
+            selected=answer.selected_option,
+            is_correct=answer.is_correct,
+            points=answer.points,
+            response_time_ms=answer.response_time_ms,
+        )
+        runtime.answer_counts[answer.question_id] = (
+            runtime.answer_counts.get(answer.question_id, 0) + 1
         )
     runtime.hydrated = True
 
@@ -222,14 +232,16 @@ def record_answer(
         if is_correct:
             player.score += points
             player.score_dirty = True
-        runtime.pending_answers.append(PendingAnswer(
+        pending = PendingAnswer(
             session_id=session_id,
             question_id=question_id,
             selected=selected,
             is_correct=is_correct,
             points=points,
             response_time_ms=response_time_ms,
-        ))
+        )
+        runtime.answer_records[key] = pending
+        runtime.pending_answers.append(pending)
         return True
 
 
@@ -261,29 +273,72 @@ def overlay_room_state(state: dict, runtime: RoomRuntime) -> dict:
         return state
 
 
+def _ensure_player_row(runtime: RoomRuntime, cached: CachedPlayer) -> int | None:
+    """Idempotently persist a cached player and bind db_id.
+
+    A previous successful insert can leave db_id empty (or a later flush can
+    retry the same nickname). Unique(room, nickname) must not abort answers.
+    """
+    if cached.db_id:
+        return cached.db_id
+
+    existing = Player.objects.filter(
+        room_id=runtime.room_id,
+        nickname=cached.nickname,
+    ).first()
+    if existing is None:
+        existing = Player.objects.filter(
+            room_id=runtime.room_id,
+            session_id=cached.session_id,
+        ).first()
+
+    if existing is not None:
+        cached.db_id = existing.id
+        updates = {}
+        if existing.session_id != cached.session_id:
+            updates['session_id'] = cached.session_id
+        if existing.score != cached.score:
+            updates['score'] = cached.score
+        if updates:
+            Player.objects.filter(id=existing.id).update(**updates)
+        return cached.db_id
+
+    try:
+        with transaction.atomic():
+            row = Player.objects.create(
+                room_id=runtime.room_id,
+                nickname=cached.nickname,
+                session_id=cached.session_id,
+                score=cached.score,
+                avatar=json.dumps(cached.avatar),
+            )
+        cached.db_id = row.id
+        return cached.db_id
+    except IntegrityError:
+        existing = Player.objects.filter(
+            room_id=runtime.room_id,
+            nickname=cached.nickname,
+        ).first()
+        if existing is None:
+            return None
+        cached.db_id = existing.id
+        return cached.db_id
+
+
 @transaction.atomic
 def _flush_locked(runtime: RoomRuntime) -> None:
-    new_players = [p for p in runtime.pending_players if p.db_id is None]
-    if new_players:
-        created = Player.objects.bulk_create([
-            Player(
-                room_id=runtime.room_id,
-                nickname=p.nickname,
-                session_id=p.session_id,
-                score=p.score,
-                avatar=json.dumps(p.avatar),
-            )
-            for p in new_players
-        ])
-        for cached, row in zip(new_players, created):
-            cached.db_id = row.id
-        runtime.pending_players = [p for p in runtime.pending_players if p.db_id is None]
+    for cached in list(runtime.players.values()):
+        if cached.db_id is None:
+            _ensure_player_row(runtime, cached)
+    runtime.pending_players = [p for p in runtime.pending_players if p.db_id is None]
 
     if runtime.pending_answers:
         remaining: list[PendingAnswer] = []
         to_create: list[Answer] = []
         for pending in runtime.pending_answers:
             player = runtime.players.get(pending.session_id)
+            if player and not player.db_id:
+                _ensure_player_row(runtime, player)
             if not player or not player.db_id:
                 remaining.append(pending)
                 continue
@@ -342,3 +397,32 @@ def maybe_flush(runtime: RoomRuntime) -> None:
 
 def flush_runtime_force(runtime: RoomRuntime) -> None:
     flush_runtime(runtime, force=True)
+
+
+def get_question_answer_records(runtime: RoomRuntime, question_id: int) -> list[PendingAnswer]:
+    with runtime.lock:
+        _hydrate_from_db(runtime)
+        return [
+            rec for (sid, qid), rec in runtime.answer_records.items()
+            if qid == question_id
+        ]
+
+
+def get_player_answer_record(
+    runtime: RoomRuntime,
+    session_id: str,
+    question_id: int,
+) -> PendingAnswer | None:
+    with runtime.lock:
+        _hydrate_from_db(runtime)
+        return runtime.answer_records.get((session_id, question_id))
+
+
+def get_runtime_pending_answers(runtime: RoomRuntime) -> list[PendingAnswer]:
+    with runtime.lock:
+        return list(runtime.pending_answers)
+
+
+def get_runtime_players(runtime: RoomRuntime) -> list[CachedPlayer]:
+    with runtime.lock:
+        return list(runtime.players.values())

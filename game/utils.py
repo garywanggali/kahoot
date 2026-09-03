@@ -5,6 +5,75 @@ from .question_save import _question_image_url
 from .validators import MAX_QUESTION_IMAGE_BYTES
 
 
+def build_question_reveal(room, question, runtime=None) -> dict:
+    """Public reveal payload after a question ends: option bars + correct answer."""
+    player_count = room.players.count()
+    records = []
+    if runtime is not None:
+        from .room_cache import get_question_answer_records, overlay_room_state
+        records = get_question_answer_records(runtime, question.id)
+        overlay = overlay_room_state({'player_count': player_count}, runtime)
+        player_count = overlay.get('player_count', player_count)
+    else:
+        records = [
+            type('Rec', (), {
+                'selected': a.selected_option,
+                'is_correct': a.is_correct,
+            })()
+            for a in Answer.objects.filter(room=room, question=question)
+        ]
+
+    answered_count = len(records)
+    correct_count = sum(1 for r in records if r.is_correct)
+    unanswered_count = max(0, player_count - answered_count)
+
+    option_stats = []
+    if question.question_type in (
+        Question.TYPE_SINGLE,
+        Question.TYPE_MULTIPLE,
+        Question.TYPE_JUDGMENT,
+    ):
+        correct_keys = question.get_correct_option_set()
+        counts = {opt['key']: 0 for opt in question.get_options()}
+        for rec in records:
+            for part in str(rec.selected or '').upper().split(','):
+                key = part.strip()
+                if key in counts:
+                    counts[key] += 1
+        option_stats = [
+            {
+                'key': opt['key'],
+                'text': opt['text'],
+                'count': counts.get(opt['key'], 0),
+                'is_correct': opt['key'] in correct_keys,
+            }
+            for opt in question.get_options()
+        ]
+
+    return {
+        'option_stats': option_stats,
+        'answered_count': answered_count,
+        'correct_count': correct_count,
+        'wrong_count': max(0, answered_count - correct_count),
+        'unanswered_count': unanswered_count,
+        'player_count': player_count,
+        'correct_answer_display': question.get_correct_option_display(),
+    }
+
+
+def get_my_result(runtime, session_id: str, question_id: int) -> dict:
+    from .room_cache import get_player_answer_record
+    rec = get_player_answer_record(runtime, session_id, question_id) if runtime else None
+    if rec is None:
+        return {'answered': False, 'is_correct': False, 'points': 0}
+    return {
+        'answered': True,
+        'is_correct': bool(rec.is_correct),
+        'points': rec.points,
+        'no_score': False,
+    }
+
+
 def calculate_points(time_limit_seconds, response_time_ms, is_correct):
     if not is_correct:
         return 0
@@ -39,6 +108,7 @@ def get_room_state(room, runtime=None):
         'total_questions': len(questions),
         'player_count': room.players.count(),
         'leaderboard': get_leaderboard(room),
+        'show_question_stem': bool(getattr(room, 'show_question_stem', True)),
     }
     if current_q and room.status in (Room.STATUS_PLAYING, Room.STATUS_LEADERBOARD):
         question_data = {
@@ -60,6 +130,7 @@ def get_room_state(room, runtime=None):
                 question_data['correct_answer'] = current_q.option_a.replace('|', ' / ')
             elif current_q.question_type != Question.TYPE_WORD_CLOUD:
                 question_data['correct_option'] = current_q.correct_option
+            question_data['reveal'] = build_question_reveal(room, current_q, runtime)
         if current_q.image:
             question_data['image_url'] = _question_image_url(current_q)
         state['question'] = question_data

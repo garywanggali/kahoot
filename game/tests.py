@@ -84,6 +84,49 @@ class AvatarFeatureTests(TestCase):
         self.assertEqual(len(lb), 1)
         self.assertEqual(lb[0]['avatar'], {'face': 5, 'hair': 2})
 
+    def test_flush_retries_after_player_already_persisted(self):
+        from .models import Answer, Player, Question, Room
+        from .room_cache import (
+            drop_runtime,
+            flush_runtime_force,
+            get_runtime,
+            join_player,
+            record_answer,
+        )
+
+        room = Room.objects.create(code='777111', name='Flush Room')
+        question = Question.objects.create(
+            text='首都？',
+            question_type=Question.TYPE_SINGLE,
+            option_a='北京',
+            option_b='上海',
+            option_c='广州',
+            option_d='深圳',
+            correct_option='A',
+        )
+        runtime = get_runtime(room)
+        cached, _created, err = join_player(runtime, 'Lee', 'sess-lee')
+        self.assertIsNone(err)
+        flush_runtime_force(runtime)
+        self.assertIsNotNone(cached.db_id)
+        self.assertEqual(Player.objects.filter(room=room).count(), 1)
+
+        # Simulate a successful insert that never bound db_id back onto the cache.
+        cached.db_id = None
+        runtime.pending_players.append(cached)
+        recorded = record_answer(
+            runtime, 'sess-lee', question.id, 'A', True, 900, 1200,
+        )
+        self.assertTrue(recorded)
+        flush_runtime_force(runtime)
+
+        self.assertEqual(Player.objects.filter(room=room).count(), 1)
+        self.assertEqual(Answer.objects.filter(room=room).count(), 1)
+        answer = Answer.objects.get(room=room)
+        self.assertTrue(answer.is_correct)
+        self.assertEqual(answer.selected_option, 'A')
+        drop_runtime(room.code)
+
 
 class AnalyticsFeatureTests(TestCase):
     def setUp(self):
@@ -238,6 +281,266 @@ class JoinRoomViewTests(TestCase):
         content = resp.content.decode('utf-8')
         self.assertIn('turbo.min.js', content)
         self.assertNotIn('https://cdn.jsdelivr.net/npm/@hotwired/turbo@8.0.12/dist/turbo.min.js', content)
+
+    def test_room_created_success_does_not_show_on_landing(self):
+        from django.contrib import messages
+        from django.contrib.messages.storage.fallback import FallbackStorage
+        from django.template.loader import render_to_string
+        from django.test import RequestFactory
+
+        request = RequestFactory().get('/')
+        request.session = self.client.session
+        setattr(request, '_messages', FallbackStorage(request))
+        messages.success(request, '房间已创建，房间号: 020217')
+        content = render_to_string(
+            'game/index.html',
+            {'messages': list(messages.get_messages(request))},
+            request=request,
+        )
+        self.assertNotIn('房间已创建', content)
+        self.assertNotIn('020217', content)
+
+
+class QuestionRevealTests(TestCase):
+    def _attach(self, room, question, order=0):
+        from .models import RoomQuestion
+        RoomQuestion.objects.create(room=room, question=question, order=order)
+
+    def test_choice_question_counts_each_option_and_marks_correct(self):
+        from .models import Player, Room
+        from .utils import build_question_reveal
+
+        room = Room.objects.create(code='111001', name='Reveal Room')
+        question = Question.objects.create(
+            text='首都？',
+            question_type=Question.TYPE_SINGLE,
+            option_a='北京',
+            option_b='上海',
+            option_c='广州',
+            option_d='深圳',
+            correct_option='A',
+        )
+        self._attach(room, question)
+        Player.objects.create(room=room, nickname='A1', session_id='s1')
+        Player.objects.create(room=room, nickname='A2', session_id='s2')
+        Player.objects.create(room=room, nickname='A3', session_id='s3')
+        from .models import Answer
+        Answer.objects.create(
+            room=room, player=Player.objects.get(session_id='s1'),
+            question=question, selected_option='A', is_correct=True, points=800,
+            response_time_ms=400,
+        )
+        Answer.objects.create(
+            room=room, player=Player.objects.get(session_id='s2'),
+            question=question, selected_option='B', is_correct=False, points=0,
+            response_time_ms=500,
+        )
+
+        reveal = build_question_reveal(room, question)
+        counts = {row['key']: row['count'] for row in reveal['option_stats']}
+        self.assertEqual(counts, {'A': 1, 'B': 1, 'C': 0, 'D': 0})
+        correct = [row['key'] for row in reveal['option_stats'] if row['is_correct']]
+        self.assertEqual(correct, ['A'])
+        self.assertEqual(reveal['answered_count'], 2)
+        self.assertEqual(reveal['correct_count'], 1)
+        self.assertEqual(reveal['unanswered_count'], 1)
+        self.assertEqual(reveal['correct_answer_display'], 'A')
+
+    def test_multiple_choice_increments_each_selected_letter(self):
+        from .models import Answer, Player, Room
+        from .utils import build_question_reveal
+
+        room = Room.objects.create(code='111002', name='Multi Reveal')
+        question = Question.objects.create(
+            text='哪些是偶数？',
+            question_type=Question.TYPE_MULTIPLE,
+            option_a='2',
+            option_b='3',
+            option_c='4',
+            option_d='5',
+            correct_option='A,C',
+        )
+        self._attach(room, question)
+        p1 = Player.objects.create(room=room, nickname='M1', session_id='m1')
+        p2 = Player.objects.create(room=room, nickname='M2', session_id='m2')
+        Answer.objects.create(
+            room=room, player=p1, question=question,
+            selected_option='A,C', is_correct=True, points=900, response_time_ms=300,
+        )
+        Answer.objects.create(
+            room=room, player=p2, question=question,
+            selected_option='A,B', is_correct=False, points=0, response_time_ms=400,
+        )
+
+        reveal = build_question_reveal(room, question)
+        counts = {row['key']: row['count'] for row in reveal['option_stats']}
+        self.assertEqual(counts['A'], 2)
+        self.assertEqual(counts['B'], 1)
+        self.assertEqual(counts['C'], 1)
+        self.assertEqual(counts['D'], 0)
+        self.assertEqual(reveal['correct_count'], 1)
+        self.assertEqual(reveal['correct_answer_display'], 'A, C')
+
+    def test_short_answer_counts_correct_and_shows_answer(self):
+        from .models import Answer, Player, Room
+        from .utils import build_question_reveal
+
+        room = Room.objects.create(code='111003', name='Short Reveal')
+        question = Question.objects.create(
+            text='中国的首都？',
+            question_type=Question.TYPE_SHORT_ANSWER,
+            option_a='北京|Beijing',
+            option_b='',
+            option_c='',
+            option_d='',
+            correct_option='',
+        )
+        self._attach(room, question)
+        p1 = Player.objects.create(room=room, nickname='S1', session_id='sa1')
+        p2 = Player.objects.create(room=room, nickname='S2', session_id='sa2')
+        Player.objects.create(room=room, nickname='S3', session_id='sa3')
+        Answer.objects.create(
+            room=room, player=p1, question=question,
+            selected_option='北京', is_correct=True, points=700, response_time_ms=800,
+        )
+        Answer.objects.create(
+            room=room, player=p2, question=question,
+            selected_option='上海', is_correct=False, points=0, response_time_ms=900,
+        )
+
+        reveal = build_question_reveal(room, question)
+        self.assertEqual(reveal['option_stats'], [])
+        self.assertEqual(reveal['correct_count'], 1)
+        self.assertEqual(reveal['answered_count'], 2)
+        self.assertEqual(reveal['unanswered_count'], 1)
+        self.assertEqual(reveal['correct_answer_display'], '北京 / Beijing')
+
+    def test_runtime_records_feed_reveal_and_player_result(self):
+        from .models import Room
+        from .room_cache import drop_runtime, get_runtime, join_player, record_answer
+        from .utils import build_question_reveal, get_my_result, get_room_state
+
+        room = Room.objects.create(code='111004', name='Cache Reveal')
+        question = Question.objects.create(
+            text='1+1？',
+            question_type=Question.TYPE_JUDGMENT,
+            option_a='正确',
+            option_b='错误',
+            option_c='',
+            option_d='',
+            correct_option='A',
+        )
+        self._attach(room, question)
+        runtime = get_runtime(room)
+        join_player(runtime, 'Lee', 'sess-lee')
+        join_player(runtime, 'Pat', 'sess-pat')
+        record_answer(runtime, 'sess-lee', question.id, 'A', True, 500, 200)
+        record_answer(runtime, 'sess-pat', question.id, 'B', False, 0, 300)
+
+        reveal = build_question_reveal(room, question, runtime=runtime)
+        counts = {row['key']: row['count'] for row in reveal['option_stats']}
+        self.assertEqual(counts, {'A': 1, 'B': 1})
+        self.assertEqual(reveal['player_count'], 2)
+
+        mine = get_my_result(runtime, 'sess-lee', question.id)
+        self.assertTrue(mine['answered'])
+        self.assertTrue(mine['is_correct'])
+        unanswered = get_my_result(runtime, 'sess-missing', question.id)
+        self.assertFalse(unanswered['answered'])
+        self.assertFalse(unanswered['is_correct'])
+
+        room.status = Room.STATUS_LEADERBOARD
+        room.current_question_index = 0
+        room.save(update_fields=['status', 'current_question_index'])
+        state = get_room_state(room, runtime=runtime)
+        self.assertIn('reveal', state['question'])
+        self.assertEqual(state['question']['reveal']['correct_count'], 1)
+        drop_runtime(room.code)
+
+    def test_host_reveal_template_has_chart_not_score_list(self):
+        from django.template.loader import render_to_string
+        from .models import Room
+
+        room = Room.objects.create(code='111005', name='Host UI')
+        html = render_to_string('game/room_host.html', {
+            'room': room,
+            'questions': [],
+            'initial_state_json': '{}',
+        })
+        self.assertIn('host-reveal-chart', html)
+        self.assertIn('结束本题', html)
+        self.assertNotIn('结束本题 & 显示排行', html)
+        self.assertNotIn('本题得分排行', html)
+        self.assertNotIn('host-leaderboard-list', html)
+
+    def test_student_template_waits_then_shows_dui_cuo(self):
+        from django.template.loader import render_to_string
+        from .models import Room
+
+        room = Room.objects.create(code='111006', name='Play UI')
+        html = render_to_string('game/play.html', {
+            'room': room,
+            'nickname': 'Test',
+        })
+        self.assertIn('已提交，等待揭晓', html)
+        self.assertIn("title: isCorrect ? '对' : '错'", html)
+        self.assertNotIn('回答正确', html)
+        self.assertNotIn('回答错误', html)
+        self.assertIn('applyStemMode', html)
+        self.assertIn('play-hide-stem', html)
+
+
+class StudentStemVisibilityTests(TestCase):
+    def test_parse_show_question_stem(self):
+        from .quiz_set_utils import parse_show_question_stem
+        self.assertTrue(parse_show_question_stem({}))
+        self.assertTrue(parse_show_question_stem({'show_question_stem': '1'}))
+        self.assertFalse(parse_show_question_stem({'show_question_stem': '0'}))
+
+    def test_create_room_can_hide_student_stem(self):
+        from .models import QuizSet, QuizSetQuestion, Teacher
+        from .quiz_set_utils import create_room_from_quiz_set
+        from .utils import get_room_state
+
+        teacher = Teacher.objects.create(username='t_stem')
+        teacher.set_password('password123')
+        teacher.save()
+        quiz_set = QuizSet.objects.create(title='地理随堂', teacher=teacher)
+        question = Question.objects.create(
+            text='首都？',
+            question_type=Question.TYPE_SINGLE,
+            option_a='北京',
+            option_b='上海',
+            option_c='广州',
+            option_d='深圳',
+            correct_option='A',
+        )
+        QuizSetQuestion.objects.create(quiz_set=quiz_set, question=question, order=0)
+
+        hidden = create_room_from_quiz_set(
+            quiz_set, teacher, name='无题干局', show_question_stem=False,
+        )
+        shown = create_room_from_quiz_set(
+            quiz_set, teacher, name='有题干局', show_question_stem=True,
+        )
+        self.assertFalse(hidden.show_question_stem)
+        self.assertTrue(shown.show_question_stem)
+        self.assertFalse(get_room_state(hidden)['show_question_stem'])
+        self.assertTrue(get_room_state(shown)['show_question_stem'])
+
+    def test_room_create_template_has_stem_choice(self):
+        from django.template.loader import render_to_string
+
+        html = render_to_string('game/room_create.html', {
+            'my_quiz_sets': [],
+            'public_quiz_sets': [],
+            'show_question_stem': True,
+        })
+        self.assertIn('name="show_question_stem"', html)
+        self.assertIn('不显示，只出选项', html)
+        self.assertIn('显示题干和图片', html)
+
+
 
 
 
