@@ -1,16 +1,17 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}删除题目 - Kahoot{% endblock %}
+{% block title %}{% trans "删除题目 - Kahoot" %}{% endblock %}
 
 {% block content %}
 <div class="card">
-    <h3>确认删除题目？</h3>
+    <h3>{% trans "确认删除题目？" %}</h3>
     <p class="section-gap">{{ question.text }}</p>
     <form method="post" class="actions-row">
         {% csrf_token %}
         {% if quiz_set_id %}<input type="hidden" name="quiz_set_id" value="{{ quiz_set_id }}">{% endif %}
-        <button type="submit" class="btn btn-primary">确认删除</button>
-        <a href="{% if quiz_set_id %}{% url 'kahoot_editor' quiz_set_id %}{% else %}{% url 'question_list' %}{% endif %}" class="btn btn-outline">取消</a>
+        <button type="submit" class="btn btn-primary">{% trans "确认删除" %}</button>
+        <a href="{% if quiz_set_id %}{% url 'kahoot_editor' quiz_set_id %}{% else %}{% url 'question_list' %}{% endif %}" class="btn btn-outline">{% trans "取消" %}</a>
     </form>
 </div>
 {% endblock %}

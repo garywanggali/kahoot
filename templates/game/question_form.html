@@ -1,6 +1,7 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}{% if action == 'edit' %}编辑题目{% else %}添加题目{% endif %} - Kahoot{% endblock %}
+{% block title %}{% if action == 'edit' %}{% trans "编辑题目" %}{% else %}{% trans "添加题目" %}{% endif %} - Kahoot{% endblock %}
 
 {% block content %}
 <div class="studio-header-bar">
@@ -10,12 +11,12 @@
                 <line x1="19" y1="12" x2="5" y2="12"></line>
                 <polyline points="12 19 5 12 12 5"></polyline>
             </svg>
-            <span>{% if quiz_set %}返回套题{% else %}返回题库{% endif %}</span>
+            <span>{% if quiz_set %}{% trans "返回套题" %}{% else %}{% trans "返回题库" %}{% endif %}</span>
         </a>
-        <h1 class="studio-main-title">{% if action == 'edit' %}编辑题目{% else %}添加题目{% endif %}</h1>
+        <h1 class="studio-main-title">{% if action == 'edit' %}{% trans "编辑题目" %}{% else %}{% trans "添加题目" %}{% endif %}</h1>
     </div>
     {% if quiz_set %}
-    <span class="form-hint">正在编辑：{{ quiz_set.title }}</span>
+    <span class="form-hint">{% blocktranslate with title=quiz_set.title %}正在编辑：{{ title }}{% endblocktranslate %}</span>
     {% endif %}
 </div>
 
@@ -24,86 +25,86 @@
         {% csrf_token %}
         {% if quiz_set %}<input type="hidden" name="quiz_set_id" value="{{ quiz_set.pk }}">{% endif %}
         <div class="form-group">
-            <label>题型</label>
+            <label>{% trans "题型" %}</label>
             <div class="type-toggle">
                 <label class="type-option">
                     <input type="radio" name="question_type" value="single"
                            {% if not question or question.question_type == 'single' %}checked{% endif %}>
-                    单选题
+                    {% trans "单选题" %}
                 </label>
                 <label class="type-option">
                     <input type="radio" name="question_type" value="multiple"
                            {% if question.question_type == 'multiple' %}checked{% endif %}>
-                    多选题
+                    {% trans "多选题" %}
                 </label>
                 <label class="type-option">
                     <input type="radio" name="question_type" value="judgment"
                            {% if question.question_type == 'judgment' %}checked{% endif %}>
-                    判断题
+                    {% trans "判断题" %}
                 </label>
                 <label class="type-option">
                     <input type="radio" name="question_type" value="short_answer"
                            {% if question.question_type == 'short_answer' %}checked{% endif %}>
-                    简答题
+                    {% trans "简答题" %}
                 </label>
                 <label class="type-option">
                     <input type="radio" name="question_type" value="word_cloud"
                            {% if question.question_type == 'word_cloud' %}checked{% endif %}>
-                    词云题
+                    {% trans "词云题" %}
                 </label>
             </div>
         </div>
         <div class="form-group">
-            <label for="text">题目</label>
+            <label for="text">{% trans "题目" %}</label>
             <input type="text" id="text" name="text" class="form-control"
                    value="{{ question.text|default:'' }}" required>
         </div>
         <div class="form-group">
-            <label for="image">题目图片（可选）</label>
+            <label for="image">{% trans "题目图片（可选）" %}</label>
             <input type="file" id="image" name="image" class="form-control"
                    accept="image/jpeg,image/png,image/gif,image/webp">
-            <p class="form-hint">JPG / PNG / GIF / WEBP，最大 {{ max_image_mb|default:2 }}MB</p>
+            <p class="form-hint">{% blocktranslate with max=max_image_mb|default:2 %}JPG / PNG / GIF / WEBP，最大 {{ max }}MB{% endblocktranslate %}</p>
             {% if question.image %}
             <div class="image-preview">
-                <img src="{{ question.image.url }}" alt="当前题目图片">
+                <img src="{{ question.image.url }}" alt="{% trans '当前题目图片' %}">
             </div>
             <label class="checkbox-inline">
-                <input type="checkbox" name="remove_image" value="1"> 删除当前图片
+                <input type="checkbox" name="remove_image" value="1"> {% trans "删除当前图片" %}
             </label>
             {% endif %}
         </div>
         <div class="form-group hidden" id="short-answer-group">
-            <label for="short_correct">参考答案</label>
+            <label for="short_correct">{% trans "参考答案" %}</label>
             <input type="text" id="short_correct" name="short_correct" class="form-control"
                    value="{% if question.question_type == 'short_answer' %}{{ question.option_a }}{% endif %}"
-                   placeholder="例如：北京">
-            <p class="form-hint">多个可接受答案用 | 分隔，如：猫|猫咪</p>
+                   placeholder="{% trans '例如：北京' %}">
+            <p class="form-hint">{% trans "多个可接受答案用 | 分隔，如：猫|猫咪" %}</p>
         </div>
         <div class="form-group hidden" id="word-cloud-hint-group">
-            <p class="form-hint">词云题无标准答案，学生提交后实时汇总展示词云（适合调查、开放问题）。</p>
+            <p class="form-hint">{% trans "词云题无标准答案，学生提交后实时汇总展示词云（适合调查、开放问题）。" %}</p>
         </div>
         <div class="form-group" id="option-a-group">
-            <label for="option_a" id="option-a-label">选项 A</label>
+            <label for="option_a" id="option-a-label">{% trans "选项 A" %}</label>
             <input type="text" id="option_a" name="option_a" class="form-control"
                    value="{% if question.question_type == 'judgment' %}{{ question.option_a|default:'正确' }}{% else %}{{ question.option_a|default:'' }}{% endif %}" required>
         </div>
         <div class="form-group" id="option-b-group">
-            <label for="option_b" id="option-b-label">选项 B</label>
+            <label for="option_b" id="option-b-label">{% trans "选项 B" %}</label>
             <input type="text" id="option_b" name="option_b" class="form-control"
                    value="{% if question.question_type == 'judgment' %}{{ question.option_b|default:'错误' }}{% else %}{{ question.option_b|default:'' }}{% endif %}" required>
         </div>
         <div class="form-group" id="option-c-group">
-            <label for="option_c">选项 C</label>
+            <label for="option_c">{% trans "选项 C" %}</label>
             <input type="text" id="option_c" name="option_c" class="form-control"
                    value="{{ question.option_c|default:'' }}" required>
         </div>
         <div class="form-group" id="option-d-group">
-            <label for="option_d">选项 D</label>
+            <label for="option_d">{% trans "选项 D" %}</label>
             <input type="text" id="option_d" name="option_d" class="form-control"
                    value="{{ question.option_d|default:'' }}" required>
         </div>
         <div class="form-group" id="single-answer-group">
-            <label for="correct_option">正确答案</label>
+            <label for="correct_option">{% trans "正确答案" %}</label>
             <select id="correct_option" name="correct_option" class="form-control">
                 <option value="A" {% if question.correct_option == 'A' %}selected{% endif %}>A</option>
                 <option value="B" {% if question.correct_option == 'B' %}selected{% endif %}>B</option>
@@ -112,22 +113,22 @@
             </select>
         </div>
         <div class="form-group hidden" id="judgment-answer-group">
-            <label>正确答案</label>
+            <label>{% trans "正确答案" %}</label>
             <div class="type-toggle">
                 <label class="type-option">
                     <input type="radio" name="judgment_correct" value="A"
                            {% if not question or question.question_type != 'judgment' or question.correct_option == 'A' %}checked{% endif %}>
-                    选「正确」项
+                    {% trans "选「正确」项" %}
                 </label>
                 <label class="type-option">
                     <input type="radio" name="judgment_correct" value="B"
                            {% if question.question_type == 'judgment' and question.correct_option == 'B' %}checked{% endif %}>
-                    选「错误」项
+                    {% trans "选「错误」项" %}
                 </label>
             </div>
         </div>
         <div class="form-group hidden" id="multiple-answer-group">
-            <label>正确答案（至少选 2 项）</label>
+            <label>{% trans "正确答案（至少选 2 项）" %}</label>
             <div class="correct-checkboxes">
                 {% for key in "ABCD" %}
                 <label class="checkbox-inline">
@@ -139,7 +140,7 @@
             </div>
         </div>
         <div class="form-group">
-            <label for="time_limit">答题时限 (秒)</label>
+            <label for="time_limit">{% trans "答题时限 (秒)" %}</label>
             <input type="number" id="time_limit" name="time_limit" class="form-control"
                    value="{{ question.time_limit|default:20 }}" min="5" max="120">
         </div>
@@ -147,12 +148,12 @@
             <label class="checkbox-inline">
                 <input type="checkbox" name="is_public" value="1"
                        {% if question.is_public %}checked{% endif %}>
-                公开到题库（其他老师可查看并在房间中使用，但无法编辑）
+                {% trans "公开到题库（其他老师可查看并在房间中使用，但无法编辑）" %}
             </label>
         </div>
-        <button type="submit" class="btn btn-primary btn-lg">保存题目</button>
+        <button type="submit" class="btn btn-primary btn-lg">{% trans "保存题目" %}</button>
         {% if quiz_set and action == 'create' %}
-        <p class="form-hint section-gap">保存后返回套题页，可继续添加下一题。</p>
+        <p class="form-hint section-gap">{% trans "保存后返回套题页，可继续添加下一题。" %}</p>
         {% endif %}
     </form>
 </div>
@@ -175,6 +176,7 @@ function updateAnswerFields() {
     const isJudgment = type === 'judgment';
     const isShort = type === 'short_answer';
     const isWordCloud = type === 'word_cloud';
+    const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
 
     document.getElementById('single-answer-group').classList.toggle('hidden', isMultiple || isJudgment || isShort || isWordCloud);
     document.getElementById('multiple-answer-group').classList.toggle('hidden', !isMultiple);
@@ -188,13 +190,13 @@ function updateAnswerFields() {
     document.getElementById('option-d-group').classList.toggle('hidden', isJudgment || isShort || isWordCloud);
 
     if (isJudgment) {
-        document.getElementById('option-a-label').textContent = '「正确」选项文字';
-        document.getElementById('option-b-label').textContent = '「错误」选项文字';
-        if (!document.getElementById('option_a').value.trim()) document.getElementById('option_a').value = '正确';
-        if (!document.getElementById('option_b').value.trim()) document.getElementById('option_b').value = '错误';
+        document.getElementById('option-a-label').textContent = isEn ? '"True" Option Text' : '「正确」选项文字';
+        document.getElementById('option-b-label').textContent = isEn ? '"False" Option Text' : '「错误」选项文字';
+        if (!document.getElementById('option_a').value.trim()) document.getElementById('option_a').value = isEn ? 'True' : '正确';
+        if (!document.getElementById('option_b').value.trim()) document.getElementById('option_b').value = isEn ? 'False' : '错误';
     } else if (!isShort && !isWordCloud) {
-        document.getElementById('option-a-label').textContent = '选项 A';
-        document.getElementById('option-b-label').textContent = '选项 B';
+        document.getElementById('option-a-label').textContent = isEn ? 'Option A' : '选项 A';
+        document.getElementById('option-b-label').textContent = isEn ? 'Option B' : '选项 B';
     }
 
     setOptionRequired(type);

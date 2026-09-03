@@ -3560,6 +3560,13 @@ body:has(.host-app-viewport) {
     max-height: 100vh !important;
 }
 
+/* 当进入答题数据分析阶段时，解除视口锁定，允许全局纵向自然滚动 */
+body:has(.host-app-viewport):has(#host-analytics:not(.hidden)) {
+    overflow-y: auto !important;
+    height: auto !important;
+    max-height: none !important;
+}
+
 body:has(.host-app-viewport) .container {
     padding: 0.75rem 1.5rem !important;
     max-width: 1400px !important;
@@ -3570,6 +3577,12 @@ body:has(.host-app-viewport) .container {
     overflow: hidden !important;
     display: flex;
     flex-direction: column;
+}
+
+body:has(.host-app-viewport):has(#host-analytics:not(.hidden)) .container {
+    overflow-y: visible !important;
+    height: auto !important;
+    max-height: none !important;
 }
 
 .host-app-viewport {
@@ -3585,6 +3598,12 @@ body:has(.host-app-viewport) .container {
     overflow: hidden;
     box-sizing: border-box;
     padding-bottom: 0 !important;
+}
+
+body:has(.host-app-viewport):has(#host-analytics:not(.hidden)) .host-app-viewport {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
 }
 
 .host-header-bar {
@@ -4364,6 +4383,17 @@ body:has(.host-app-viewport) .container {
 }
 
 /* 4. 颁奖典礼 (Podium - 奢华质感无Emoji交互领奖台) */
+#host-ended.host-stage-card {
+    justify-content: center !important;
+    gap: 1.25rem !important;
+    padding: 1.75rem 2.5rem !important;
+}
+
+#host-ended .host-stage-title-wrap {
+    margin-bottom: 0.5rem !important;
+    flex-shrink: 0;
+}
+
 .host-ceremony-tag {
     display: inline-flex;
     align-items: center;
@@ -4377,17 +4407,35 @@ body:has(.host-app-viewport) .container {
     font-size: 0.8rem;
     font-weight: 800;
     letter-spacing: 0.08em;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
 }
 
 .host-podium-outer {
-    margin: 0.25rem 0 0.85rem;
+    margin: 0.25rem 0 0.5rem;
     width: 100%;
-    flex: 1;
+    flex: 0 1 auto;
     display: flex;
     align-items: flex-end;
     justify-content: center;
     min-height: 0;
+}
+
+#host-ended .host-stage-foot {
+    padding-top: 0.5rem !important;
+    margin-top: 0.25rem !important;
+    flex-shrink: 0;
+}
+
+/* 5. 答题数据分析复盘 (全页纵向自然滚动) */
+.host-stage-card#host-analytics {
+    overflow-y: visible !important;
+    max-height: none !important;
+    height: auto !important;
+    min-height: calc(100vh - 80px) !important;
+    margin-bottom: 3rem !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start !important;
 }
 
 .podium-stage {

@@ -380,22 +380,15 @@
         const className = options.className || 'kahoot-avatar-svg';
 
         return `
-            <svg class="${className}" width="${width}" height="${height}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="头像" style="overflow: visible;">
-                <defs>
-                    <!-- 投影底盘 -->
-                    <filter id="kh-av-shadow-${avatar.face}-${avatar.hair}" x="-10%" y="-10%" width="120%" height="120%">
-                        <feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000000" flood-opacity="0.14"/>
-                    </filter>
-                </defs>
-
+            <svg class="${className}" width="${width}" height="${height}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="头像" style="overflow: visible; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.12));">
                 <!-- 卡通圆形主身躯 (Kahoot 标志性圆润角色) -->
-                <g filter="url(#kh-av-shadow-${avatar.face}-${avatar.hair})">
+                <g class="avatar-body-layer">
                     <!-- 身体底色 -->
                     <rect x="14" y="14" width="72" height="72" rx="36" fill="${palette.body.bg}"/>
                     <!-- 立体底阴影微弧 -->
-                    <path d="M 16 60 Q 50 92 84 60 A 36 36 0 0 1 16 60 Z" fill="${palette.body.shadow}" opacity="0.3"/>
+                    <path d="M 16 60 Q 50 92 84 60 A 36 36 0 0 1 16 60 Z" fill="${palette.body.shadow}" opacity="0.35"/>
                     <!-- 边框收边 -->
-                    <rect x="14" y="14" width="72" height="72" rx="36" stroke="rgba(0,0,0,0.12)" stroke-width="2"/>
+                    <rect x="14" y="14" width="72" height="72" rx="36" stroke="rgba(0,0,0,0.15)" stroke-width="2.5"/>
                 </g>
 
                 <!-- 脸部表情层 (眼睛、腮红、嘴巴) -->

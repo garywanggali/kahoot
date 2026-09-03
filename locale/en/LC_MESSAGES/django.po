@@ -1,0 +1,854 @@
+# English translations for Kahoot
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-03 14:00+0800\n"
+"PO-Revision-Date: 2026-09-03 14:00+0800\n"
+"Last-Translator: Antigravity\n"
+"Language-Team: English\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: templates/base.html
+msgid "中 / EN"
+msgstr "中 / EN"
+
+#: templates/game/index.html
+msgid "Kahoot - every question. every answer."
+msgstr "Kahoot - every question. every answer."
+
+msgid "房间号"
+msgstr "Game PIN"
+
+msgid "输入6位房间码"
+msgstr "Enter 6-digit PIN"
+
+msgid "昵称"
+msgstr "Nickname"
+
+msgid "输入你的昵称"
+msgstr "Enter your nickname"
+
+msgid "进入游戏"
+msgstr "Enter Game"
+
+msgid "你是出题人？<strong>切换至老师端 ↻</strong>"
+msgstr "Host a quiz? <strong>Switch to Teacher Studio ↻</strong>"
+
+msgid "用户名"
+msgstr "Username"
+
+msgid "输入老师用户名"
+msgstr "Enter teacher username"
+
+msgid "密码"
+msgstr "Password"
+
+msgid "注册时设置的密码（不是邀请码）"
+msgstr "Password set during registration"
+
+msgid "登录老师控制台"
+msgstr "Log In to Studio"
+
+msgid "还没有账号？邀请码注册 →"
+msgstr "No account? Register with invite code →"
+
+msgid "← <strong>返回学生加入</strong>"
+msgstr "← <strong>Back to Student Join</strong>"
+
+#: templates/game/play.html
+msgid "游戏"
+msgstr "Game"
+
+msgid "玩家"
+msgstr "Player"
+
+msgid "已连线 %(count)s 人"
+msgstr "%(count)s players connected"
+
+msgid "随机换装"
+msgstr "Randomize"
+
+msgid "表情"
+msgstr "Face"
+
+msgid "发型"
+msgstr "Hair"
+
+msgid "上一个表情"
+msgstr "Previous Face"
+
+msgid "下一个表情"
+msgstr "Next Face"
+
+msgid "上一个发型"
+msgstr "Previous Hair"
+
+msgid "下一个发型"
+msgstr "Next Hair"
+
+msgid "等待老师开始游戏"
+msgstr "Waiting for the host to start…"
+
+msgid "题目图片"
+msgstr "Question Image"
+
+msgid "在此输入你的答案..."
+msgstr "Type your answer here…"
+
+msgid "提交答案"
+msgstr "Submit"
+
+msgid "等待下一题..."
+msgstr "Waiting for next question…"
+
+msgid "颁奖典礼"
+msgstr "Podium & Awards"
+
+msgid "完整排名"
+msgstr "Full Rankings"
+
+msgid "查看数据分析"
+msgstr "View Analytics"
+
+msgid "返回首页"
+msgstr "Back to Home"
+
+msgid "答题数据分析"
+msgstr "Match Analytics"
+
+msgid "← 返回荣誉领奖台"
+msgstr "← Back to Podium"
+
+msgid "返回首页 →"
+msgstr "Back to Home →"
+
+msgid "输入弹幕..."
+msgstr "Type a comment…"
+
+msgid "发送"
+msgstr "Send"
+
+msgid "收起"
+msgstr "Collapse"
+
+msgid "发弹幕"
+msgstr "Danmaku"
+
+#: templates/game/room_host.html
+msgid "主持游戏"
+msgstr "Host Quiz"
+
+msgid "返回控制台"
+msgstr "Back to Studio"
+
+msgid "互动测验房间"
+msgstr "Interactive Quiz Room"
+
+msgid "互动测验"
+msgstr "Interactive Quiz"
+
+msgid "请使用手机浏览器访问并输入 6 位房间号加入"
+msgstr "Join with phone browser using the 6-digit Game PIN"
+
+msgid "已加入：%(count)s 人"
+msgstr "Joined: %(count)s players"
+
+msgid "共 <strong>%(count)s</strong> 道试题"
+msgstr "Total <strong>%(count)s</strong> Questions"
+
+msgid "已进入玩家"
+msgstr "Joined Players"
+
+msgid "等待学生连线中… 手机输入房间号后将实时在此处显示"
+msgstr "Waiting for players to connect… Names will appear here live."
+
+msgid "开始游戏"
+msgstr "Start Game"
+
+msgid "已答：%(count)s / %(total)s 人"
+msgstr "Answered: %(count)s / %(total)s players"
+
+msgid "加载题干中…"
+msgstr "Loading question…"
+
+msgid "实时词云汇总"
+msgstr "Live Word Cloud"
+
+msgid "结束本题"
+msgstr "End Question"
+
+msgid "答题揭晓"
+msgstr "Question Results"
+
+msgid "本题统计"
+msgstr "Question Stats"
+
+msgid "各选项作答人数与正确答案"
+msgstr "Response breakdown and correct answer"
+
+msgid "人答对"
+msgstr "Correct"
+
+msgid "本题词云"
+msgstr "Word Cloud"
+
+msgid "正确答案"
+msgstr "Correct Answer"
+
+msgid "下一题"
+msgstr "Next Question"
+
+msgid "结束并返回控制台"
+msgstr "Finish & Return to Studio"
+
+#: templates/game/teacher_dashboard.html
+msgid "老师控制台 - 互动测验工作台"
+msgstr "Teacher Studio - Interactive Quiz"
+
+msgid "老师控制台"
+msgstr "Teacher Studio"
+
+msgid "当前账号：%(user)s"
+msgstr "Current account: %(user)s"
+
+msgid "安全退出"
+msgstr "Log Out"
+
+msgid "退出登录"
+msgstr "Log Out"
+
+msgid "创建互动房间"
+msgstr "Launch Game Room"
+
+msgid "挑选一套测验题库，一键生成 6 位房间号并投屏至大屏，组织学生手机连线极速竞答。"
+msgstr "Select a quiz set, generate a 6-digit PIN to project on the big screen, and host live fast-paced student competitions."
+
+msgid "+ 发起新房间"
+msgstr "+ Launch Room"
+
+msgid "新建 Kahoot / 我的题库"
+msgstr "Create Kahoot / My Question Bank"
+
+msgid "支持手动编排或使用 AI 智能批量出题，自由配置单选、多选、判断与配图题型。"
+msgstr "Create questions manually or generate them in bulk with AI, configuring single choice, multi choice, true/false, and image prompts."
+
+msgid "+ 新建 Kahoot"
+msgstr "+ New Kahoot"
+
+msgid "管理我的题库 (%(count)s)"
+msgstr "Manage Question Bank (%(count)s)"
+
+#: templates/game/teacher_login.html
+msgid "老师登录 - Kahoot Studio"
+msgstr "Teacher Log In - Kahoot Studio"
+
+msgid "← 返回首页"
+msgstr "← Back to Home"
+
+#: templates/game/teacher_register.html
+msgid "老师注册 - Kahoot Studio"
+msgstr "Teacher Registration - Kahoot Studio"
+
+msgid "邀请码"
+msgstr "Invite Code"
+
+msgid "例如 WELCOME2026（仅注册时使用）"
+msgstr "e.g. WELCOME2026 (Registration only)"
+
+msgid "3–50 位字母、数字或下划线"
+msgstr "3–50 characters (letters, numbers, underscore)"
+
+msgid "至少 6 位密码"
+msgstr "At least 6 characters"
+
+msgid "确认密码"
+msgstr "Confirm Password"
+
+msgid "再次输入密码"
+msgstr "Re-enter password"
+
+msgid "注册并登录"
+msgstr "Register & Log In"
+
+msgid "已有老师账号？<strong>去登录 →</strong>"
+msgstr "Already have an account? <strong>Log In →</strong>"
+
+#: templates/game/kahoot_new.html
+msgid "新建测验题库 - 题库创建向导"
+msgstr "New Quiz Set - Creation Wizard"
+
+msgid "新建测验题库"
+msgstr "Create New Quiz Set"
+
+msgid "1. 命名题库"
+msgstr "1. Name Quiz"
+
+msgid "2. 选择出题方式"
+msgstr "2. Choose Creation Method"
+
+msgid "返回修改名称"
+msgstr "Back to Edit Name"
+
+msgid "第一步：命名这套测验题库"
+msgstr "Step 1: Name this Quiz Set"
+
+msgid "每次新建都会保存为<strong>一套独立的测验套题</strong>，可在题库中随时复用，也可直接一键发起大屏互动。"
+msgstr "Every quiz set is saved as <strong>an independent package</strong> ready for instant classroom hosting or future reuse."
+
+msgid "题库名称"
+msgstr "Quiz Title"
+
+msgid "例如：初一地理期末总复习 / 细胞生物学专题测验"
+msgstr "e.g., Grade 7 Geography Review / Cell Biology Quiz"
+
+msgid "下一步：选择出题方式"
+msgstr "Next: Choose Method"
+
+msgid "第二步：选择出题方式"
+msgstr "Step 2: Choose Creation Method"
+
+msgid "选择最适合你的出题模式，选定后即可直接进入试题编辑或批量生成。"
+msgstr "Select the creation mode that best fits your workflow to start editing or bulk-generating questions."
+
+msgid "开始手动出题 →"
+msgstr "Create Manually →"
+
+msgid "手动编辑出题"
+msgstr "Manual Question Editor"
+
+msgid "逐题编写题干与选项，自由配置单选、多选、判断、简答与配图。"
+msgstr "Compose stems and options step by step with single/multi choice, true/false, short answer, and image uploads."
+
+msgid "使用 AI 生成 →"
+msgstr "Generate with AI →"
+
+msgid "AI 智能生成"
+msgstr "AI Generator"
+
+msgid "输入学科主题、年级与题型配比，由大模型自动出题并填入。"
+msgstr "Input subject topic, grade level, and question types; let AI automatically generate and populate questions."
+
+msgid "上传 Excel 导入 →"
+msgstr "Import from Excel →"
+
+msgid "Excel 批量导入"
+msgstr "Excel Bulk Import"
+
+msgid "下载标准表格模板，按固定格式批量上传 .xlsx 文件快速导入试题。"
+msgstr "Download standard spreadsheet template and upload .xlsx files for instant bulk question importing."
+
+msgid "浏览公共题库 →"
+msgstr "Browse Public Bank →"
+
+msgid "从公共题库选用"
+msgstr "Select from Public Bank"
+
+msgid "浏览其他老师公开的精选套题，一键选用或二次编辑修改。"
+msgstr "Explore shared quiz sets from other teachers to clone and customize with one click."
+
+#: templates/game/kahoot_editor.html
+msgid "编辑 %(title)s - Kahoot Studio"
+msgstr "Edit %(title)s - Kahoot Studio"
+
+msgid "Kahoot 名称"
+msgstr "Kahoot Title"
+
+msgid "已快速保存"
+msgstr "Auto-saved"
+
+msgid "保存"
+msgstr "Save"
+
+msgid "离开"
+msgstr "Exit"
+
+msgid "题目"
+msgstr "Questions"
+
+msgid "+ 添加"
+msgstr "+ Add"
+
+msgid "点击上传题目图片（可选）"
+msgstr "Click to upload question image (Optional)"
+
+msgid "移除图片"
+msgstr "Remove Image"
+
+msgid "输入题干…"
+msgstr "Type question stem…"
+
+msgid "选项 A"
+msgstr "Option A"
+
+msgid "选项 B"
+msgstr "Option B"
+
+msgid "选项 C"
+msgstr "Option C"
+
+msgid "选项 D"
+msgstr "Option D"
+
+msgid "标为正确答案"
+msgstr "Mark as correct"
+
+msgid "参考答案（多个用 | 分隔）"
+msgstr "Accepted answer (separate multiple with |)"
+
+msgid "词云题：学生提交文字后实时汇总，无标准答案。"
+msgstr "Word cloud: Students submit words live without scoring."
+
+msgid "题目设置"
+msgstr "Question Settings"
+
+msgid "题型"
+msgstr "Question Type"
+
+msgid "单选题"
+msgstr "Single Choice"
+
+msgid "多选题"
+msgstr "Multiple Choice"
+
+msgid "判断题"
+msgstr "True / False"
+
+msgid "简答题"
+msgstr "Short Answer"
+
+msgid "词云题"
+msgstr "Word Cloud"
+
+msgid "答题时限"
+msgstr "Time Limit"
+
+msgid "单选：点击 ✓ 标记唯一正确答案"
+msgstr "Single: Click ✓ to mark the correct option"
+
+msgid "保存本题"
+msgstr "Save Question"
+
+msgid "删除本题"
+msgstr "Delete Question"
+
+msgid "离开编辑？"
+msgstr "Exit Editor?"
+
+msgid "离开前请选择是否保存修改，以及是否将套题公开到题库。"
+msgstr "Before leaving, choose whether to save changes and whether to publish this quiz set."
+
+msgid "保存当前修改"
+msgstr "Save current changes"
+
+msgid "保存题目、选项、配图和套题名称等编辑内容。"
+msgstr "Save questions, options, images, and quiz title."
+
+msgid "公开此套测验题库"
+msgstr "Make this quiz set public"
+
+msgid "公开后，其他老师可在公共题库中浏览并一键选用本套题。"
+msgstr "When public, other teachers can discover and clone this quiz set."
+
+msgid "取消"
+msgstr "Cancel"
+
+msgid "确认离开"
+msgstr "Confirm & Exit"
+
+#: templates/game/kahoot_ai.html
+msgid "AI 生成 Kahoot - Kahoot"
+msgstr "AI Kahoot Generator - Kahoot"
+
+msgid "返回新建 Kahoot"
+msgstr "Back to New Kahoot"
+
+msgid "AI 智能生成 Kahoot"
+msgstr "AI Kahoot Generator"
+
+msgid "未检测到 <code>STEPFUN_API_KEY</code>。请在阶跃星辰开放平台创建 API Key 后设置环境变量并重启服务。"
+msgstr "<code>STEPFUN_API_KEY</code> not detected. Please configure the environment variable and restart."
+
+msgid "本地示例："
+msgstr "Local example: "
+
+msgid "接入文档"
+msgstr "Documentation"
+
+msgid "生成设置"
+msgstr "Generation Settings"
+
+msgid "套题名称"
+msgstr "Quiz Set Title"
+
+msgid "在新建页已设定，保存后将使用此名称"
+msgstr "Set in wizard, will be used upon saving"
+
+msgid "未检测到套题名称，请 <a href=\"/teacher/kahoot/new/\">返回新建页</a> 先命名题库再选择 AI 生成。"
+msgstr "Quiz title missing. Please <a href=\"/teacher/kahoot/new/\">return to wizard</a> to name your quiz first."
+
+msgid "主题 / 方向"
+msgstr "Topic / Subject"
+
+msgid "例如：地理、中国古代史、英语词汇"
+msgstr "e.g., World Geography, Ancient Civilizations, English Vocabulary"
+
+msgid "仅用于指导 AI 出题内容，与套题名称无关。"
+msgstr "Used only to guide the AI prompt; independent of the quiz set title."
+
+msgid "详细要求（可选）"
+msgstr "Detailed Requirements (Optional)"
+
+msgid "可写任意长度的限制说明，例如：着重中国地理，考查学生如何把中国地理特点跟政权更迭联系起来的能力；题目难度中等，避免过于偏门的知识点。"
+msgstr "Specify additional instructions, target grade, difficulty level, focus points, etc."
+
+msgid "各题型数量（总计不超过 %(max)s 道）"
+msgstr "Question Counts (Max %(max)s total)"
+
+msgid "AI 仅生成以上四种题型，不含词云题。"
+msgstr "AI generates these 4 question types; word cloud excluded."
+
+msgid "生成题目"
+msgstr "Generate Questions"
+
+msgid "预览（%(count)s 道）"
+msgstr "Preview (%(count)s Questions)"
+
+msgid "套题名称：<strong>%(title)s</strong>。确认内容后进入可视化编辑器审核修改。"
+msgstr "Quiz Set: <strong>%(title)s</strong>. Confirm to open in the visual editor."
+
+msgid "参考答案："
+msgstr "Accepted Answer: "
+
+msgid "正确 / 错误 · 答案："
+msgstr "True / False · Answer: "
+
+msgid "正确答案："
+msgstr "Correct Answer: "
+
+msgid "保存并进入编辑 →"
+msgstr "Save & Open Editor →"
+
+msgid "放弃并重新生成"
+msgstr "Discard & Re-generate"
+
+msgid "AI 正在出题"
+msgstr "AI is Generating Questions"
+
+msgid "通常需要 30 秒～2 分钟，请勿关闭或刷新页面"
+msgstr "Usually takes 30s to 2 minutes. Please do not close or refresh this page."
+
+#: templates/game/kahoot_import.html
+msgid "Excel 导入题库 - Kahoot"
+msgstr "Excel Quiz Import - Kahoot"
+
+msgid "Excel 导入题库"
+msgstr "Excel Quiz Import"
+
+msgid "按严格表头格式上传，一键生成整套 Kahoot"
+msgstr "Upload standard spreadsheet to generate a full Kahoot quiz set."
+
+msgid "下载模板 .xlsx"
+msgstr "Download Template .xlsx"
+
+msgid "格式要求（必须严格遵守）"
+msgstr "Formatting Requirements (Strict)"
+
+msgid "文件格式：<strong>.xlsx</strong>（不支持 .xls / .csv）"
+msgstr "File format: <strong>.xlsx</strong> (.xls / .csv not supported)"
+
+msgid "第一行表头必须<strong>完全一致</strong>（共 %(count)s 列）："
+msgstr "First row header must match <strong>strictly</strong> (%(count)s columns):"
+
+msgid "从第 2 行起为题目，最多 <strong>%(count)s</strong> 道"
+msgstr "Questions start from row 2, up to <strong>%(count)s</strong> questions"
+
+msgid "推荐在 Excel 模板下拉框中直接选择 <strong>单选题</strong>、<strong>多选题</strong>、<strong>判断题</strong>、<strong>简答题</strong>（亦兼容填写 <code>single</code> / <code>multiple</code> / <code>judgment</code> / <code>short_answer</code>）"
+msgstr "Select from Excel dropdown: <strong>Single</strong>, <strong>Multiple</strong>, <strong>True/False</strong>, <strong>Short Answer</strong> (also accepts <code>single</code>, <code>multiple</code>, <code>judgment</code>, <code>short_answer</code>)"
+
+msgid "单选"
+msgstr "Single Choice"
+
+msgid "四选项必填，正确答案单个字母 A/B/C/D"
+msgstr "All 4 options required; correct answer is single letter A/B/C/D"
+
+msgid "多选"
+msgstr "Multiple Choice"
+
+msgid "四选项必填，正确答案逗号分隔且至少 2 项，如 <code>A,C</code>（须全部选对才得分）"
+msgstr "All 4 options required; comma-separated letters with at least 2 items, e.g. <code>A,C</code>"
+
+msgid "判断"
+msgstr "True / False"
+
+msgid "选项 A/B 为正确/错误文字，正确答案 <code>A</code> 或 <code>B</code>"
+msgstr "Option A/B are True/False texts; correct answer is <code>A</code> or <code>B</code>"
+
+msgid "简答"
+msgstr "Short Answer"
+
+msgid "参考答案写在「选项A」列，多个可接受答案用 <code>|</code> 分隔"
+msgstr "Accepted answer written in Option A column; separate multiple answers with <code>|</code>"
+
+msgid "词云"
+msgstr "Word Cloud"
+
+msgid "选项列可留空，无标准答案"
+msgstr "Option columns can be left empty; no correct answer."
+
+msgid "时限秒"
+msgstr "Time Limit (s)"
+
+msgid "5–120 的整数"
+msgstr "Integer from 5 to 120"
+
+msgid "上传文件"
+msgstr "Upload File"
+
+msgid "导入后的套题名称"
+msgstr "Imported Quiz Set Title"
+
+msgid "Excel 文件 (.xlsx)"
+msgstr "Excel File (.xlsx)"
+
+msgid "导入并创建套题 →"
+msgstr "Import & Create Quiz Set →"
+
+#: templates/game/kahoot_public.html
+msgid "公共题库 - Kahoot"
+msgstr "Public Question Bank - Kahoot"
+
+msgid "返回创建题库"
+msgstr "Back to Create Quiz"
+
+msgid "公共题库"
+msgstr "Public Question Bank"
+
+msgid "复制其他老师公开的套题到我的题库，可在编辑器中修改"
+msgstr "Clone shared quiz sets from other teachers into your library to customize."
+
+msgid "名称"
+msgstr "Title"
+
+msgid "作者"
+msgstr "Author"
+
+msgid "题数"
+msgstr "Questions"
+
+msgid "操作"
+msgstr "Action"
+
+msgid "副本"
+msgstr "Copy"
+
+msgid "复制到我的题库"
+msgstr "Clone to My Library"
+
+msgid "暂无其他老师公开的套题。"
+msgstr "No public quiz sets available yet."
+
+#: templates/game/room_create.html
+msgid "创建互动房间 - 互动测验工作台"
+msgstr "Create Game Room - Teacher Studio"
+
+msgid "（选填，留空将默认使用套题名称）"
+msgstr "(Optional, defaults to quiz title if blank)"
+
+msgid "例如：初一地理期中竞赛 / 课前 5 分钟随堂测验"
+msgstr "e.g., Grade 7 Geography Midterm / 5-min Warm-up Quiz"
+
+msgid "学生端是否显示题干"
+msgstr "Show Question Stem on Student Screens"
+
+msgid "（公共屏幕始终显示完整题目）"
+msgstr "(Big projector screen always displays full question)"
+
+msgid "显示题干和图片"
+msgstr "Show stem and image"
+
+msgid "学生手机上能看到题目文字和配图，再作答"
+msgstr "Students see question text and images directly on their devices before answering"
+
+msgid "不显示，只出选项"
+msgstr "Hide stem, options only"
+
+msgid "学生端铺满选项或输入框，题干看教室大屏"
+msgstr "Student screens show full-screen buttons; stem is read from projector"
+
+msgid "选择互动测验套题"
+msgstr "Select Quiz Set"
+
+msgid "（点击卡片即可直接选中）"
+msgstr "(Click card to select)"
+
+msgid "我的题库 (%(count)s)"
+msgstr "My Library (%(count)s)"
+
+msgid "公共题库 (%(count)s)"
+msgstr "Public Bank (%(count)s)"
+
+msgid "%(count)s 题"
+msgstr "%(count)s Qs"
+
+msgid "您还没有创建自己的测验套题"
+msgstr "You have not created any quiz sets yet."
+
+msgid "+ 去新建套题"
+msgstr "+ Create New Quiz"
+
+msgid "创建并启动房间"
+msgstr "Create & Launch Room"
+
+msgid "当前暂无任何可用测验套题"
+msgstr "No quiz sets available currently."
+
+msgid "+ 立即新建第一套 Kahoot"
+msgstr "+ Create First Kahoot Now"
+
+#: templates/game/room_analytics.html
+msgid "数据分析报告"
+msgstr "Analytics Report"
+
+msgid "对战数据分析报告"
+msgstr "Match Analytics Report"
+
+msgid "房间号：<code>%(code)s</code>"
+msgstr "Room PIN: <code>%(code)s</code>"
+
+msgid "返回大厅主持"
+msgstr "Back to Live Host"
+
+#: templates/game/question_list.html
+msgid "我的题库 - 测验套题管理"
+msgstr "My Question Bank - Quiz Set Management"
+
+msgid "我的测验套题"
+msgstr "My Quiz Sets"
+
+msgid "试题数量"
+msgstr "Questions"
+
+msgid "可见权限"
+msgstr "Visibility"
+
+msgid "创建时间"
+msgstr "Created At"
+
+msgid "快捷操作"
+msgstr "Actions"
+
+msgid "题"
+msgstr "Qs"
+
+msgid "公开"
+msgstr "Public"
+
+msgid "私有"
+msgstr "Private"
+
+msgid "编辑"
+msgstr "Edit"
+
+msgid "删除套题"
+msgstr "Delete Quiz"
+
+msgid "确定要删除套题吗？此操作不可恢复。"
+msgstr "Are you sure you want to delete this quiz set? This action cannot be undone."
+
+msgid "← 上一页"
+msgstr "← Previous"
+
+msgid "下一页 →"
+msgstr "Next →"
+
+msgid "暂无测验套题"
+msgstr "No Quiz Sets Yet"
+
+msgid "你可以前往创建向导，使用手动、AI 或 Excel 快速创建你的第一套题库。"
+msgstr "Use the wizard to create questions manually, with AI, or via Excel bulk upload."
+
+msgid "+ 新建测验题库 →"
+msgstr "+ Create New Quiz Set →"
+
+#: templates/game/question_form.html
+msgid "编辑题目"
+msgstr "Edit Question"
+
+msgid "添加题目"
+msgstr "Add Question"
+
+msgid "返回套题"
+msgstr "Back to Quiz"
+
+msgid "返回题库"
+msgstr "Back to Bank"
+
+msgid "正在编辑：%(title)s"
+msgstr "Editing: %(title)s"
+
+msgid "JPG / PNG / GIF / WEBP，最大 %(max)sMB"
+msgstr "JPG / PNG / GIF / WEBP, Max %(max)sMB"
+
+msgid "当前题目图片"
+msgstr "Current Image"
+
+msgid "删除当前图片"
+msgstr "Delete Current Image"
+
+msgid "例如：北京"
+msgstr "e.g., Beijing"
+
+msgid "多个可接受答案用 | 分隔，如：猫|猫咪"
+msgstr "Separate multiple accepted answers with |, e.g., cat|kitten"
+
+msgid "词云题无标准答案，学生提交后实时汇总展示词云（适合调查、开放问题）。"
+msgstr "Word cloud questions have no correct answers; submissions are aggregated live."
+
+msgid "选「正确」项"
+msgstr "Select \"True\""
+
+msgid "选「错误」项"
+msgstr "Select \"False\""
+
+msgid "正确答案（至少选 2 项）"
+msgstr "Correct Options (Select at least 2)"
+
+msgid "答题时限 (秒)"
+msgstr "Time Limit (seconds)"
+
+msgid "公开到题库（其他老师可查看并在房间中使用，但无法编辑）"
+msgstr "Share publicly (other teachers can host, but cannot edit)"
+
+msgid "保存题目"
+msgstr "Save Question"
+
+msgid "保存后返回套题页，可继续添加下一题。"
+msgstr "Returns to quiz page after saving to add more questions."
+
+#: templates/game/kahoot_confirm_delete.html
+msgid "删除套题 - Kahoot"
+msgstr "Delete Quiz Set - Kahoot"
+
+msgid "确认删除整套 Kahoot？"
+msgstr "Confirm Deleting Quiz Set?"
+
+msgid "%(count)s 道题"
+msgstr "%(count)s questions"
+
+msgid "将同时删除套题内的所有题目，此操作不可恢复。"
+msgstr "All questions inside this quiz set will be deleted. This cannot be undone."
+
+msgid "确认删除"
+msgstr "Confirm Delete"
+
+#: templates/game/question_confirm_delete.html
+msgid "删除题目 - Kahoot"
+msgstr "Delete Question - Kahoot"
+
+msgid "确认删除题目？"
+msgstr "Confirm Deleting Question?"
