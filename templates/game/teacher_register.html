@@ -1,6 +1,7 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}老师注册 - Kahoot Studio{% endblock %}
+{% block title %}{% trans "老师注册 - Kahoot Studio" %}{% endblock %}
 
 {% block content %}
 <div class="landing-screen-viewport" style="height: auto; min-height: calc(100vh - 2.5rem); overflow: visible;">
@@ -31,46 +32,46 @@
                     {% csrf_token %}
                     
                     <div class="form-group-industrial">
-                        <label for="invite_code">邀请码</label>
+                        <label for="invite_code">{% trans "邀请码" %}</label>
                         <input type="text" id="invite_code" name="invite_code" class="input-industrial"
                                value="{{ invite_code|default:'' }}" required autocomplete="off"
-                               placeholder="例如 WELCOME2026（仅注册时使用）" autofocus>
+                               placeholder="{% trans '例如 WELCOME2026（仅注册时使用）' %}" autofocus>
                     </div>
                     
                     <div class="form-group-industrial">
-                        <label for="username">用户名</label>
+                        <label for="username">{% trans "用户名" %}</label>
                         <input type="text" id="username" name="username" class="input-industrial"
                                value="{{ username|default:'' }}" required autocomplete="username"
                                minlength="3" maxlength="50" pattern="[a-zA-Z0-9_]+"
-                               placeholder="3–50 位字母、数字或下划线">
+                               placeholder="{% trans '3–50 位字母、数字或下划线' %}">
                     </div>
                     
                     <div class="form-group-industrial">
-                        <label for="password">密码</label>
+                        <label for="password">{% trans "密码" %}</label>
                         <input type="password" id="password" name="password" class="input-industrial"
-                               placeholder="至少 6 位密码" required minlength="6" autocomplete="new-password">
+                               placeholder="{% trans '至少 6 位密码' %}" required minlength="6" autocomplete="new-password">
                     </div>
                     
                     <div class="form-group-industrial">
-                        <label for="password_confirm">确认密码</label>
+                        <label for="password_confirm">{% trans "确认密码" %}</label>
                         <input type="password" id="password_confirm" name="password_confirm" class="input-industrial"
-                               placeholder="再次输入密码" required minlength="6" autocomplete="new-password">
+                               placeholder="{% trans '再次输入密码' %}" required minlength="6" autocomplete="new-password">
                     </div>
                     
                     <button type="submit" class="btn-industrial-primary">
-                        <span>注册并登录</span>
+                        <span>{% trans "注册并登录" %}</span>
                         <span>→</span>
                     </button>
                 </form>
                 
                 <div class="flip-footer-switch">
                     <a href="{% url 'teacher_login' %}" class="flip-switch-action">
-                        已有老师账号？<strong>去登录 →</strong>
+                        {% blocktranslate %}已有老师账号？<strong>去登录 →</strong>{% endblocktranslate %}
                     </a>
                 </div>
                 
                 <div class="teacher-extra-links">
-                    <a href="{% url 'index' %}" class="link-mono">← 返回首页</a>
+                    <a href="{% url 'index' %}" class="link-mono">{% trans "← 返回首页" %}</a>
                 </div>
             </div>
         </div>
@@ -82,7 +83,6 @@
 
 {% block extra_js %}
 <script>
-// 鼠标微视差与键帽物理交互
 (function initKeycapsInteraction() {
     const stage = document.getElementById('keycaps-stage');
     if (!stage) return;
