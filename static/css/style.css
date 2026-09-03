@@ -2941,10 +2941,46 @@ button.kahoot-choice-button:focus-visible {
     font-weight: 600;
 }
 
-.host-pulse-icon {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-    animation: hostPulse 2s infinite ease-in-out;
+.host-radar-wrap {
+    position: relative;
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid var(--token-color-pitch-black);
+    box-shadow: 0 4px 0 var(--token-color-pitch-black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--token-color-orange);
+    margin: 0.25rem auto 1rem;
+    box-sizing: border-box;
+}
+
+.host-radar-ping {
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 2px solid var(--token-color-orange);
+    opacity: 0;
+    pointer-events: none;
+    animation: hostRadarPing 2s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
+
+@keyframes hostRadarPing {
+    0% { transform: scale(0.85); opacity: 0.8; }
+    100% { transform: scale(1.35); opacity: 0; }
+}
+
+.host-radar-svg {
+    display: block;
+    color: var(--token-color-orange);
+    animation: hostSignalPulse 2s ease-in-out infinite;
+}
+
+@keyframes hostSignalPulse {
+    0%, 100% { transform: scale(1); opacity: 0.9; }
+    50% { transform: scale(1.08); opacity: 1; }
 }
 
 .host-player-chip {

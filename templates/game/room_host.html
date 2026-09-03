@@ -21,10 +21,7 @@
             <h1 class="studio-main-title" style="font-size: 1.6rem; margin-bottom: 0;">{{ room.name|default:"互动测验房间" }}</h1>
         </div>
 
-        <div class="host-header-status">
-            <span class="host-status-dot"></span>
-            <span id="conn-status" class="host-conn-text">连接中...</span>
-        </div>
+        <span id="conn-status" class="hidden"></span>
     </div>
 
     <!-- 1. 等待学生加入大厅 (Waiting Lobby) -->
@@ -56,7 +53,15 @@
             <div class="host-wall-title">已连线玩家</div>
             <div id="host-waiting-leaderboard" class="host-players-wall">
                 <div class="host-empty-players">
-                    <div class="host-pulse-icon">⏳</div>
+                    <div class="host-radar-wrap">
+                        <div class="host-radar-ping"></div>
+                        <svg class="host-radar-svg" viewBox="0 0 24 24" width="30" height="30" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4.93 4.93a10 10 0 0 1 14.14 0"></path>
+                            <path d="M7.76 7.76a6 6 0 0 1 8.48 0"></path>
+                            <circle cx="12" cy="12" r="2.5"></circle>
+                            <path d="M12 15v6"></path>
+                        </svg>
+                    </div>
                     <p>等待学生连线中… 手机输入房间号后将实时在此处显示</p>
                 </div>
             </div>
@@ -391,7 +396,15 @@ function renderWaitingLobbyPlayers(leaderboard) {
     if (!leaderboard || leaderboard.length === 0) {
         container.innerHTML = `
             <div class="host-empty-players">
-                <div class="host-pulse-icon">⏳</div>
+                <div class="host-radar-wrap">
+                    <div class="host-radar-ping"></div>
+                    <svg class="host-radar-svg" viewBox="0 0 24 24" width="30" height="30" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4.93 4.93a10 10 0 0 1 14.14 0"></path>
+                        <path d="M7.76 7.76a6 6 0 0 1 8.48 0"></path>
+                        <circle cx="12" cy="12" r="2.5"></circle>
+                        <path d="M12 15v6"></path>
+                    </svg>
+                </div>
                 <p>等待学生连线中… 手机输入房间号后将实时在此处显示</p>
             </div>
         `;
