@@ -119,6 +119,11 @@
                     </div>
                     <span>{% trans "等待下一题..." %}</span>
                 </div>
+                <div id="feedback-rank-board" class="feedback-rank-board hidden">
+                    <p class="feedback-rank-title" id="feedback-rank-title"></p>
+                    <p class="feedback-rank-me" id="feedback-rank-me"></p>
+                    <div id="feedback-rank-list" class="feedback-rank-list"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -163,6 +168,14 @@
     </div>
 </div>
 
+<div id="question-countdown" class="q-countdown hidden" aria-live="assertive" aria-atomic="true" aria-hidden="true">
+    <div class="q-countdown-bg"></div>
+    <div class="q-countdown-ring" aria-hidden="true"></div>
+    <p class="q-countdown-meta"></p>
+    <div class="q-countdown-num">3</div>
+    <p class="q-countdown-hint"></p>
+</div>
+
 <div class="danmaku-rail">
     <div id="danmaku-layer" class="danmaku-layer"></div>
 </div>
@@ -195,6 +208,7 @@
 {% block extra_js %}
 <script src="{% static 'js/awards.js' %}?v=6"></script>
 <script src="{% static 'js/analytics.js' %}?v=4"></script>
+<script src="{% static 'js/question_countdown.js' %}?v=1"></script>
 <script>
 function _t(key, ...args) {
     if (typeof window !== 'undefined' && window.t) {
@@ -278,6 +292,7 @@ let ws = null;
 let sessionId = localStorage.getItem('kahoot_session_' + ROOM_CODE) || '';
 let currentQuestionId = null;
 let questionStartTime = null;
+let questionPhase = null;
 let timerInterval = null;
 let hasAnswered = false;
 let selectedOptions = new Set();
@@ -287,6 +302,21 @@ let danmakuEnabled = false;
 let joinedReady = false;
 const pendingActions = [];
 let waitingStatePollTimer = null;
+const playCountdown = window.QuestionCountdown
+    ? window.QuestionCountdown.create('question-countdown')
+    : null;
+
+function cancelPlayCountdown() {
+    if (playCountdown) playCountdown.cancel();
+}
+
+function runPlayCountdown(state, onDone) {
+    if (playCountdown) {
+        playCountdown.run(state, onDone);
+        return;
+    }
+    onDone();
+}
 
 function startWaitingStatePoll() {
     if (waitingStatePollTimer) return;
@@ -374,7 +404,8 @@ function handleEvent(event, data) {
             applyState(data);
             break;
         case 'question_ended':
-            showQuestionResult(data);
+        case 'ranking_shown':
+            applyState(data);
             break;
         case 'game_ended':
             applyState(data);
@@ -432,6 +463,11 @@ function applyState(state) {
     hideAllScreens();
     applyStemMode(state);
 
+    if (state.status !== 'playing') {
+        cancelPlayCountdown();
+        questionPhase = null;
+    }
+
     if (state.status === 'waiting') {
         document.getElementById('waiting-screen').classList.remove('hidden');
         startWaitingStatePoll();
@@ -458,7 +494,7 @@ function applyState(state) {
     } else if (state.status === 'playing' && state.question) {
         document.getElementById('play-screen').classList.remove('hidden');
         showQuestion(state);
-    } else if (state.status === 'leaderboard') {
+    } else if (state.status === 'reveal' || state.status === 'leaderboard') {
         document.getElementById('play-screen').classList.remove('hidden');
         showQuestionResult(state);
         clearTimer();
@@ -485,25 +521,56 @@ function applyStemMode(state) {
 
 function showQuestion(state) {
     const q = state.question;
-    if (currentQuestionId === q.id && hasAnswered && state.status === 'playing') {
+    if (currentQuestionId === q.id && questionPhase) {
         return;
     }
-    if (currentQuestionId !== q.id) {
-        currentQuestionId = q.id;
-        hasAnswered = false;
-        selectedOptions = new Set();
-        lastAnswerResult = { answered: false, is_correct: false, points: 0 };
-        questionStartTime = Date.now();
-        clearResultRevealTimer();
-        hideFeedbackStage();
+    currentQuestionId = q.id;
+    questionPhase = 'countdown';
+    hasAnswered = false;
+    selectedOptions = new Set();
+    lastAnswerResult = { answered: false, is_correct: false, points: 0 };
+    questionStartTime = null;
+    clearResultRevealTimer();
+    hideFeedbackStage();
+    hideQuestionInputUi();
+    hideQuestionStemUi();
+    clearTimer();
+
+    if (q.question_type === 'explanation') {
+        questionPhase = 'live';
+        renderPlayQuestion(state);
+        return;
     }
 
+    runPlayCountdown(state, function () {
+        if (currentQuestionId !== q.id) return;
+        questionPhase = 'live';
+        questionStartTime = Date.now();
+        renderPlayQuestion(state);
+    });
+}
+
+function renderPlayQuestion(state) {
+    const q = state.question;
     const isChoice = CHOICE_TYPES.has(q.question_type);
     const isText = TEXT_TYPES.has(q.question_type);
     const isMultiple = q.question_type === 'multiple';
     const isJudgment = q.question_type === 'judgment';
+    const isExplanation = q.question_type === 'explanation';
     const showStem = shouldShowStem(state);
     applyStemMode(state);
+
+    if (isExplanation) {
+        hideQuestionInputUi();
+        hideQuestionStemUi();
+        document.getElementById('timer-bar').classList.add('hidden');
+        renderFeedbackCard({
+            type: 'waiting',
+            title: _t('play.explanation_title'),
+            detail: _t('play.explanation_detail'),
+        });
+        return;
+    }
 
     document.getElementById('question-number').textContent =
         _t('play.question_num', state.current_question_index + 1, state.total_questions);
@@ -599,7 +666,7 @@ function clearTimer() {
 }
 
 function toggleMultiOption(key, btn) {
-    if (hasAnswered) return;
+    if (hasAnswered || questionPhase !== 'live') return;
     if (selectedOptions.has(key)) {
         selectedOptions.delete(key);
         btn.classList.remove('selected');
@@ -610,7 +677,7 @@ function toggleMultiOption(key, btn) {
 }
 
 function submitTextAnswer() {
-    if (hasAnswered) return;
+    if (hasAnswered || questionPhase !== 'live' || !questionStartTime) return;
     const text = document.getElementById('text-answer-input').value.trim();
     if (!text) return;
     hasAnswered = true;
@@ -623,7 +690,7 @@ function submitTextAnswer() {
 }
 
 function submitMultiAnswer() {
-    if (hasAnswered || selectedOptions.size === 0) return;
+    if (hasAnswered || questionPhase !== 'live' || !questionStartTime || selectedOptions.size === 0) return;
     hasAnswered = true;
     lockAnswerUi();
     sendWs({
@@ -634,7 +701,7 @@ function submitMultiAnswer() {
 }
 
 function submitAnswer(key, btn) {
-    if (hasAnswered) return;
+    if (hasAnswered || questionPhase !== 'live' || !questionStartTime) return;
     hasAnswered = true;
     btn.classList.add('selected');
     lockAnswerUi();
@@ -717,8 +784,11 @@ function renderFeedbackCard(opts) {
     iconEl.innerHTML = iconSvg;
 
     let titleHtml = `<span class="feedback-text-main">${escapeHtml(opts.title || '')}</span>`;
-    if (opts.points !== undefined && opts.points !== null && opts.points > 0) {
-        titleHtml += ` <span class="feedback-points-pill">+${opts.points}</span>`;
+    if (opts.showPoints) {
+        const pts = Number(opts.points) || 0;
+        const zeroClass = pts > 0 ? '' : ' is-zero';
+        const label = _t('awards.pts_gain', pts);
+        titleHtml += ` <span class="feedback-points-pill${zeroClass}">${escapeHtml(String(label))}</span>`;
     }
     titleEl.innerHTML = titleHtml;
 
@@ -736,12 +806,52 @@ function renderFeedbackCard(opts) {
         hintEl.classList.add('hidden');
     }
 
+    if (opts.leaderboard && opts.leaderboard.length) {
+        renderPlayLiveRanking(opts.leaderboard);
+    } else {
+        hidePlayLiveRanking();
+    }
+
     stage.classList.remove('hidden');
 }
 
 function hideFeedbackStage() {
     const stage = document.getElementById('feedback-stage');
     if (stage) stage.classList.add('hidden');
+    hidePlayLiveRanking();
+}
+
+function hidePlayLiveRanking() {
+    const board = document.getElementById('feedback-rank-board');
+    if (board) board.classList.add('hidden');
+}
+
+function renderPlayLiveRanking(leaderboard) {
+    const board = document.getElementById('feedback-rank-board');
+    const titleEl = document.getElementById('feedback-rank-title');
+    const meEl = document.getElementById('feedback-rank-me');
+    const listEl = document.getElementById('feedback-rank-list');
+    if (!board || !listEl) return;
+    const list = leaderboard || [];
+    if (!list.length) {
+        board.classList.add('hidden');
+        return;
+    }
+    if (titleEl) titleEl.textContent = _t('play.live_ranking');
+    const me = list.find(p => p.nickname === NICKNAME);
+    if (meEl) {
+        meEl.textContent = me
+            ? _t('play.your_rank_score', me.rank, me.score)
+            : '';
+        meEl.classList.toggle('hidden', !me);
+    }
+    if (typeof renderLeaderboardList === 'function') {
+        renderLeaderboardList(list, 'feedback-rank-list', 1, {
+            highlightNickname: NICKNAME,
+            maxRows: 5,
+        });
+    }
+    board.classList.remove('hidden');
 }
 
 function applyMyResult(result) {
@@ -784,6 +894,8 @@ function showAnswerFeedback(data) {
 }
 
 function showQuestionResult(state) {
+    cancelPlayCountdown();
+    questionPhase = null;
     applyMyResult(state.my_result);
     clearResultRevealTimer();
     clearTimer();
@@ -793,21 +905,50 @@ function showQuestionResult(state) {
 
     const q = state.question;
     const isWordCloud = q && q.question_type === 'word_cloud';
+    const isExplanation = q && q.question_type === 'explanation';
+    const showRanking = state.status === 'leaderboard';
+    const ranking = showRanking ? state.leaderboard : null;
+
+    if (isExplanation) {
+        renderFeedbackCard({
+            type: 'waiting',
+            title: _t('play.waiting_next'),
+            showWaitingHint: !showRanking,
+            leaderboard: ranking,
+        });
+        return;
+    }
 
     if (isWordCloud || lastAnswerResult.no_score) {
         renderFeedbackCard({
             type: 'submitted',
             title: lastAnswerResult.answered ? _t('fb.submitted_short') : _t('fb.question_ended'),
-            showWaitingHint: true,
+            showWaitingHint: !showRanking,
+            leaderboard: ranking,
         });
         return;
     }
 
-    const isCorrect = lastAnswerResult.answered && lastAnswerResult.is_correct;
+    if (!lastAnswerResult.answered) {
+        renderFeedbackCard({
+            type: 'timeup',
+            title: '未作答',
+            showPoints: true,
+            points: 0,
+            showWaitingHint: !showRanking,
+            leaderboard: ranking,
+        });
+        return;
+    }
+
+    const isCorrect = lastAnswerResult.is_correct;
     renderFeedbackCard({
         type: isCorrect ? 'correct' : 'wrong',
         title: isCorrect ? _t('fb.correct') : _t('fb.wrong'),
-        showWaitingHint: true,
+        showPoints: true,
+        points: isCorrect ? (lastAnswerResult.points || 0) : 0,
+        showWaitingHint: !showRanking,
+        leaderboard: ranking,
     });
 }
 

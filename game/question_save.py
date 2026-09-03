@@ -42,7 +42,7 @@ def parse_question_from_request(request, question=None) -> dict:
 
     if question_type not in (
         Question.TYPE_SINGLE, Question.TYPE_MULTIPLE, Question.TYPE_JUDGMENT,
-        Question.TYPE_SHORT_ANSWER, Question.TYPE_WORD_CLOUD,
+        Question.TYPE_SHORT_ANSWER, Question.TYPE_WORD_CLOUD, Question.TYPE_EXPLANATION,
     ):
         question_type = Question.TYPE_SINGLE
 
@@ -58,6 +58,19 @@ def parse_question_from_request(request, question=None) -> dict:
         option_c = Question.TEXT_OPTION_PLACEHOLDER
         option_d = Question.TEXT_OPTION_PLACEHOLDER
         correct_option = ''
+    elif question_type == Question.TYPE_EXPLANATION:
+        text = Question.EXPLANATION_TEXT_PLACEHOLDER
+        option_a = Question.TEXT_OPTION_PLACEHOLDER
+        option_b = Question.TEXT_OPTION_PLACEHOLDER
+        option_c = Question.TEXT_OPTION_PLACEHOLDER
+        option_d = Question.TEXT_OPTION_PLACEHOLDER
+        correct_option = ''
+        time_limit = 0
+        has_image = bool(image_file) or (
+            question is not None and bool(question.image) and not remove_image
+        )
+        if not has_image:
+            raise QuestionFormError('解释题必须上传一张图片')
     elif question_type == Question.TYPE_JUDGMENT:
         if not option_a:
             option_a = '正确'

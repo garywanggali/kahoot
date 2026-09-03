@@ -57,18 +57,23 @@
                            {% if question.question_type == 'word_cloud' %}checked{% endif %}>
                     {% trans "词云题" %}
                 </label>
+                <label class="type-option">
+                    <input type="radio" name="question_type" value="explanation"
+                           {% if question.question_type == 'explanation' %}checked{% endif %}>
+                    {% trans "解释" %}
+                </label>
             </div>
         </div>
-        <div class="form-group">
+        <div class="form-group" id="text-group">
             <label for="text">{% trans "题目" %}</label>
             <input type="text" id="text" name="text" class="form-control"
                    value="{{ question.text|default:'' }}" required>
         </div>
-        <div class="form-group">
-            <label for="image">{% trans "题目图片（可选）" %}</label>
+        <div class="form-group" id="image-group">
+            <label for="image" id="image-label">{% trans "题目图片（可选）" %}</label>
             <input type="file" id="image" name="image" class="form-control"
                    accept="image/jpeg,image/png,image/gif,image/webp">
-            <p class="form-hint">{% blocktranslate with max=max_image_mb|default:2 %}JPG / PNG / GIF / WEBP，最大 {{ max }}MB{% endblocktranslate %}</p>
+            <p class="form-hint" id="image-hint">{% blocktranslate with max=max_image_mb|default:2 %}JPG / PNG / GIF / WEBP，最大 {{ max }}MB{% endblocktranslate %}</p>
             {% if question.image %}
             <div class="image-preview">
                 <img src="{{ question.image.url }}" alt="{% trans '当前题目图片' %}">
@@ -87,6 +92,9 @@
         </div>
         <div class="form-group hidden" id="word-cloud-hint-group">
             <p class="form-hint">{% trans "词云题无标准答案，学生提交后实时汇总展示词云（适合调查、开放问题）。" %}</p>
+        </div>
+        <div class="form-group hidden" id="explanation-hint-group">
+            <p class="form-hint">{% trans "解释：只上传一张图片，上课铺满大屏供老师讲解，不限时；讲完后老师点下一题。学生端不显示、无需作答。" %}</p>
         </div>
         <div class="form-group" id="option-a-group">
             <label for="option_a" id="option-a-label">{% trans "选项 A" %}</label>
@@ -144,8 +152,8 @@
                 {% endfor %}
             </div>
         </div>
-        <div class="form-group">
-            <label for="time_limit">{% trans "答题时限 (秒)" %}</label>
+        <div class="form-group" id="time-limit-group">
+            <label for="time_limit" id="time-limit-label">{% trans "答题时限 (秒)" %}</label>
             <input type="number" id="time_limit" name="time_limit" class="form-control"
                    value="{{ question.time_limit|default:20 }}" min="5" max="120">
         </div>
@@ -169,10 +177,12 @@
 function setOptionRequired(type) {
     const isChoice = type === 'single' || type === 'multiple';
     const isJudgment = type === 'judgment';
+    const isExplanation = type === 'explanation';
     document.getElementById('option_a').required = isChoice || isJudgment;
     document.getElementById('option_b').required = isChoice || isJudgment;
     document.getElementById('option_c').required = isChoice;
     document.getElementById('option_d').required = isChoice;
+    document.getElementById('text').required = !isExplanation;
 }
 
 function updateAnswerFields() {
@@ -181,25 +191,42 @@ function updateAnswerFields() {
     const isJudgment = type === 'judgment';
     const isShort = type === 'short_answer';
     const isWordCloud = type === 'word_cloud';
+    const isExplanation = type === 'explanation';
+    const hideOptions = isShort || isWordCloud || isExplanation;
     const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
 
-    document.getElementById('single-answer-group').classList.toggle('hidden', isMultiple || isJudgment || isShort || isWordCloud);
+    document.getElementById('single-answer-group').classList.toggle('hidden', isMultiple || isJudgment || isShort || isWordCloud || isExplanation);
     document.getElementById('multiple-answer-group').classList.toggle('hidden', !isMultiple);
     document.getElementById('judgment-answer-group').classList.toggle('hidden', !isJudgment);
     document.getElementById('short-answer-group').classList.toggle('hidden', !isShort);
     document.getElementById('word-cloud-hint-group').classList.toggle('hidden', !isWordCloud);
+    document.getElementById('explanation-hint-group').classList.toggle('hidden', !isExplanation);
+    document.getElementById('text-group').classList.toggle('hidden', isExplanation);
+    const timeGroup = document.getElementById('time-limit-group');
+    if (timeGroup) timeGroup.classList.toggle('hidden', isExplanation);
 
-    document.getElementById('option-a-group').classList.toggle('hidden', isShort || isWordCloud);
-    document.getElementById('option-b-group').classList.toggle('hidden', isJudgment || isShort || isWordCloud);
-    document.getElementById('option-c-group').classList.toggle('hidden', isJudgment || isShort || isWordCloud);
-    document.getElementById('option-d-group').classList.toggle('hidden', isJudgment || isShort || isWordCloud);
+    document.getElementById('option-a-group').classList.toggle('hidden', hideOptions);
+    document.getElementById('option-b-group').classList.toggle('hidden', isJudgment || hideOptions);
+    document.getElementById('option-c-group').classList.toggle('hidden', isJudgment || hideOptions);
+    document.getElementById('option-d-group').classList.toggle('hidden', isJudgment || hideOptions);
+
+    const imageLabel = document.getElementById('image-label');
+    const imageHint = document.getElementById('image-hint');
+    if (imageLabel) imageLabel.textContent = isExplanation ? '解释图片（必填，仅一张）' : '题目图片（可选）';
+    if (imageHint) {
+        imageHint.textContent = isExplanation
+            ? '上课时铺满屏幕。JPG / PNG / GIF / WEBP，最大 {{ max_image_mb|default:2 }}MB'
+            : 'JPG / PNG / GIF / WEBP，最大 {{ max_image_mb|default:2 }}MB';
+    }
+    const timeLabel = document.getElementById('time-limit-label');
+    if (timeLabel) timeLabel.textContent = isEn ? 'Time limit (seconds)' : '答题时限 (秒)';
 
     if (isJudgment) {
         document.getElementById('option-a-label').textContent = isEn ? '"True" Option Text' : '「正确」选项文字';
         document.getElementById('option-b-label').textContent = isEn ? '"False" Option Text' : '「错误」选项文字';
         if (!document.getElementById('option_a').value.trim()) document.getElementById('option_a').value = isEn ? 'True' : '正确';
         if (!document.getElementById('option_b').value.trim()) document.getElementById('option_b').value = isEn ? 'False' : '错误';
-    } else if (!isShort && !isWordCloud) {
+    } else if (!isShort && !isWordCloud && !isExplanation) {
         document.getElementById('option-a-label').textContent = isEn ? 'Option A' : '选项 A';
         document.getElementById('option-b-label').textContent = isEn ? 'Option B' : '选项 B';
     }

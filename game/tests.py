@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from .models import Question
 
@@ -466,6 +466,41 @@ class QuestionRevealTests(TestCase):
         self.assertEqual(state['question']['reveal']['correct_count'], 1)
         drop_runtime(room.code)
 
+    def test_playing_state_tracks_live_answered_count(self):
+        from .models import Room
+        from .room_cache import drop_runtime, get_runtime, join_player, record_answer
+        from .utils import get_room_state
+
+        room = Room.objects.create(
+            code='111007',
+            name='Live Count',
+            status=Room.STATUS_PLAYING,
+            current_question_index=0,
+        )
+        question = Question.objects.create(
+            text='首都？',
+            question_type=Question.TYPE_SINGLE,
+            option_a='北京',
+            option_b='上海',
+            option_c='广州',
+            option_d='深圳',
+            correct_option='A',
+        )
+        self._attach(room, question)
+        runtime = get_runtime(room)
+        join_player(runtime, 'Lee', 'sess-lee')
+        join_player(runtime, 'Pat', 'sess-pat')
+        record_answer(runtime, 'sess-lee', question.id, 'A', True, 500, 200)
+
+        state = get_room_state(room, runtime=runtime)
+        self.assertEqual(state['player_count'], 2)
+        self.assertEqual(state['answered_count'], 1)
+
+        record_answer(runtime, 'sess-pat', question.id, 'B', False, 0, 300)
+        state = get_room_state(room, runtime=runtime)
+        self.assertEqual(state['answered_count'], 2)
+        drop_runtime(room.code)
+
     def test_host_reveal_template_has_chart_not_score_list(self):
         from django.template.loader import render_to_string
         from .models import Room
@@ -478,6 +513,14 @@ class QuestionRevealTests(TestCase):
         })
         self.assertIn('host-reveal-chart', html)
         self.assertIn('结束本题', html)
+        self.assertIn('host-question-countdown', html)
+        self.assertIn('QuestionCountdown', html)
+        self.assertIn('host-mid-leaderboard', html)
+        self.assertIn('answers_updated', html)
+        self.assertIn('updateHostAnswerProgress', html)
+        self.assertIn('hostPlayingAction', html)
+        self.assertIn('ranking_shown', html)
+        self.assertIn("host.btn_show_ranking", html)
         self.assertNotIn('结束本题 & 显示排行', html)
         self.assertNotIn('本题得分排行', html)
         self.assertNotIn('host-leaderboard-list', html)
@@ -491,12 +534,19 @@ class QuestionRevealTests(TestCase):
             'room': room,
             'nickname': 'Test',
         })
-        self.assertTrue("已提交，等待揭晓" in html or "_t('fb.submitted')" in html)
-        self.assertTrue("title: isCorrect ? _t('fb.correct') : _t('fb.wrong')" in html or "title: isCorrect ? '对' : '错'" in html)
+        self.assertIn("_t('fb.submitted')", html)
+        self.assertIn("title: '未作答'", html)
+        self.assertIn("_t('fb.correct')", html)
+        self.assertIn("_t('fb.wrong')", html)
         self.assertNotIn('回答正确', html)
         self.assertNotIn('回答错误', html)
         self.assertIn('applyStemMode', html)
         self.assertIn('play-hide-stem', html)
+        self.assertIn('question-countdown', html)
+        self.assertIn('QuestionCountdown', html)
+        self.assertIn('showPoints: true', html)
+        self.assertIn('feedback-rank-board', html)
+        self.assertIn("state.status === 'leaderboard'", html)
 
 
 class StudentStemVisibilityTests(TestCase):
@@ -604,7 +654,420 @@ class KahootAIGenerateTests(TestCase):
         self.assertContains(follow, 'ai-loading-overlay hidden')
 
 
+def _tiny_png(name='slide.png'):
+    from io import BytesIO
+
+    from django.core.files.uploadedfile import SimpleUploadedFile
+    from PIL import Image
+
+    buf = BytesIO()
+    Image.new('RGB', (16, 9), color=(20, 90, 180)).save(buf, format='PNG')
+    return SimpleUploadedFile(name, buf.getvalue(), content_type='image/png')
 
 
+@override_settings(MEDIA_ROOT='/Users/garywit/work/kahoot/.test-media')
+class ExplanationQuestionTests(TestCase):
+    def _make_explanation(self, with_image=True) -> Question:
+        q = Question(
+            text=Question.EXPLANATION_TEXT_PLACEHOLDER,
+            question_type=Question.TYPE_EXPLANATION,
+            option_a=Question.TEXT_OPTION_PLACEHOLDER,
+            option_b=Question.TEXT_OPTION_PLACEHOLDER,
+            option_c=Question.TEXT_OPTION_PLACEHOLDER,
+            option_d=Question.TEXT_OPTION_PLACEHOLDER,
+            correct_option='',
+            time_limit=30,
+        )
+        if with_image:
+            q.image = _tiny_png()
+        q.save()
+        return q
+
+    def test_unscored_and_not_answerable(self):
+        q = self._make_explanation()
+        self.assertTrue(q.is_unscored())
+        self.assertFalse(q.is_answer_correct('A'))
+        self.assertEqual(q.get_options(), [])
+        self.assertEqual(q.get_correct_option_display(), '')
+
+    def test_parse_requires_image(self):
+        from django.test import RequestFactory
+
+        from .question_save import QuestionFormError, parse_question_from_request
+
+        factory = RequestFactory()
+        request = factory.post('/', {'question_type': 'explanation', 'time_limit': '20'})
+        with self.assertRaises(QuestionFormError):
+            parse_question_from_request(request)
+
+        request = factory.post('/', {
+            'question_type': 'explanation',
+            'time_limit': '45',
+            'text': 'ignored',
+            'image': _tiny_png(),
+        })
+        fields = parse_question_from_request(request)
+        self.assertEqual(fields['question_type'], Question.TYPE_EXPLANATION)
+        self.assertEqual(fields['text'], Question.EXPLANATION_TEXT_PLACEHOLDER)
+        self.assertTrue(fields['image_file'])
+        self.assertEqual(fields['time_limit'], 0)
+
+    def test_room_state_is_fullscreen_slide(self):
+        from .models import Room, RoomQuestion
+        from .utils import get_room_state
+        from django.utils import timezone
+
+        question = self._make_explanation()
+        room = Room.objects.create(
+            code='112233',
+            name='讲解房',
+            status=Room.STATUS_PLAYING,
+            current_question_index=0,
+            question_started_at=timezone.now(),
+        )
+        RoomQuestion.objects.create(room=room, question=question, order=0)
+        state = get_room_state(room)
+        self.assertEqual(state['question']['question_type'], Question.TYPE_EXPLANATION)
+        self.assertTrue(state['question']['no_score'])
+        self.assertTrue(state['question'].get('image_url'))
+        self.assertEqual(state['question']['options'], [])
+        self.assertEqual(state['countdown_remaining_ms'], 0)
+
+    def test_analytics_skips_explanation_for_players(self):
+        from .analytics import get_room_analytics_data
+        from .models import Player, Room, RoomQuestion
+
+        question = self._make_explanation()
+        scored = Question.objects.create(
+            text='1+1?',
+            question_type=Question.TYPE_SINGLE,
+            option_a='2', option_b='3', option_c='4', option_d='5',
+            correct_option='A',
+        )
+        room = Room.objects.create(code='334455', name='Analytics Exp')
+        RoomQuestion.objects.create(room=room, question=question, order=0)
+        RoomQuestion.objects.create(room=room, question=scored, order=1)
+        Player.objects.create(room=room, nickname='Ann', session_id='ann', score=0)
+        data = get_room_analytics_data(room)
+        by_q = data['by_questions']
+        self.assertEqual(by_q[0]['is_explanation'], True)
+        self.assertEqual(by_q[0]['is_unscored'], True)
+        self.assertEqual(data['summary']['total_scored_questions'], 1)
+        self.assertEqual(data['by_players'][0]['unanswered_count'], 1)
+
+    def test_editor_save_api(self):
+        from django.urls import reverse
+
+        from .models import QuizSet, Teacher
+
+        teacher = Teacher.objects.create(username='t_explain')
+        teacher.set_password('password123')
+        teacher.save()
+        quiz_set = QuizSet.objects.create(title='讲解套题', teacher=teacher)
+        session = self.client.session
+        session['teacher_id'] = teacher.pk
+        session.save()
+
+        add_url = reverse('kahoot_question_add', args=[quiz_set.pk])
+        add_resp = self.client.post(add_url)
+        self.assertEqual(add_resp.status_code, 200)
+        qid = add_resp.json()['question']['id']
+
+        save_url = reverse('kahoot_question_save', args=[quiz_set.pk])
+        resp = self.client.post(save_url, {
+            'question_id': qid,
+            'question_type': 'explanation',
+            'time_limit': '60',
+            'image': _tiny_png(),
+        })
+        self.assertEqual(resp.status_code, 200, resp.content)
+        data = resp.json()['question']
+        self.assertEqual(data['question_type'], 'explanation')
+        self.assertTrue(data['image_url'])
+        self.assertEqual(data['text'], Question.EXPLANATION_TEXT_PLACEHOLDER)
+        self.assertEqual(data['time_limit'], 0)
+
+    def test_clone_copies_explanation_image(self):
+        from .models import QuizSet, Teacher
+        from .quiz_set_utils import add_question_to_quiz_set, clone_quiz_set
+
+        owner = Teacher.objects.create(username='t_src')
+        owner.set_password('password123')
+        owner.save()
+        other = Teacher.objects.create(username='t_dst')
+        other.set_password('password123')
+        other.save()
+        source = QuizSet.objects.create(title='带讲解', teacher=owner, is_public=True)
+        question = self._make_explanation()
+        question.teacher = owner
+        question.save(update_fields=['teacher'])
+        add_question_to_quiz_set(source, question)
+
+        cloned = clone_quiz_set(source, other, '带讲解副本')
+        cloned_q = cloned.get_questions()[0]
+        self.assertEqual(cloned_q.question_type, Question.TYPE_EXPLANATION)
+        self.assertTrue(cloned_q.image)
+        self.assertNotEqual(cloned_q.image.name, question.image.name)
+
+
+class QuestionCountdownTests(TestCase):
+    def test_remaining_ms_from_start_time(self):
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        from .models import Room
+        from .utils import QUESTION_COUNTDOWN_SECONDS, can_accept_answer, question_countdown_remaining_ms
+
+        started = timezone.now()
+        room = Room.objects.create(
+            code='445566',
+            name='Countdown',
+            status=Room.STATUS_PLAYING,
+            question_started_at=started,
+        )
+        self.assertEqual(QUESTION_COUNTDOWN_SECONDS, 3)
+        self.assertEqual(question_countdown_remaining_ms(room, now=started), 3000)
+        self.assertEqual(
+            question_countdown_remaining_ms(room, now=started + timedelta(milliseconds=1200)),
+            1800,
+        )
+        self.assertEqual(
+            question_countdown_remaining_ms(room, now=started + timedelta(seconds=3)),
+            0,
+        )
+        self.assertFalse(can_accept_answer(room))
+        room.question_started_at = started - timedelta(seconds=4)
+        room.save(update_fields=['question_started_at'])
+        self.assertTrue(can_accept_answer(room))
+
+        room.status = Room.STATUS_WAITING
+        room.save(update_fields=['status'])
+        self.assertEqual(question_countdown_remaining_ms(room, now=started), 0)
+        self.assertFalse(can_accept_answer(room))
+
+    def test_room_state_includes_countdown(self):
+        from django.utils import timezone
+
+        from .models import Room, RoomQuestion
+        from .utils import get_room_state
+
+        question = Question.objects.create(
+            text='首都？',
+            question_type=Question.TYPE_SINGLE,
+            option_a='北京',
+            option_b='上海',
+            option_c='广州',
+            option_d='深圳',
+            correct_option='A',
+        )
+        started = timezone.now()
+        room = Room.objects.create(
+            code='778899',
+            name='Countdown State',
+            status=Room.STATUS_PLAYING,
+            current_question_index=0,
+            question_started_at=started,
+        )
+        RoomQuestion.objects.create(room=room, question=question, order=0)
+        state = get_room_state(room)
+        self.assertEqual(state['countdown_seconds'], 3)
+        self.assertGreater(state['countdown_remaining_ms'], 2000)
+        self.assertLessEqual(state['countdown_remaining_ms'], 3000)
+
+
+class TeacherSettingsTests(TestCase):
+    def setUp(self):
+        from .models import Teacher
+        self.teacher = Teacher.objects.create(username='t_settings', display_name='老师甲')
+        self.teacher.set_password('oldpass1')
+        self.teacher.save()
+        session = self.client.session
+        session['teacher_id'] = self.teacher.pk
+        session.save()
+
+    def test_dashboard_has_settings_entry(self):
+        from django.urls import reverse
+        resp = self.client.get(reverse('teacher_dashboard'))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'btn-open-settings')
+        self.assertContains(resp, 'settings-overlay')
+        self.assertContains(resp, 'teacher-settings-form')
+
+    def test_update_profile_without_password(self):
+        import json
+
+        from django.urls import reverse
+
+        from .models import Teacher
+        resp = self.client.post(
+            reverse('teacher_settings'),
+            data=json.dumps({
+                'display_name': '地理老师',
+                'gender': 'female',
+                'username': 't_settings',
+                'avatar': {'face': 3, 'hair': 2},
+            }),
+            content_type='application/json',
+        )
+        self.assertEqual(resp.status_code, 200, resp.content)
+        payload = resp.json()
+        self.assertTrue(payload['ok'])
+        self.assertEqual(payload['teacher']['display_name'], '地理老师')
+        self.assertEqual(payload['teacher']['gender'], 'female')
+        self.assertEqual(payload['teacher']['avatar'], {'face': 3, 'hair': 2})
+        teacher = Teacher.objects.get(pk=self.teacher.pk)
+        self.assertEqual(teacher.display_name, '地理老师')
+        self.assertEqual(teacher.gender, 'female')
+
+    def test_username_change_requires_password(self):
+        import json
+
+        from django.urls import reverse
+        resp = self.client.post(
+            reverse('teacher_settings'),
+            data=json.dumps({
+                'display_name': '老师甲',
+                'gender': 'unspecified',
+                'username': 'new_teacher',
+            }),
+            content_type='application/json',
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.teacher.refresh_from_db()
+        self.assertEqual(self.teacher.username, 't_settings')
+
+    def test_password_change(self):
+        import json
+
+        from django.urls import reverse
+
+        from .models import Teacher
+        resp = self.client.post(
+            reverse('teacher_settings'),
+            data=json.dumps({
+                'display_name': '老师甲',
+                'gender': 'unspecified',
+                'username': 't_settings',
+                'current_password': 'oldpass1',
+                'new_password': 'newpass9',
+                'new_password_confirm': 'newpass9',
+            }),
+            content_type='application/json',
+        )
+        self.assertEqual(resp.status_code, 200, resp.content)
+        teacher = Teacher.objects.get(pk=self.teacher.pk)
+        self.assertTrue(teacher.check_password('newpass9'))
+        self.assertFalse(teacher.check_password('oldpass1'))
+
+
+class RevealThenRankingFlowTests(TestCase):
+    def _choice_question(self):
+        return Question.objects.create(
+            text='首都？',
+            question_type=Question.TYPE_SINGLE,
+            option_a='北京',
+            option_b='上海',
+            option_c='广州',
+            option_d='深圳',
+            correct_option='A',
+            time_limit=20,
+        )
+
+    def _explanation(self):
+        q = Question(
+            text=Question.EXPLANATION_TEXT_PLACEHOLDER,
+            question_type=Question.TYPE_EXPLANATION,
+            option_a=Question.TEXT_OPTION_PLACEHOLDER,
+            option_b=Question.TEXT_OPTION_PLACEHOLDER,
+            option_c=Question.TEXT_OPTION_PLACEHOLDER,
+            option_d=Question.TEXT_OPTION_PLACEHOLDER,
+            correct_option='',
+            time_limit=0,
+        )
+        q.image = _tiny_png()
+        q.save()
+        return q
+
+    def test_end_question_shows_stats_then_ranking_then_next(self):
+        from .consumers import advance_question_for_room, end_question_for_room
+        from .models import Room, RoomQuestion
+
+        q1 = self._choice_question()
+        q2 = self._choice_question()
+        q2.text = '第二题'
+        q2.save(update_fields=['text'])
+        room = Room.objects.create(
+            code='221001',
+            name='两步揭晓',
+            status=Room.STATUS_PLAYING,
+            current_question_index=0,
+        )
+        RoomQuestion.objects.create(room=room, question=q1, order=0)
+        RoomQuestion.objects.create(room=room, question=q2, order=1)
+
+        state, event = end_question_for_room(room.code)
+        self.assertEqual(event, 'question_ended')
+        self.assertEqual(state['status'], Room.STATUS_REVEAL)
+        self.assertIn('reveal', state['question'])
+
+        state, event, error = advance_question_for_room(room.code)
+        self.assertIsNone(error)
+        self.assertEqual(event, 'ranking_shown')
+        self.assertEqual(state['status'], Room.STATUS_LEADERBOARD)
+        self.assertIn('reveal', state['question'])
+
+        state, event, error = advance_question_for_room(room.code)
+        self.assertIsNone(error)
+        self.assertEqual(event, 'question_started')
+        self.assertEqual(state['status'], Room.STATUS_PLAYING)
+        self.assertEqual(state['current_question_index'], 1)
+        self.assertEqual(state['question']['id'], q2.id)
+
+    def test_explanation_skips_stats_and_ranking(self):
+        from .consumers import advance_question_for_room, end_question_for_room
+        from .models import Room, RoomQuestion
+
+        slide = self._explanation()
+        q2 = self._choice_question()
+        room = Room.objects.create(
+            code='221002',
+            name='讲解跳过',
+            status=Room.STATUS_PLAYING,
+            current_question_index=0,
+        )
+        RoomQuestion.objects.create(room=room, question=slide, order=0)
+        RoomQuestion.objects.create(room=room, question=q2, order=1)
+
+        state, event, error = advance_question_for_room(room.code)
+        self.assertIsNone(error)
+        self.assertEqual(event, 'question_started')
+        self.assertEqual(state['status'], Room.STATUS_PLAYING)
+        self.assertEqual(state['question']['id'], q2.id)
+
+        room.status = Room.STATUS_PLAYING
+        room.current_question_index = 0
+        room.save(update_fields=['status', 'current_question_index'])
+        state, event = end_question_for_room(room.code)
+        self.assertEqual(event, 'question_started')
+        self.assertEqual(state['status'], Room.STATUS_PLAYING)
+        self.assertEqual(state['question']['id'], q2.id)
+
+    def test_last_explanation_ends_game(self):
+        from .consumers import advance_question_for_room
+        from .models import Room, RoomQuestion
+
+        slide = self._explanation()
+        room = Room.objects.create(
+            code='221003',
+            name='最后一题讲解',
+            status=Room.STATUS_PLAYING,
+            current_question_index=0,
+        )
+        RoomQuestion.objects.create(room=room, question=slide, order=0)
+        state, event, error = advance_question_for_room(room.code)
+        self.assertIsNone(error)
+        self.assertEqual(event, 'game_ended')
+        self.assertEqual(state['status'], Room.STATUS_ENDED)
 
 

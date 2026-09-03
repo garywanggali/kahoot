@@ -4,6 +4,40 @@ from .models import Answer, Player, Question, Room
 from .question_save import _question_image_url
 from .validators import MAX_QUESTION_IMAGE_BYTES
 
+QUESTION_COUNTDOWN_SECONDS = 3
+
+
+def question_uses_countdown(question) -> bool:
+    if not question:
+        return True
+    if getattr(question, 'question_type', None) == Question.TYPE_EXPLANATION:
+        return False
+    if int(getattr(question, 'time_limit', 0) or 0) <= 0:
+        return False
+    return True
+
+
+def question_countdown_remaining_ms(room, now=None) -> int:
+    """Milliseconds left in the 3-2-1 intro before answering starts."""
+    if getattr(room, 'status', None) != Room.STATUS_PLAYING:
+        return 0
+    current_q = room.current_question() if hasattr(room, 'current_question') else None
+    if not question_uses_countdown(current_q):
+        return 0
+    started = getattr(room, 'question_started_at', None)
+    if not started:
+        return 0
+    now = now or timezone.now()
+    elapsed_ms = int((now - started).total_seconds() * 1000)
+    return max(0, QUESTION_COUNTDOWN_SECONDS * 1000 - elapsed_ms)
+
+
+def can_accept_answer(room) -> bool:
+    return (
+        getattr(room, 'status', None) == Room.STATUS_PLAYING
+        and question_countdown_remaining_ms(room) <= 0
+    )
+
 
 def build_question_reveal(room, question, runtime=None) -> dict:
     """Public reveal payload after a question ends: option bars + correct answer."""
@@ -64,13 +98,15 @@ def build_question_reveal(room, question, runtime=None) -> dict:
 def get_my_result(runtime, session_id: str, question_id: int) -> dict:
     from .room_cache import get_player_answer_record
     rec = get_player_answer_record(runtime, session_id, question_id) if runtime else None
+    question = Question.objects.filter(pk=question_id).only('question_type').first()
+    no_score = bool(question and question.question_type in Question.UNSCORED_TYPES)
     if rec is None:
-        return {'answered': False, 'is_correct': False, 'points': 0}
+        return {'answered': False, 'is_correct': False, 'points': 0, 'no_score': no_score}
     return {
         'answered': True,
         'is_correct': bool(rec.is_correct),
         'points': rec.points,
-        'no_score': False,
+        'no_score': no_score,
     }
 
 
@@ -109,16 +145,20 @@ def get_room_state(room, runtime=None):
         'player_count': room.players.count(),
         'leaderboard': get_leaderboard(room),
         'show_question_stem': bool(getattr(room, 'show_question_stem', True)),
+        'countdown_seconds': QUESTION_COUNTDOWN_SECONDS,
+        'countdown_remaining_ms': question_countdown_remaining_ms(room),
+        'answered_count': 0,
     }
-    if current_q and room.status in (Room.STATUS_PLAYING, Room.STATUS_LEADERBOARD):
+    if current_q and room.status in (Room.STATUS_PLAYING, *Room.SETTLEMENT_STATUSES):
         question_data = {
             'id': current_q.id,
             'text': current_q.text,
             'question_type': current_q.question_type,
             'options': current_q.get_options(),
             'time_limit': current_q.time_limit,
+            'no_score': current_q.question_type in Question.UNSCORED_TYPES,
         }
-        if room.status == Room.STATUS_LEADERBOARD:
+        if room.status in Room.SETTLEMENT_STATUSES:
             if current_q.question_type == Question.TYPE_MULTIPLE:
                 question_data['correct_options'] = sorted(current_q.get_correct_option_set())
             elif current_q.question_type == Question.TYPE_JUDGMENT:
@@ -128,7 +168,7 @@ def get_room_state(room, runtime=None):
                 )
             elif current_q.question_type == Question.TYPE_SHORT_ANSWER:
                 question_data['correct_answer'] = current_q.option_a.replace('|', ' / ')
-            elif current_q.question_type != Question.TYPE_WORD_CLOUD:
+            elif current_q.question_type not in Question.UNSCORED_TYPES:
                 question_data['correct_option'] = current_q.correct_option
             question_data['reveal'] = build_question_reveal(room, current_q, runtime)
         if current_q.image:
@@ -143,6 +183,6 @@ def get_room_state(room, runtime=None):
 
 
 def process_question_end(room):
-    room.status = Room.STATUS_LEADERBOARD
+    room.status = Room.STATUS_REVEAL
     room.save(update_fields=['status'])
     return get_room_state(room)

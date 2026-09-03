@@ -6,7 +6,7 @@
 {% block title %}{% blocktranslate with title=quiz_set.title %}编辑 {{ title }} - Kahoot Studio{% endblocktranslate %}{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/kahoot_editor.css' %}?v=19">
+<link rel="stylesheet" href="{% static 'css/kahoot_editor.css' %}?v=21">
 {% endblock %}
 
 {% block content %}
@@ -54,7 +54,7 @@
                     <img id="preview-image" class="kahoot-editor-preview-img hidden" alt="">
                     <div id="media-placeholder" class="kahoot-editor-media-placeholder">
                         <span>+</span>
-                        <p>{% trans "点击上传题目图片（可选）" %}</p>
+                        <p id="media-placeholder-text">{% trans "点击上传题目图片（可选）" %}</p>
                     </div>
                     <input type="file" id="image-input" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden">
                     <button type="button" class="btn btn-outline btn-sm hidden" id="btn-remove-image">{% trans "移除图片" %}</button>
@@ -97,6 +97,10 @@
                     <p>{% trans "词云题：学生提交文字后实时汇总，无标准答案。" %}</p>
                 </div>
 
+                <div id="explanation-panel" class="kahoot-editor-hint hidden">
+                    <p>{% trans "解释：只上传一张图片，上课铺满大屏供老师讲解，不限时；讲完后老师点下一题。学生端不显示、无需作答。" %}</p>
+                </div>
+
                 <p class="kahoot-editor-save-hint" id="save-status"></p>
             </div>
         </main>
@@ -111,9 +115,10 @@
                     <option value="judgment">{% trans "判断题" %}</option>
                     <option value="short_answer">{% trans "简答题" %}</option>
                     <option value="word_cloud">{% trans "词云题" %}</option>
+                    <option value="explanation">{% trans "解释" %}</option>
                 </select>
             </div>
-            <div class="form-group">
+            <div class="form-group" id="time-limit-group">
                 <label for="field-time">{% trans "答题时限" %}</label>
                 <select id="field-time" class="form-control">
                     <option value="10">10s</option>
@@ -174,5 +179,5 @@
 const INITIAL_QUESTIONS = {{ questions_json|safe }};
 const MAX_IMAGE_MB = {{ max_image_mb }};
 </script>
-<script src="{% static 'js/kahoot_editor.js' %}?v=21"></script>
+<script src="{% static 'js/kahoot_editor.js' %}?v=24"></script>
 {% endblock %}

@@ -80,6 +80,10 @@
         optionsPanel: document.getElementById('options-panel'),
         shortPanel: document.getElementById('short-panel'),
         wordPanel: document.getElementById('wordcloud-panel'),
+        explanationPanel: document.getElementById('explanation-panel'),
+        preview: document.getElementById('editor-preview'),
+        mediaZone: document.getElementById('media-zone'),
+        mediaPlaceholderText: document.getElementById('media-placeholder-text'),
         previewImage: document.getElementById('preview-image'),
         mediaPlaceholder: document.getElementById('media-placeholder'),
         imageInput: document.getElementById('image-input'),
@@ -119,6 +123,7 @@
                 judgment: 'True/False',
                 short_answer: 'Short Answer',
                 word_cloud: 'Word Cloud',
+                explanation: 'Explain',
             };
             return mapEn[t] || 'Single';
         }
@@ -128,6 +133,7 @@
             judgment: '判断',
             short_answer: '简答',
             word_cloud: '词云',
+            explanation: '解释',
         };
         return map[t] || '单选';
     }
@@ -156,8 +162,12 @@
         questions.forEach((q, i) => {
             const li = document.createElement('li');
             li.className = 'kahoot-editor-q-item' + (i === activeIndex ? ' active' : '');
+            const isExplanation = (q.question_type === 'explanation');
             const emptyLabel = isEn ? '(Untitled question)' : '（未填写题干）';
-            const label = (q.text || '').trim() || emptyLabel;
+            const rawLabel = (q.text || '').trim();
+            const label = isExplanation
+                ? (isEn ? 'Full-screen image' : '全屏图片')
+                : (rawLabel || emptyLabel);
             li.innerHTML = `<span class="kahoot-editor-q-num">${i + 1}</span>
                 <span class="kahoot-editor-q-label">${typeLabel(q.question_type)} · ${label.slice(0, 28)}</span>`;
             li.onclick = () => { void selectQuestion(i); };
@@ -191,17 +201,41 @@
         const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
         const isShort = type === 'short_answer';
         const isWord = type === 'word_cloud';
+        const isExplanation = type === 'explanation';
         const isJudgment = type === 'judgment';
-        els.optionsPanel.classList.toggle('hidden', isShort || isWord);
+        els.optionsPanel.classList.toggle('hidden', isShort || isWord || isExplanation);
         els.shortPanel.classList.toggle('hidden', !isShort);
         els.wordPanel.classList.toggle('hidden', !isWord);
+        if (els.explanationPanel) els.explanationPanel.classList.add('hidden');
+        els.text.classList.toggle('hidden', isExplanation);
+        if (els.preview) els.preview.classList.toggle('preview-explanation', isExplanation);
+        if (els.mediaZone) els.mediaZone.classList.toggle('media-explanation', isExplanation);
+        if (els.previewNumber) els.previewNumber.classList.toggle('hidden', isExplanation);
+        const timerBar = document.querySelector('.kahoot-editor-timer');
+        if (timerBar) timerBar.classList.toggle('hidden', isExplanation);
+        const timeGroup = document.getElementById('time-limit-group');
+        if (timeGroup) timeGroup.classList.toggle('hidden', isExplanation);
+        if (els.mediaPlaceholderText) {
+            els.mediaPlaceholderText.textContent = isExplanation
+                ? (isEn ? 'Click to upload explanation image (required, one image, fills the screen)' : '点击上传解释图片（必填，仅一张，上课铺满屏幕）')
+                : (isEn ? 'Click to upload question image (optional)' : '点击上传题目图片（可选）');
+        }
+        const timeLabel = document.querySelector('label[for="field-time"]');
+        if (timeLabel) {
+            timeLabel.textContent = isEn ? 'Time limit' : '答题时限';
+        }
+        if (els.removeImage) {
+            els.removeImage.textContent = isExplanation
+                ? (isEn ? 'Replace image' : '更换图片')
+                : (isEn ? 'Remove image' : '移除图片');
+        }
 
         if (isJudgment) {
             els.optionA.placeholder = isEn ? 'True' : '正确';
             els.optionB.placeholder = isEn ? 'False' : '错误';
             els.optionC.parentElement.classList.add('hidden');
             els.optionD.parentElement.classList.add('hidden');
-        } else if (!isShort && !isWord) {
+        } else if (!isShort && !isWord && !isExplanation) {
             els.optionA.placeholder = isEn ? 'Option A' : '选项 A';
             els.optionB.placeholder = isEn ? 'Option B' : '选项 B';
             els.optionC.parentElement.classList.remove('hidden');
@@ -216,6 +250,10 @@
             els.typeHint.textContent = isEn ? 'True/False: Option A is True, B is False. Click ✓ to mark' : '判断：标记正确项为 A 或 B';
         } else if (type === 'short_answer') {
             els.typeHint.textContent = isEn ? 'Short Answer: Enter accepted text (separate with |)' : '简答：填写参考答案（多个用 | 分隔）';
+        } else if (type === 'explanation') {
+            els.typeHint.textContent = isEn
+                ? 'Explanation: Upload one image that fills the classroom screen. No timer — tap Next when you finish talking. Students do not see or answer it.'
+                : '解释：只上传一张图片，上课铺满大屏；不限时，讲完后点下一题。学生不看、不作答';
         } else {
             els.typeHint.textContent = isEn ? 'Word Cloud: Students submit text live without scoring' : '词云：学生自由输入实时聚合展示';
         }
@@ -269,7 +307,7 @@
         if (q && q.id) payload.append('question_id', q.id);
         payload.append('text', els.text.value.trim());
         payload.append('question_type', type);
-        payload.append('time_limit', els.time.value);
+        payload.append('time_limit', type === 'explanation' ? '0' : els.time.value);
         payload.append('option_a', els.optionA.value.trim());
         payload.append('option_b', els.optionB.value.trim());
         payload.append('option_c', els.optionC.value.trim());
@@ -596,6 +634,8 @@
             if (!els.optionB.value) els.optionB.value = isEn ? 'False' : '错误';
             correctKeys = new Set(['A']);
             updateCorrectMarks();
+        } else if (els.type.value !== 'explanation' && els.text.value === '解释') {
+            els.text.value = '';
         }
         markDirty();
     });
@@ -615,8 +655,11 @@
         });
     });
 
-    if (els.mediaPlaceholder) {
-        els.mediaPlaceholder.addEventListener('click', () => els.imageInput.click());
+    if (els.mediaZone) {
+        els.mediaZone.addEventListener('click', (e) => {
+            if (e.target.closest('#btn-remove-image')) return;
+            els.imageInput.click();
+        });
     }
     els.imageInput.addEventListener('change', () => {
         const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
@@ -637,6 +680,10 @@
     });
     els.removeImage.addEventListener('click', (e) => {
         e.stopPropagation();
+        if (els.type.value === 'explanation') {
+            els.imageInput.click();
+            return;
+        }
         els.imageInput.value = '';
         revokeLocalImagePreview();
         showQuestionImage('');
@@ -645,7 +692,13 @@
     });
 
     function canAutoSaveCurrentQuestion() {
-        return !!currentQuestion();
+        if (!currentQuestion()) return false;
+        if (els.type.value === 'explanation') {
+            const hasFile = !!(els.imageInput.files && els.imageInput.files[0]);
+            const keepExisting = !!(currentQuestion().image_url && els.removeImage.dataset.pendingRemove !== '1');
+            return hasFile || keepExisting;
+        }
+        return true;
     }
 
     async function runPeriodicAutoSave() {

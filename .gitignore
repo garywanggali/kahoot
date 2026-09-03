@@ -9,3 +9,4 @@ logs/
 staticfiles/
 .requirements.hash
 media/
+.test-media/

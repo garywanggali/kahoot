@@ -51,6 +51,10 @@ def add_question_to_quiz_set(quiz_set: QuizSet, question, order: int | None = No
 
 @transaction.atomic
 def clone_quiz_set(source: QuizSet, teacher, title: str | None = None) -> QuizSet:
+    import os
+
+    from django.core.files.base import ContentFile
+
     new_title = (title or '').strip() or f'{source.title}（副本）'
     new_set = QuizSet.objects.create(
         title=new_title[:200],
@@ -72,8 +76,15 @@ def clone_quiz_set(source: QuizSet, teacher, title: str | None = None) -> QuizSe
             is_public=False,
         )
         if q.image:
-            # 图片不复制，避免跨教师 media 权限问题
-            pass
+            try:
+                q.image.open('rb')
+                new_q.image.save(
+                    os.path.basename(q.image.name),
+                    ContentFile(q.image.read()),
+                    save=True,
+                )
+            except Exception:
+                pass
         QuizSetQuestion.objects.create(
             quiz_set=new_set,
             question=new_q,

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import re
 
 from django.contrib import messages
 from django.core.exceptions import ValidationError
@@ -51,6 +50,7 @@ from .question_save import (
 )
 from .teacher_auth import (
     accessible_quiz_sets,
+    apply_teacher_settings,
     can_edit_question,
     can_edit_quiz_set,
     can_host_room,
@@ -58,6 +58,7 @@ from .teacher_auth import (
     get_current_teacher,
     login_teacher,
     logout_teacher,
+    MIN_TEACHER_PASSWORD_LEN,
     normalize_username,
     own_questions,
     own_quiz_sets,
@@ -65,13 +66,11 @@ from .teacher_auth import (
     require_teacher_or_redirect,
     require_teacher_api,
     teacher_rooms,
+    USERNAME_PATTERN,
 )
 from .room_cache import drop_runtime, flush_runtime_force, get_runtime
 from .utils import get_room_state
 from .validators import MAX_QUESTION_IMAGE_BYTES, validate_question_image
-
-MIN_TEACHER_PASSWORD_LEN = 6
-USERNAME_PATTERN = re.compile(r'^[a-zA-Z0-9_]{3,50}$')
 
 
 def _guard_teacher(request):
@@ -227,7 +226,39 @@ def teacher_dashboard(request):
         'quiz_set_count': quiz_set_count,
         'question_count': question_count,
         'teacher': teacher,
+        'teacher_profile': teacher.profile_payload(),
     })
+
+
+def teacher_settings(request):
+    teacher, redirect_resp = require_teacher_or_redirect(request)
+    if redirect_resp:
+        return redirect_resp
+    if request.method != 'POST':
+        return redirect('teacher_dashboard')
+
+    is_json = 'application/json' in (request.content_type or '')
+    if is_json:
+        try:
+            payload = json.loads(request.body.decode('utf-8') or '{}')
+        except json.JSONDecodeError:
+            return JsonResponse({'ok': False, 'error': '请求格式无效'}, status=400)
+        if not isinstance(payload, dict):
+            return JsonResponse({'ok': False, 'error': '请求格式无效'}, status=400)
+    else:
+        payload = request.POST
+
+    updated, error = apply_teacher_settings(teacher, payload)
+    if error:
+        if is_json:
+            return JsonResponse({'ok': False, 'error': error}, status=400)
+        messages.error(request, error)
+        return redirect('teacher_dashboard')
+
+    if is_json:
+        return JsonResponse({'ok': True, 'teacher': updated.profile_payload()})
+    messages.success(request, '账号设置已保存')
+    return redirect('teacher_dashboard')
 
 
 def question_list(request):
@@ -336,7 +367,7 @@ def _save_question(request, teacher, question=None, quiz_set=None):
 
     if question_type not in (
         Question.TYPE_SINGLE, Question.TYPE_MULTIPLE, Question.TYPE_JUDGMENT,
-        Question.TYPE_SHORT_ANSWER, Question.TYPE_WORD_CLOUD,
+        Question.TYPE_SHORT_ANSWER, Question.TYPE_WORD_CLOUD, Question.TYPE_EXPLANATION,
     ):
         question_type = Question.TYPE_SINGLE
 
@@ -358,6 +389,20 @@ def _save_question(request, teacher, question=None, quiz_set=None):
         option_c = Question.TEXT_OPTION_PLACEHOLDER
         option_d = Question.TEXT_OPTION_PLACEHOLDER
         correct_option = ''
+    elif question_type == Question.TYPE_EXPLANATION:
+        text = Question.EXPLANATION_TEXT_PLACEHOLDER
+        option_a = Question.TEXT_OPTION_PLACEHOLDER
+        option_b = Question.TEXT_OPTION_PLACEHOLDER
+        option_c = Question.TEXT_OPTION_PLACEHOLDER
+        option_d = Question.TEXT_OPTION_PLACEHOLDER
+        correct_option = ''
+        has_image = bool(image_file) or (
+            question is not None and bool(question.image) and not remove_image
+        )
+        if not has_image:
+            messages.error(request, '解释题必须上传一张图片')
+            return render(request, 'game/question_form.html', form_ctx)
+        time_limit = 0
     elif question_type == Question.TYPE_JUDGMENT:
         if not text or not option_a or not option_b:
             messages.error(request, _('判断题请填写题目和正确/错误选项'))
@@ -402,7 +447,7 @@ def _save_question(request, teacher, question=None, quiz_set=None):
         question.option_c = option_c
         question.option_d = option_d
         question.correct_option = correct_option
-        question.time_limit = max(5, min(120, time_limit))
+        question.time_limit = 0 if question_type == Question.TYPE_EXPLANATION else max(5, min(120, time_limit))
         question.is_public = is_public
         if remove_image and question.image:
             question.image.delete(save=False)
@@ -424,7 +469,7 @@ def _save_question(request, teacher, question=None, quiz_set=None):
             option_c=option_c,
             option_d=option_d,
             correct_option=correct_option,
-            time_limit=max(5, min(120, time_limit)),
+            time_limit=0 if question_type == Question.TYPE_EXPLANATION else max(5, min(120, time_limit)),
             image=image_file,
             teacher=teacher,
             is_public=is_public,

@@ -16,6 +16,7 @@ from .models import Answer, Player, Question, Room
 from .room_cache import (
     answer_exists as cache_answer_exists,
     flush_runtime_force,
+    get_answer_progress,
     get_player_nickname,
     get_runtime_for_code,
     join_player,
@@ -27,7 +28,7 @@ from .text_utils import (
     SHORT_ANSWER_MAX_LENGTH,
     normalize_word_cloud_text,
 )
-from .utils import calculate_points, get_my_result, get_room_state
+from .utils import calculate_points, can_accept_answer, get_my_result, get_room_state
 from .word_cloud import aggregate_word_cloud
 
 logger = logging.getLogger(__name__)
@@ -98,7 +99,7 @@ class RoomConsumer(AsyncWebsocketConsumer):
 
     async def room_message(self, event):
         data = event['data']
-        if event['event'] == 'question_ended' and getattr(self, 'session_id', None):
+        if event['event'] in ('question_ended', 'ranking_shown') and getattr(self, 'session_id', None):
             question = (data or {}).get('question') or {}
             question_id = question.get('id')
             if question_id:
@@ -167,7 +168,7 @@ class RoomConsumer(AsyncWebsocketConsumer):
 
         my_result = None
         question = state.get('question') or {}
-        if state.get('status') == Room.STATUS_LEADERBOARD and question.get('id'):
+        if state.get('status') in Room.SETTLEMENT_STATUSES and question.get('id'):
             my_result = await database_sync_to_async(get_my_result)(
                 runtime, session_id, question['id'],
             )
@@ -242,11 +243,13 @@ class RoomConsumer(AsyncWebsocketConsumer):
             return
 
         room = await self.get_room()
-        if room.status != Room.STATUS_PLAYING:
+        if not can_accept_answer(room):
             return
 
         question = await self.get_current_question()
         if not question:
+            return
+        if question.question_type == Question.TYPE_EXPLANATION:
             return
 
         selected = self.normalize_answer_selection(question, data)
@@ -293,6 +296,15 @@ class RoomConsumer(AsyncWebsocketConsumer):
         }))
 
         try:
+            progress = await database_sync_to_async(get_answer_progress)(runtime, question_id)
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {'type': 'room_message', 'event': 'answers_updated', 'data': progress},
+            )
+        except Exception:
+            logger.exception('Failed to broadcast answer progress room=%s', self.room_code)
+
+        try:
             await self._after_answer_recorded(question_id, question_type, runtime)
         except Exception:
             logger.exception('Post-answer processing failed room=%s', self.room_code)
@@ -315,12 +327,12 @@ class RoomConsumer(AsyncWebsocketConsumer):
 
     async def handle_end_question(self):
         try:
-            state = await database_sync_to_async(end_question_for_room)(self.room_code)
+            state, event = await database_sync_to_async(end_question_for_room)(self.room_code)
             if state is None:
                 return
             await self.channel_layer.group_send(
                 self.room_group_name,
-                {'type': 'room_message', 'event': 'question_ended', 'data': state},
+                {'type': 'room_message', 'event': event or 'question_ended', 'data': state},
             )
         except Exception:
             logger.exception('Failed to end question room=%s', self.room_code)
@@ -369,7 +381,7 @@ class RoomConsumer(AsyncWebsocketConsumer):
         state = await self.get_room_state_async()
         if (
             getattr(self, 'session_id', None)
-            and state.get('status') == Room.STATUS_LEADERBOARD
+            and state.get('status') in Room.SETTLEMENT_STATUSES
         ):
             question = state.get('question') or {}
             question_id = question.get('id')
@@ -445,7 +457,7 @@ class RoomConsumer(AsyncWebsocketConsumer):
 
 def score_answer(question_id: int, selected: str, response_time_ms: int) -> tuple[bool, int]:
     question = Question.objects.get(pk=question_id)
-    if question.question_type == Question.TYPE_WORD_CLOUD:
+    if question.question_type in Question.UNSCORED_TYPES:
         return False, 0
     if question.question_type == Question.TYPE_SHORT_ANSWER:
         is_correct = question.is_text_answer_correct(selected)
@@ -457,32 +469,8 @@ def score_answer(question_id: int, selected: str, response_time_ms: int) -> tupl
     return is_correct, points
 
 
-def end_question_for_room(room_code: str) -> dict | None:
-    room = Room.objects.get(code=room_code)
-    if room.status != Room.STATUS_PLAYING:
-        return None
-    runtime = get_runtime_for_code(room_code)
-    try:
-        flush_runtime_force(runtime)
-    except Exception:
-        logger.exception('Flush failed before end question room=%s', room_code)
-    room.status = Room.STATUS_LEADERBOARD
-    room.save(update_fields=['status'])
-    return get_room_state(room, runtime=runtime)
-
-
-def advance_question_for_room(room_code: str) -> tuple[dict | None, str | None, str | None]:
-    room = Room.objects.get(code=room_code)
-    if room.status != Room.STATUS_LEADERBOARD:
-        return None, None, '当前不是题目结算阶段，请稍候再试'
-
+def _advance_to_next_question(room, runtime) -> tuple[dict | None, str | None, str | None]:
     questions_count = room.room_questions.count()
-    runtime = get_runtime_for_code(room_code)
-    try:
-        flush_runtime_force(runtime)
-    except Exception:
-        logger.exception('Flush failed before next question room=%s', room_code)
-
     if room.current_question_index + 1 >= questions_count:
         room.status = Room.STATUS_ENDED
         room.save(update_fields=['status'])
@@ -493,6 +481,50 @@ def advance_question_for_room(room_code: str) -> tuple[dict | None, str | None, 
     room.question_started_at = timezone.now()
     room.save(update_fields=['status', 'current_question_index', 'question_started_at'])
     return get_room_state(room, runtime=runtime), 'question_started', None
+
+
+def _flush_runtime(room_code: str, runtime):
+    try:
+        flush_runtime_force(runtime)
+    except Exception:
+        logger.exception('Flush failed room=%s', room_code)
+
+
+def end_question_for_room(room_code: str) -> tuple[dict | None, str | None]:
+    room = Room.objects.get(code=room_code)
+    if room.status != Room.STATUS_PLAYING:
+        return None, None
+    runtime = get_runtime_for_code(room_code)
+    _flush_runtime(room_code, runtime)
+    current = room.current_question()
+    if current and current.question_type == Question.TYPE_EXPLANATION:
+        state, event, _error = _advance_to_next_question(room, runtime)
+        return state, event
+    room.status = Room.STATUS_REVEAL
+    room.save(update_fields=['status'])
+    return get_room_state(room, runtime=runtime), 'question_ended'
+
+
+def advance_question_for_room(room_code: str) -> tuple[dict | None, str | None, str | None]:
+    room = Room.objects.get(code=room_code)
+    runtime = get_runtime_for_code(room_code)
+    _flush_runtime(room_code, runtime)
+
+    if room.status == Room.STATUS_PLAYING:
+        current = room.current_question()
+        if current and current.question_type == Question.TYPE_EXPLANATION:
+            return _advance_to_next_question(room, runtime)
+        return None, None, '当前不是题目结算阶段，请稍候再试'
+
+    if room.status == Room.STATUS_REVEAL:
+        room.status = Room.STATUS_LEADERBOARD
+        room.save(update_fields=['status'])
+        return get_room_state(room, runtime=runtime), 'ranking_shown', None
+
+    if room.status != Room.STATUS_LEADERBOARD:
+        return None, None, '当前不是题目结算阶段，请稍候再试'
+
+    return _advance_to_next_question(room, runtime)
 
 
 def start_game_for_room(room_code: str) -> tuple[dict | None, str | None]:

@@ -59,6 +59,22 @@
         'dash.quiz_bank_desc': '支持手动编排或使用 AI 智能批量出题，自由配置单选、多选、判断与配图题型。',
         'dash.btn_new_kahoot': '+ 新建 Kahoot',
         'dash.btn_manage_bank': '管理我的题库 (%s)',
+        'dash.settings': '账号设置',
+        'dash.settings_hint': '管理头像、性别与登录信息',
+        'dash.display_name': '显示名',
+        'dash.username': '登录用户名',
+        'dash.gender': '性别',
+        'dash.gender.unspecified': '保密',
+        'dash.gender.female': '女',
+        'dash.gender.male': '男',
+        'dash.gender.other': '其他',
+        'dash.current_password': '当前密码',
+        'dash.new_password': '新密码',
+        'dash.new_password_confirm': '确认新密码',
+        'dash.password_hint': '更改用户名或密码时需填写当前密码；新密码留空则不修改。',
+        'dash.btn_save_settings': '保存设置',
+        'dash.settings_saved': '已保存',
+        'dash.avatar_random': '随机换装',
 
         // --- 题库向导 / Wizard ---
         'wizard.title': '新建测验题库',
@@ -99,9 +115,15 @@
         'play.text_placeholder_wordcloud': '输入一个词或短语...',
         'play.btn_submit': '提交答案',
         'play.waiting_next': '等待下一题...',
+        'play.explanation_title': '老师正在讲解',
+        'play.explanation_detail': '请看教室大屏，本题无需作答',
+        'play.live_ranking': '实时积分榜',
+        'play.your_rank_score': '第 %s 名 · 总分 %s',
         'play.danmaku_send': '发送',
         'play.danmaku_btn': '发弹幕',
         'play.danmaku_placeholder': '输入弹幕...',
+        'countdown.get_ready': '准备',
+        'countdown.go': '开始!',
 
         // 反馈卡片状态
         'fb.correct': '对',
@@ -157,7 +179,9 @@
         'host.btn_starting': '正在开启游戏…',
         'host.answered_progress': '已答：<strong id="answer-count">%s</strong> / <span id="total-players">%s</span> 人',
         'host.btn_end_q': '结束本题',
+        'host.btn_end_explanation': '下一题',
         'host.btn_next_q': '下一题',
+        'host.btn_show_ranking': '查看排行榜',
         'host.btn_ceremony': '颁奖典礼',
         'host.reveal_kicker': '答题揭晓',
         'host.reveal_title': '本题统计',
@@ -168,6 +192,9 @@
         'host.short_correct_count': '人答对',
         'host.short_meta': '共 %s 人作答 · %s 人未作答',
         'host.loading_stem': '加载题干中…',
+        'host.explanation_done': '讲解结束',
+        'host.explanation_done_sub': '本题无需作答，可进入下一题',
+        'host.live_ranking': '实时积分榜',
 
         // 题型徽章
         'qtype.single': '【单选】',
@@ -175,11 +202,13 @@
         'qtype.judgment': '【判断】',
         'qtype.short_answer': '【简答】',
         'qtype.word_cloud': '【词云】',
+        'qtype.explanation': '【解释】',
         'qtype.label.single': '单选题',
         'qtype.label.multiple': '多选题',
         'qtype.label.judgment': '判断题',
         'qtype.label.short_answer': '简答题',
         'qtype.label.word_cloud': '词云题',
+        'qtype.label.explanation': '解释',
 
         // --- 数据分析系统 / Analytics ---
         'analytics.title': '答题数据分析',
@@ -242,6 +271,7 @@
         'editor.type_hint_judgment': '判断：A 为「正确」，B 为「错误」，点击 ✓ 标记',
         'editor.type_hint_short': '简答：在参考答案框输入标准文本（多个用 | 分隔）',
         'editor.type_hint_wordcloud': '词云：学生输入词汇实时聚合展示，无对错评分',
+        'editor.type_hint_explanation': '解释：只上传一张图片，上课铺满大屏；不限时，讲完后点下一题。学生不看、不作答',
 
         // --- 我的题库列表 / Question List ---
         'qlist.title': '我的题库',
@@ -318,6 +348,22 @@
         'dash.quiz_bank_desc': 'Build manually or use AI generation, freely configuring single, multiple, true/false, and media questions.',
         'dash.btn_new_kahoot': '+ New Kahoot',
         'dash.btn_manage_bank': 'Manage My Quizzes (%s)',
+        'dash.settings': 'Account Settings',
+        'dash.settings_hint': 'Manage avatar, gender, and login details',
+        'dash.display_name': 'Display Name',
+        'dash.username': 'Username',
+        'dash.gender': 'Gender',
+        'dash.gender.unspecified': 'Prefer not to say',
+        'dash.gender.female': 'Female',
+        'dash.gender.male': 'Male',
+        'dash.gender.other': 'Other',
+        'dash.current_password': 'Current Password',
+        'dash.new_password': 'New Password',
+        'dash.new_password_confirm': 'Confirm New Password',
+        'dash.password_hint': 'Current password is required to change username or password. Leave new password blank to keep it.',
+        'dash.btn_save_settings': 'Save Settings',
+        'dash.settings_saved': 'Saved',
+        'dash.avatar_random': 'Randomize',
 
         // --- 题库向导 / Wizard ---
         'wizard.title': 'Create Quiz Set',
@@ -358,9 +404,15 @@
         'play.text_placeholder_wordcloud': 'Type a word or short phrase...',
         'play.btn_submit': 'Submit Answer',
         'play.waiting_next': 'Waiting for next question...',
+        'play.explanation_title': 'Teacher is explaining',
+        'play.explanation_detail': 'Please look at the classroom screen. No answer needed.',
+        'play.live_ranking': 'Leaderboard',
+        'play.your_rank_score': 'Rank #%s · %s pts',
         'play.danmaku_send': 'Send',
         'play.danmaku_btn': 'Danmaku',
         'play.danmaku_placeholder': 'Send a message...',
+        'countdown.get_ready': 'Get Ready',
+        'countdown.go': 'GO!',
 
         // 反馈卡片状态
         'fb.correct': 'Correct!',
@@ -416,7 +468,9 @@
         'host.btn_starting': 'Starting game…',
         'host.answered_progress': 'Answered: <strong id="answer-count">%s</strong> / <span id="total-players">%s</span> players',
         'host.btn_end_q': 'End Question',
+        'host.btn_end_explanation': 'Next Question',
         'host.btn_next_q': 'Next Question',
+        'host.btn_show_ranking': 'Show Leaderboard',
         'host.btn_ceremony': 'Awards Ceremony',
         'host.reveal_kicker': 'Answer Reveal',
         'host.reveal_title': 'Question Results',
@@ -427,6 +481,9 @@
         'host.short_correct_count': 'answered correctly',
         'host.short_meta': '%s answered · %s did not answer',
         'host.loading_stem': 'Loading question…',
+        'host.explanation_done': 'Explanation finished',
+        'host.explanation_done_sub': 'No answer required. Continue to the next question.',
+        'host.live_ranking': 'Live Leaderboard',
 
         // 题型徽章
         'qtype.single': '[Single Choice]',
@@ -434,11 +491,13 @@
         'qtype.judgment': '[True/False]',
         'qtype.short_answer': '[Short Answer]',
         'qtype.word_cloud': '[Word Cloud]',
+        'qtype.explanation': '[Explanation]',
         'qtype.label.single': 'Single Choice',
         'qtype.label.multiple': 'Multiple Choice',
         'qtype.label.judgment': 'True / False',
         'qtype.label.short_answer': 'Short Answer',
         'qtype.label.word_cloud': 'Word Cloud',
+        'qtype.label.explanation': 'Explanation',
 
         // --- 数据分析系统 / Analytics ---
         'analytics.title': 'Game Match Analytics',
@@ -501,6 +560,7 @@
         'editor.type_hint_judgment': 'True/False: Option A is True, B is False. Click ✓ to mark',
         'editor.type_hint_short': 'Short Answer: Enter accepted text (separate with |)',
         'editor.type_hint_wordcloud': 'Word Cloud: Aggregates student submissions live without scoring',
+        'editor.type_hint_explanation': 'Explanation: Upload one image that fills the classroom screen. No timer — tap Next when you finish talking. Students do not see or answer it.',
 
         // --- 我的题库列表 / Question List ---
         'qlist.title': 'My Quiz Bank',

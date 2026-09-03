@@ -131,6 +131,7 @@ def get_room_analytics_data(room: Room) -> dict[str, Any]:
         Question.TYPE_JUDGMENT: '判断题',
         Question.TYPE_SHORT_ANSWER: '简答题',
         Question.TYPE_WORD_CLOUD: '词云题',
+        Question.TYPE_EXPLANATION: '解释',
     }
 
     # 1. By Question Analysis
@@ -140,12 +141,36 @@ def get_room_analytics_data(room: Room) -> dict[str, Any]:
 
     for idx, q in enumerate(questions, start=1):
         is_word_cloud = (q.question_type == Question.TYPE_WORD_CLOUD)
-        if not is_word_cloud:
+        is_explanation = (q.question_type == Question.TYPE_EXPLANATION)
+        is_unscored = q.question_type in Question.UNSCORED_TYPES
+        if not is_unscored:
             total_scored_questions += 1
 
         correct_players = []
         wrong_players = []
         unanswered_players = []
+
+        if is_explanation:
+            questions_analysis.append({
+                'id': q.id,
+                'order': idx,
+                'text': q.text,
+                'question_type': q.question_type,
+                'type_label': type_labels.get(q.question_type, '选择题'),
+                'correct_answer_display': q.get_correct_option_display(),
+                'image_url': q.image.url if q.image else '',
+                'accuracy_percent': 0.0,
+                'correct_count': 0,
+                'wrong_count': 0,
+                'unanswered_count': 0,
+                'is_word_cloud': False,
+                'is_explanation': True,
+                'is_unscored': True,
+                'correct_players': [],
+                'wrong_players': [],
+                'unanswered_players': [],
+            })
+            continue
 
         for p in players:
             ans = answer_map.get((p.id, q.id))
@@ -196,6 +221,8 @@ def get_room_analytics_data(room: Room) -> dict[str, Any]:
             'wrong_count': len(wrong_players),
             'unanswered_count': len(unanswered_players),
             'is_word_cloud': is_word_cloud,
+            'is_explanation': False,
+            'is_unscored': is_unscored,
             'correct_players': correct_players,
             'wrong_players': wrong_players,
             'unanswered_players': unanswered_players,
@@ -210,6 +237,8 @@ def get_room_analytics_data(room: Room) -> dict[str, Any]:
         unanswered_list = []
 
         for idx, q in enumerate(questions, start=1):
+            if q.question_type == Question.TYPE_EXPLANATION:
+                continue
             ans = answer_map.get((p.id, q.id))
             is_word_cloud = (q.question_type == Question.TYPE_WORD_CLOUD)
             correct_display = q.get_correct_option_display()
@@ -276,7 +305,7 @@ def get_room_analytics_data(room: Room) -> dict[str, Any]:
     highest_score = max((p.score for p in players), default=0)
 
     # Most difficult / easiest questions
-    scored_questions = [qa for qa in questions_analysis if not qa['is_word_cloud']]
+    scored_questions = [qa for qa in questions_analysis if not qa.get('is_unscored')]
     hardest_q = min(scored_questions, key=lambda x: x['accuracy_percent'], default=None)
     easiest_q = max(scored_questions, key=lambda x: x['accuracy_percent'], default=None)
 

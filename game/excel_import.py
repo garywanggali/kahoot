@@ -50,6 +50,9 @@ TYPE_ALIASES = {
     'wordcloud': Question.TYPE_WORD_CLOUD,
     '词云': Question.TYPE_WORD_CLOUD,
     '词云题': Question.TYPE_WORD_CLOUD,
+    'explanation': Question.TYPE_EXPLANATION,
+    '解释': Question.TYPE_EXPLANATION,
+    '解释题': Question.TYPE_EXPLANATION,
 }
 
 EXAMPLE_ROWS = [
@@ -123,7 +126,7 @@ def _normalize_type(raw: str) -> str:
     if raw.strip() in TYPE_ALIASES:
         return TYPE_ALIASES[raw.strip()]
     raise ExcelImportError(
-        f'题型无效「{raw}」，须为：单选题 / 多选题 / 判断题 / 简答题（或 single / multiple / judgment / short_answer）'
+        f'题型无效「{raw}」，须为：单选题 / 多选题 / 判断题 / 简答题（或 single / multiple / judgment / short_answer）。解释题请在可视化编辑器中上传图片。'
     )
 
 
@@ -173,6 +176,8 @@ def validate_question_row(row_num: int, raw: dict[str, str]) -> dict[str, Any]:
         option_c = Question.TEXT_OPTION_PLACEHOLDER
         option_d = Question.TEXT_OPTION_PLACEHOLDER
         correct_option = ''
+    elif question_type == Question.TYPE_EXPLANATION:
+        raise ExcelImportError('解释题只能在可视化编辑器中上传一张图片，无法通过 Excel 导入', row_num)
     elif question_type == Question.TYPE_JUDGMENT:
         option_a = option_a or '正确'
         option_b = option_b or '错误'

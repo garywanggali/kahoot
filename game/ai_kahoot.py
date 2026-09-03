@@ -243,5 +243,6 @@ def question_type_label(qtype: str) -> str:
         Question.TYPE_JUDGMENT: '判断',
         Question.TYPE_SHORT_ANSWER: '简答',
         Question.TYPE_WORD_CLOUD: '词云',
+        Question.TYPE_EXPLANATION: '解释',
     }
     return labels.get(qtype, '单选')

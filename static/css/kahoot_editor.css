@@ -1,4 +1,9 @@
 /* Kahoot-style visual question editor */
+body:has(.kahoot-editor-app) {
+    overflow: hidden;
+    height: 100vh;
+}
+
 body:has(.kahoot-editor-app) .container {
     max-width: none;
     padding: 0;
@@ -6,7 +11,8 @@ body:has(.kahoot-editor-app) .container {
 }
 
 .kahoot-editor-app {
-    min-height: calc(100vh - 2rem);
+    min-height: 100vh;
+    height: 100vh;
     background: var(--bg-base);
     display: flex;
     flex-direction: column;
@@ -225,11 +231,20 @@ body:has(.kahoot-editor-app) .container {
     padding: 1.5rem 2rem;
     overflow-y: auto;
     background: var(--bg-base);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.kahoot-editor-stage:has(.preview-explanation) {
+    padding: 0;
+    overflow: hidden;
 }
 
 .kahoot-editor-preview {
     max-width: 52rem;
     margin: 0 auto;
+    width: 100%;
 }
 
 .kahoot-editor-timer {
@@ -267,6 +282,68 @@ body:has(.kahoot-editor-app) .container {
     max-width: 100%;
     object-fit: contain;
     border-radius: var(--radius-md);
+}
+
+.kahoot-editor-preview.preview-explanation {
+    position: relative;
+    max-width: none;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.kahoot-editor-preview.preview-explanation .question-number,
+.kahoot-editor-preview.preview-explanation .kahoot-editor-timer,
+.kahoot-editor-preview.preview-explanation .kahoot-editor-hint {
+    display: none;
+}
+
+.kahoot-editor-media.media-explanation {
+    flex: 1;
+    min-height: 0;
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    background: #111111;
+    overflow: hidden;
+}
+
+.kahoot-editor-media.media-explanation:has(#media-placeholder:not(.hidden)) {
+    border: 2px dashed #52525b;
+}
+
+.kahoot-editor-media.media-explanation .kahoot-editor-preview-img:not(.hidden) {
+    max-height: none;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 0;
+    background: #111111;
+}
+
+.kahoot-editor-media.media-explanation .kahoot-editor-media-placeholder {
+    color: #d4d4d8;
+}
+
+.kahoot-editor-media.media-explanation #btn-remove-image {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    z-index: 2;
+    background: #ffffff;
+}
+
+.kahoot-editor-preview.preview-explanation .kahoot-editor-save-hint {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.75rem;
+    z-index: 2;
+    margin: 0;
+    color: #f4f4f5;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
 }
 
 .kahoot-editor-stem-input {

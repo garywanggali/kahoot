@@ -257,6 +257,16 @@ def get_answer_count(runtime: RoomRuntime, question_id: int) -> int:
         return runtime.answer_counts.get(question_id, 0)
 
 
+def get_answer_progress(runtime: RoomRuntime, question_id: int) -> dict:
+    with runtime.lock:
+        _hydrate_from_db(runtime)
+        return {
+            'question_id': question_id,
+            'answered_count': runtime.answer_counts.get(question_id, 0),
+            'player_count': runtime.player_count(),
+        }
+
+
 def get_player_nickname(runtime: RoomRuntime, session_id: str) -> str | None:
     with runtime.lock:
         player = runtime.players.get(session_id)
@@ -265,11 +275,15 @@ def get_player_nickname(runtime: RoomRuntime, session_id: str) -> str | None:
 
 def overlay_room_state(state: dict, runtime: RoomRuntime) -> dict:
     with runtime.lock:
+        _hydrate_from_db(runtime)
         if not runtime.players:
             return state
         state = dict(state)
         state['player_count'] = runtime.player_count()
         state['leaderboard'] = runtime.get_leaderboard()
+        qid = (state.get('question') or {}).get('id')
+        if qid:
+            state['answered_count'] = runtime.answer_counts.get(qid, 0)
         return state
 
 

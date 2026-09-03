@@ -127,7 +127,8 @@
                         const isExpanded = this.expandedQuestions.has(q.id);
                         const accRate = q.accuracy_percent;
                         let accClass = 'badge-success';
-                        if (accRate < 50) accClass = 'badge-danger';
+                        if (q.is_explanation) accClass = 'badge-neutral';
+                        else if (accRate < 50) accClass = 'badge-danger';
                         else if (accRate < 75) accClass = 'badge-warning';
 
                         const correctPlayers = q.correct_players || [];
@@ -136,10 +137,14 @@
 
                         const qIndexStr = isEn ? `Q${q.order}` : `第 ${q.order} 题`;
                         const typeLabel = (isEn && _t('qtype.label.' + q.question_type)) ? _t('qtype.label.' + q.question_type) : q.type_label;
-                        const accBadgeText = q.is_word_cloud ? (isEn ? 'Interactive' : '互动题') : (isEn ? `Accuracy ${accRate}%` : `正确率 ${accRate}%`);
-                        const countsText = isEn
-                            ? `${q.correct_count} correct · ${q.wrong_count + q.unanswered_count} wrong/unanswered`
-                            : `${q.correct_count} 对 · ${q.wrong_count + q.unanswered_count} 错/未答`;
+                        const accBadgeText = q.is_explanation
+                            ? (isEn ? 'Explanation' : '讲解')
+                            : (q.is_word_cloud ? (isEn ? 'Interactive' : '互动题') : (isEn ? `Accuracy ${accRate}%` : `正确率 ${accRate}%`));
+                        const countsText = q.is_explanation
+                            ? (isEn ? 'Students do not answer' : '学生无需作答')
+                            : (isEn
+                                ? `${q.correct_count} correct · ${q.wrong_count + q.unanswered_count} wrong/unanswered`
+                                : `${q.correct_count} 对 · ${q.wrong_count + q.unanswered_count} 错/未答`);
                         const foldBtnText = isExpanded
                             ? (isEn ? 'Collapse' : '收起')
                             : (isEn ? 'View Students' : '展开名单');
@@ -167,6 +172,13 @@
                                 <!-- 展开详情区 -->
                                 ${isExpanded ? `
                                     <div class="analytics-card-content">
+                                        ${q.is_explanation ? `
+                                            <div class="q-correct-answer-strip">
+                                                <span class="strip-label">${isEn ? 'Note: ' : '题型说明：'}</span>
+                                                <span class="strip-value">${isEn ? 'Teacher explanation slide. Students do not see or answer it.' : '教师讲解知识点，学生端不显示、无需作答'}</span>
+                                            </div>
+                                            ${q.image_url ? `<div class="q-explanation-thumb"><img src="${escapeHtml(q.image_url)}" alt="${isEn ? 'Explanation image' : '讲解图片'}"></div>` : ''}
+                                        ` : `
                                         <!-- 标准答案条 -->
                                         <div class="q-correct-answer-strip">
                                             <span class="strip-label">${isEn ? 'Correct Answer: ' : '标准答案：'}</span>
@@ -208,6 +220,7 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        `}
                                     </div>
                                 ` : ''}
                             </div>

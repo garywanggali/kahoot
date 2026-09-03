@@ -13,9 +13,9 @@ from .models import (
 
 @admin.register(Teacher)
 class TeacherAdmin(admin.ModelAdmin):
-    list_display = ('username', 'display_name', 'is_active', 'created_at')
+    list_display = ('username', 'display_name', 'gender', 'is_active', 'created_at')
     search_fields = ('username', 'display_name')
-    list_filter = ('is_active',)
+    list_filter = ('is_active', 'gender')
 
 
 @admin.register(TeacherInviteCode)

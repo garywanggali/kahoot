@@ -118,11 +118,24 @@ function renderPodium(leaderboard, containerId) {
     `;
 }
 
-function renderLeaderboardList(leaderboard, containerId, startRank = 1) {
+function renderLeaderboardList(leaderboard, containerId, startRank = 1, options) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    const rows = (leaderboard || []).filter(p => p.rank >= startRank);
+    options = options || {};
+    const highlightNickname = options.highlightNickname || '';
+    const maxRows = options.maxRows || 0;
+    let rows = (leaderboard || []).filter(p => p.rank >= startRank);
+    if (maxRows > 0) {
+        const top = rows.slice(0, maxRows);
+        if (highlightNickname) {
+            const me = rows.find(p => p.nickname === highlightNickname);
+            if (me && !top.some(p => p.nickname === me.nickname)) {
+                top.push(me);
+            }
+        }
+        rows = top;
+    }
     if (rows.length === 0) {
         container.innerHTML = '';
         return;
@@ -134,9 +147,11 @@ function renderLeaderboardList(leaderboard, containerId, startRank = 1) {
         const avatarSvg = window.AvatarSystem
             ? window.AvatarSystem.renderSvg(p.avatar, 32, { nickname: p.nickname })
             : `<span class="player-chip-avatar-fallback">${escapeHtml(p.nickname.slice(0, 1).toUpperCase())}</span>`;
+        const meClass = highlightNickname && p.nickname === highlightNickname ? ' is-me' : '';
+        const rankClass = p.rank <= 3 ? ` rank-${p.rank}` : '';
 
         return `
-            <div class="host-lb-row">
+            <div class="host-lb-row${rankClass}${meClass}">
                 <div class="host-lb-rank">#${p.rank}</div>
                 <div class="host-lb-avatar">${avatarSvg}</div>
                 <div class="host-lb-name">${escapeHtml(p.nickname)}</div>

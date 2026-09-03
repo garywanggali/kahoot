@@ -1,3 +1,4 @@
+import json
 import random
 import string
 
@@ -7,11 +8,47 @@ from django.db import models
 from .text_utils import normalize_answer_text, split_acceptable_answers
 from .validators import validate_question_image
 
+AVATAR_FACE_MAX = 7
+AVATAR_HAIR_MAX = 7
+
+
+def _parse_avatar_json(raw) -> dict:
+    data = raw
+    if isinstance(raw, str):
+        try:
+            data = json.loads(raw)
+        except Exception:
+            data = None
+    if not isinstance(data, dict):
+        return {'face': 0, 'hair': 0}
+    try:
+        face = int(data.get('face', 0))
+        hair = int(data.get('hair', 0))
+    except (TypeError, ValueError):
+        return {'face': 0, 'hair': 0}
+    return {
+        'face': max(0, min(AVATAR_FACE_MAX, face)),
+        'hair': max(0, min(AVATAR_HAIR_MAX, hair)),
+    }
+
 
 class Teacher(models.Model):
+    GENDER_UNSPECIFIED = 'unspecified'
+    GENDER_FEMALE = 'female'
+    GENDER_MALE = 'male'
+    GENDER_OTHER = 'other'
+    GENDER_CHOICES = (
+        (GENDER_UNSPECIFIED, '保密'),
+        (GENDER_FEMALE, '女'),
+        (GENDER_MALE, '男'),
+        (GENDER_OTHER, '其他'),
+    )
+
     username = models.CharField('用户名', max_length=50, unique=True, db_index=True)
     password_hash = models.CharField(max_length=128)
     display_name = models.CharField('显示名', max_length=100, blank=True)
+    gender = models.CharField('性别', max_length=16, choices=GENDER_CHOICES, default=GENDER_UNSPECIFIED)
+    avatar = models.CharField('个性化头像', max_length=120, default='{"face":0,"hair":0}')
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -26,6 +63,21 @@ class Teacher(models.Model):
 
     def check_password(self, raw_password: str) -> bool:
         return check_password(raw_password, self.password_hash)
+
+    def get_avatar_dict(self) -> dict:
+        return _parse_avatar_json(self.avatar)
+
+    def set_avatar_dict(self, data) -> None:
+        parsed = _parse_avatar_json(data)
+        self.avatar = json.dumps(parsed, separators=(',', ':'))
+
+    def profile_payload(self) -> dict:
+        return {
+            'username': self.username,
+            'display_name': self.display_name or self.username,
+            'gender': self.gender or self.GENDER_UNSPECIFIED,
+            'avatar': self.get_avatar_dict(),
+        }
 
 
 class TeacherInviteCode(models.Model):
@@ -62,15 +114,19 @@ class Question(models.Model):
     TYPE_JUDGMENT = 'judgment'
     TYPE_SHORT_ANSWER = 'short_answer'
     TYPE_WORD_CLOUD = 'word_cloud'
+    TYPE_EXPLANATION = 'explanation'
     TYPE_CHOICES = [
         (TYPE_SINGLE, '单选题'),
         (TYPE_MULTIPLE, '多选题'),
         (TYPE_JUDGMENT, '判断题'),
         (TYPE_SHORT_ANSWER, '简答题'),
         (TYPE_WORD_CLOUD, '词云题'),
+        (TYPE_EXPLANATION, '解释'),
     ]
     JUDGMENT_OPTION_PLACEHOLDER = '—'
     TEXT_OPTION_PLACEHOLDER = '—'
+    EXPLANATION_TEXT_PLACEHOLDER = '解释'
+    UNSCORED_TYPES = (TYPE_WORD_CLOUD, TYPE_EXPLANATION)
 
     text = models.CharField('题目', max_length=500)
     question_type = models.CharField(
@@ -111,7 +167,9 @@ class Question(models.Model):
                 {'key': 'A', 'text': self.option_a},
                 {'key': 'B', 'text': self.option_b},
             ]
-        if self.question_type in (self.TYPE_SHORT_ANSWER, self.TYPE_WORD_CLOUD):
+        if self.question_type in (
+            self.TYPE_SHORT_ANSWER, self.TYPE_WORD_CLOUD, self.TYPE_EXPLANATION,
+        ):
             return []
         return [
             {'key': 'A', 'text': self.option_a},
@@ -165,6 +223,8 @@ class Question(models.Model):
             return self.option_a.replace('|', ' / ')
         if self.question_type == self.TYPE_WORD_CLOUD:
             return '词云统计'
+        if self.question_type == self.TYPE_EXPLANATION:
+            return ''
         if self.question_type == self.TYPE_JUDGMENT:
             key = self.correct_option.strip().upper()
             if key == 'A':
@@ -177,7 +237,12 @@ class Question(models.Model):
     def correct_option_keys(self):
         return sorted(self.get_correct_option_set())
 
+    def is_unscored(self) -> bool:
+        return self.question_type in self.UNSCORED_TYPES
+
     def is_answer_correct(self, selected):
+        if self.question_type == self.TYPE_EXPLANATION:
+            return False
         if self.question_type == self.TYPE_SHORT_ANSWER:
             return self.is_text_answer_correct(selected)
         if self.question_type == self.TYPE_WORD_CLOUD:
@@ -243,15 +308,18 @@ class QuizSetQuestion(models.Model):
 class Room(models.Model):
     STATUS_WAITING = 'waiting'
     STATUS_PLAYING = 'playing'
+    STATUS_REVEAL = 'reveal'
     STATUS_LEADERBOARD = 'leaderboard'
     STATUS_ENDED = 'ended'
 
     STATUS_CHOICES = [
         (STATUS_WAITING, '等待中'),
         (STATUS_PLAYING, '答题中'),
+        (STATUS_REVEAL, '揭晓统计'),
         (STATUS_LEADERBOARD, '排行榜'),
         (STATUS_ENDED, '已结束'),
     ]
+    SETTLEMENT_STATUSES = (STATUS_REVEAL, STATUS_LEADERBOARD)
 
     code = models.CharField('房间号', max_length=6, unique=True, db_index=True)
     name = models.CharField('房间名称', max_length=100, blank=True)
@@ -328,21 +396,7 @@ class Player(models.Model):
         return f'{self.nickname} ({self.score})'
 
     def get_avatar_dict(self) -> dict:
-        if not self.avatar:
-            return {'face': 0, 'hair': 0}
-        if isinstance(self.avatar, dict):
-            return self.avatar
-        try:
-            import json
-            data = json.loads(self.avatar)
-            if isinstance(data, dict):
-                return {
-                    'face': max(0, int(data.get('face', 0))),
-                    'hair': max(0, int(data.get('hair', 0))),
-                }
-        except Exception:
-            pass
-        return {'face': 0, 'hair': 0}
+        return _parse_avatar_json(self.avatar)
 
 
 class Answer(models.Model):

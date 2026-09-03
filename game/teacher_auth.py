@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 from django.db.models import Q
 from django.shortcuts import redirect
 
@@ -9,6 +11,14 @@ from .models import Question, QuizSet, Room, Teacher
 
 
 SESSION_TEACHER_KEY = 'teacher_id'
+MIN_TEACHER_PASSWORD_LEN = 6
+USERNAME_PATTERN = re.compile(r'^[a-zA-Z0-9_]{3,50}$')
+TEACHER_GENDERS = {
+    Teacher.GENDER_UNSPECIFIED,
+    Teacher.GENDER_FEMALE,
+    Teacher.GENDER_MALE,
+    Teacher.GENDER_OTHER,
+}
 
 
 def get_current_teacher(request) -> Teacher | None:
@@ -50,6 +60,60 @@ def require_teacher_api(request):
 
 def normalize_username(username: str) -> str:
     return username.strip().lower()
+
+
+def apply_teacher_settings(teacher: Teacher, payload: dict) -> tuple[Teacher | None, str | None]:
+    """Update profile fields. Returns (teacher, error_message)."""
+    display_name = str(payload.get('display_name') or '').strip()[:100]
+    gender = str(payload.get('gender') or Teacher.GENDER_UNSPECIFIED).strip()
+    if gender not in TEACHER_GENDERS:
+        gender = Teacher.GENDER_UNSPECIFIED
+
+    avatar_payload = payload.get('avatar')
+    if not isinstance(avatar_payload, dict):
+        avatar_payload = {
+            'face': payload.get('avatar_face', payload.get('face', 0)),
+            'hair': payload.get('avatar_hair', payload.get('hair', 0)),
+        }
+
+    username_raw = str(payload.get('username') or teacher.username).strip()
+    new_username = normalize_username(username_raw)
+    current_password = str(payload.get('current_password') or '')
+    new_password = str(payload.get('new_password') or '')
+    new_password_confirm = str(payload.get('new_password_confirm') or '')
+
+    username_changed = new_username != teacher.username
+    password_changed = bool(new_password)
+
+    if username_changed:
+        if not USERNAME_PATTERN.match(username_raw):
+            return None, '用户名须为 3–50 位字母、数字或下划线'
+        if not current_password or not teacher.check_password(current_password):
+            return None, '更改用户名请输入当前密码'
+        taken = Teacher.objects.filter(username=new_username).exclude(pk=teacher.pk).exists()
+        if taken:
+            return None, '用户名已被占用'
+
+    if password_changed:
+        if not current_password or not teacher.check_password(current_password):
+            return None, '更改密码请输入当前密码'
+        if len(new_password) < MIN_TEACHER_PASSWORD_LEN:
+            return None, f'新密码至少 {MIN_TEACHER_PASSWORD_LEN} 位'
+        if new_password != new_password_confirm:
+            return None, '两次输入的新密码不一致'
+
+    teacher.display_name = display_name
+    teacher.gender = gender
+    teacher.set_avatar_dict(avatar_payload)
+    update_fields = ['display_name', 'gender', 'avatar']
+    if username_changed:
+        teacher.username = new_username
+        update_fields.append('username')
+    if password_changed:
+        teacher.set_password(new_password)
+        update_fields.append('password_hash')
+    teacher.save(update_fields=update_fields)
+    return teacher, None
 
 
 def own_questions(teacher: Teacher):

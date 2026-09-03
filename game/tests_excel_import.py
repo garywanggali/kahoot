@@ -46,7 +46,19 @@ class ExcelImportTests(TestCase):
         self.assertEqual(QuizSet.objects.count(), before_s + 1)
         self.assertEqual(Question.objects.count(), before_q + 4)
 
-    def test_template_dropdown_validation(self):
+    def test_explanation_rejected(self):
+        with self.assertRaises(ExcelImportError) as ctx:
+            validate_question_row(2, {
+                'question_type': '解释',
+                'text': '知识点',
+                'option_a': '',
+                'option_b': '',
+                'option_c': '',
+                'option_d': '',
+                'correct_option': '',
+                'time_limit': '20',
+            })
+        self.assertIn('可视化编辑器', str(ctx.exception))
         import io
         from openpyxl import load_workbook
         xlsx = build_template_xlsx()

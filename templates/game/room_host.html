@@ -114,8 +114,8 @@
 
         <!-- 底部操作栏 -->
         <div class="host-playing-foot">
-            <button class="token-btn-secondary btn-host-end-q" onclick="endQuestion()">
-                <span>{% trans "结束本题" %}</span>
+            <button class="token-btn-secondary btn-host-end-q" id="btn-end-question" type="button" onclick="hostPlayingAction()">
+                <span id="btn-end-question-label">{% trans "结束本题" %}</span>
                 <span>→</span>
             </button>
         </div>
@@ -155,11 +155,21 @@
                 <span class="host-reveal-answer-badge">{% trans "参考答案" %}</span>
                 <span class="host-reveal-answer-text" id="host-reveal-answer-text"></span>
             </div>
+
+            <div id="host-reveal-explanation" class="host-reveal-explanation hidden">
+                <p class="host-reveal-explanation-title">{% trans "讲解结束" %}</p>
+                <p class="host-reveal-explanation-meta">{% trans "本题为学生无需作答的知识点讲解" %}</p>
+            </div>
+
+            <div id="host-mid-leaderboard-wrap" class="host-mid-leaderboard-wrap hidden">
+                <h3 class="host-mid-leaderboard-title" id="host-mid-leaderboard-title">{% trans "实时积分榜" %}</h3>
+                <div id="host-mid-leaderboard" class="host-leaderboard-scroll-list host-mid-leaderboard"></div>
+            </div>
         </div>
 
         <div class="host-reveal-action-row">
-            <button id="btn-next" class="token-btn-primary btn-host-next-q" onclick="nextQuestion()">
-                <span>{% trans "下一题" %}</span>
+            <button id="btn-next" class="token-btn-primary btn-host-next-q" type="button" onclick="nextQuestion()">
+                <span>{% trans "查看排行榜" %}</span>
                 <span>→</span>
             </button>
         </div>
@@ -197,7 +207,7 @@
             <h2 class="host-stage-title">{% trans "答题数据分析" %}</h2>
         </div>
 
-        <div id="host-analytics-container" style="min-height: 300px; margin: 1rem 0;"></div>
+        <div id="host-analytics-container"></div>
 
         <div class="host-stage-foot" style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;">
             <button type="button" class="token-btn-secondary" onclick="backToPodium()">
@@ -212,6 +222,14 @@
 
 </div>
 
+<div id="host-question-countdown" class="q-countdown hidden" aria-live="assertive" aria-atomic="true" aria-hidden="true">
+    <div class="q-countdown-bg"></div>
+    <div class="q-countdown-ring" aria-hidden="true"></div>
+    <p class="q-countdown-meta"></p>
+    <div class="q-countdown-num">3</div>
+    <p class="q-countdown-hint"></p>
+</div>
+
 <!-- 弹幕互动层 -->
 <div class="danmaku-rail danmaku-rail-host">
     <div id="host-danmaku-layer" class="danmaku-layer"></div>
@@ -221,7 +239,8 @@
 {% block extra_js %}
 <script src="{% static 'js/awards.js' %}?v=6"></script>
 <script src="{% static 'js/wordcloud.js' %}?v=3"></script>
-<script src="{% static 'js/analytics.js' %}?v=4"></script>
+<script src="{% static 'js/analytics.js' %}?v=5"></script>
+<script src="{% static 'js/question_countdown.js' %}?v=1"></script>
 <script>
 function _t(key, ...args) {
     if (typeof window !== 'undefined' && window.t) {
@@ -237,6 +256,21 @@ let hostTimerInterval = null;
 let currentHostQuestionId = null;
 let wsConnected = false;
 const pendingActions = [];
+const hostCountdown = window.QuestionCountdown
+    ? window.QuestionCountdown.create('host-question-countdown')
+    : null;
+
+function cancelHostCountdown() {
+    if (hostCountdown) hostCountdown.cancel();
+}
+
+function runHostCountdown(state, onDone) {
+    if (hostCountdown) {
+        hostCountdown.run(state, onDone);
+        return;
+    }
+    onDone();
+}
 
 function setConnStatus(text) {
     const el = document.getElementById('conn-status');
@@ -299,6 +333,7 @@ function handleHostEvent(event, data) {
         case 'game_started':
         case 'question_started':
         case 'question_ended':
+        case 'ranking_shown':
         case 'game_ended':
             applyHostState(data);
             break;
@@ -307,6 +342,9 @@ function handleHostEvent(event, data) {
             break;
         case 'word_cloud_updated':
             renderWordCloud('host-word-cloud-display', data.words);
+            break;
+        case 'answers_updated':
+            updateHostAnswerProgress(data);
             break;
         case 'error':
             const errMsg = data.message || _t('status.error');
@@ -322,6 +360,8 @@ function handleHostEvent(event, data) {
                 nextBtn.disabled = false;
                 nextBtn.textContent = nextBtn.dataset.label || _t('host.btn_next_q');
             }
+            const playBtn = document.getElementById('btn-end-question');
+            if (playBtn) playBtn.disabled = false;
             break;
     }
 }
@@ -329,6 +369,10 @@ function handleHostEvent(event, data) {
 function applyHostState(state) {
     document.getElementById('host-player-count').textContent = state.player_count;
     document.getElementById('total-players').textContent = state.player_count;
+
+    if (state.status !== 'playing') {
+        cancelHostCountdown();
+    }
 
     hideHostScreens();
 
@@ -347,13 +391,21 @@ function applyHostState(state) {
             startBtn.disabled = false;
             startBtn.innerHTML = `<span>${_t('host.btn_start')}</span><span>→</span>`;
         }
+        const playBtn = document.getElementById('btn-end-question');
+        if (playBtn) playBtn.disabled = false;
         showHostQuestion(state);
-    } else if (state.status === 'leaderboard') {
+        updateHostAnswerProgress({
+            answered_count: state.answered_count || 0,
+            player_count: state.player_count,
+        });
+    } else if (state.status === 'reveal' || state.status === 'leaderboard') {
         currentHostQuestionId = null;
         document.getElementById('host-leaderboard').classList.remove('hidden');
         renderQuestionReveal(state);
         const btn = document.getElementById('btn-next');
-        if (state.current_question_index + 1 >= state.total_questions) {
+        if (state.status === 'reveal') {
+            btn.innerHTML = `<span>${_t('host.btn_show_ranking')}</span><span>→</span>`;
+        } else if (state.current_question_index + 1 >= state.total_questions) {
             btn.innerHTML = `<span>${_t('host.btn_ceremony')}</span><span>→</span>`;
         } else {
             btn.innerHTML = `<span>${_t('host.btn_next_q')}</span><span>→</span>`;
@@ -368,6 +420,12 @@ function applyHostState(state) {
 
 function hideHostScreens() {
     clearHostTimer();
+    const playing = document.getElementById('host-playing');
+    if (playing) playing.classList.remove('host-playing-explanation');
+    const revealCard = document.getElementById('host-leaderboard');
+    if (revealCard) {
+        revealCard.classList.remove('is-ranking-phase', 'has-live-rank');
+    }
     ['host-waiting', 'host-playing', 'host-leaderboard', 'host-ended', 'host-analytics']
         .forEach(id => {
             const el = document.getElementById(id);
@@ -405,8 +463,41 @@ function backToPodium() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+function updateHostAnswerProgress(data) {
+    if (!data) return;
+    if (data.question_id && currentHostQuestionId && data.question_id !== currentHostQuestionId) {
+        return;
+    }
+    const answered = document.getElementById('answer-count');
+    const total = document.getElementById('total-players');
+    if (answered && data.answered_count != null) {
+        answered.textContent = String(data.answered_count);
+    }
+    if (total && data.player_count != null) {
+        total.textContent = String(data.player_count);
+    }
+}
+
 function showHostQuestion(state) {
     const q = state.question;
+    const isExplanation = q.question_type === 'explanation';
+    const playing = document.getElementById('host-playing');
+    if (playing) playing.classList.toggle('host-playing-explanation', isExplanation);
+    const answerProgress = document.querySelector('.host-answer-progress');
+    if (answerProgress) answerProgress.classList.toggle('hidden', isExplanation);
+    const endLabel = document.getElementById('btn-end-question-label');
+    if (endLabel) {
+        if (isExplanation) {
+            endLabel.textContent = (state.current_question_index + 1 >= state.total_questions)
+                ? _t('host.btn_ceremony')
+                : _t('host.btn_next_q');
+        } else {
+            endLabel.textContent = _t('host.btn_end_q');
+        }
+    }
+    const playBtn = document.getElementById('btn-end-question');
+    if (playBtn) playBtn.disabled = false;
+
     if (currentHostQuestionId === q.id) return;
     currentHostQuestionId = q.id;
 
@@ -441,6 +532,14 @@ function showHostQuestion(state) {
 
     const stemBox = document.querySelector('.host-stem-box');
     const container = document.getElementById('host-options');
+    if (isExplanation) {
+        if (stemBox) stemBox.classList.add('hidden');
+        container.innerHTML = '';
+        container.classList.add('hidden');
+        clearHostTimer();
+        return;
+    }
+    if (stemBox) stemBox.classList.remove('hidden');
     if (isTextType) {
         if (stemBox) stemBox.classList.add('stem-hero');
         container.innerHTML = '';
@@ -460,7 +559,18 @@ function showHostQuestion(state) {
         ).join('');
     }
 
-    startHostTimer(q.time_limit);
+    beginHostQuestionTimer(state, q.time_limit);
+}
+
+function beginHostQuestionTimer(state, seconds) {
+    clearHostTimer();
+    const fill = document.getElementById('host-timer-fill');
+    if (fill) fill.style.width = '100%';
+    const questionId = currentHostQuestionId;
+    runHostCountdown(state, function () {
+        if (currentHostQuestionId !== questionId) return;
+        startHostTimer(seconds);
+    });
 }
 
 function startHostTimer(seconds) {
@@ -525,6 +635,14 @@ function renderQuestionReveal(state) {
     const reveal = q.reveal || {};
     const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
     const typeLabel = _t('qtype.label.' + (q.question_type || 'single'));
+    const isExplanation = q.question_type === 'explanation';
+    const isRanking = state.status === 'leaderboard';
+
+    const hostCard = document.getElementById('host-leaderboard');
+    if (hostCard) {
+        hostCard.classList.toggle('is-ranking-phase', isRanking);
+        hostCard.classList.remove('has-live-rank');
+    }
 
     const kicker = document.getElementById('host-reveal-kicker');
     const title = document.getElementById('host-reveal-title');
@@ -533,16 +651,27 @@ function renderQuestionReveal(state) {
     kicker.textContent = isEn
         ? `Question ${state.current_question_index + 1} of ${state.total_questions} · ${typeLabel}`
         : `第 ${state.current_question_index + 1} / ${state.total_questions} 题 · ${typeLabel}`;
-    title.textContent = q.text || _t('host.reveal_title');
-    subtitle.textContent = isEn
-        ? `${reveal.answered_count || 0} answered · ${reveal.player_count || state.player_count || 0} present`
-        : `${reveal.answered_count || 0} 人已作答 · ${reveal.player_count || state.player_count || 0} 人在场`;
+
+    if (isRanking) {
+        title.textContent = _t('host.live_ranking');
+        subtitle.textContent = isEn
+            ? `${state.player_count || 0} players`
+            : `${state.player_count || 0} 人在场`;
+    } else {
+        title.textContent = isExplanation ? _t('host.explanation_done') : (q.text || _t('host.reveal_title'));
+        subtitle.textContent = isExplanation
+            ? _t('host.explanation_done_sub')
+            : (isEn
+                ? `${reveal.answered_count || 0} answered · ${reveal.player_count || state.player_count || 0} present`
+                : `${reveal.answered_count || 0} 人已作答 · ${reveal.player_count || state.player_count || 0} 人在场`);
+    }
 
     const chartEl = document.getElementById('host-reveal-chart');
     const shortEl = document.getElementById('host-reveal-short');
     const cloudWrap = document.getElementById('host-leaderboard-word-cloud-wrap');
     const answerWrap = document.getElementById('host-reveal-answer');
     const answerText = document.getElementById('host-reveal-answer-text');
+    const explanationEl = document.getElementById('host-reveal-explanation');
     const isWordCloud = q.question_type === 'word_cloud';
     const isShort = q.question_type === 'short_answer';
     const optionStats = reveal.option_stats || [];
@@ -551,6 +680,18 @@ function renderQuestionReveal(state) {
     shortEl.classList.add('hidden');
     cloudWrap.classList.add('hidden');
     answerWrap.classList.add('hidden');
+    if (explanationEl) explanationEl.classList.add('hidden');
+
+    if (isRanking) {
+        renderHostLiveRanking(state);
+        return;
+    }
+
+    if (isExplanation) {
+        if (explanationEl) explanationEl.classList.remove('hidden');
+        hideHostLiveRanking();
+        return;
+    }
 
     if (optionStats.length) {
         const shapes = ['▲', '◆', '●', '■'];
@@ -599,6 +740,25 @@ function renderQuestionReveal(state) {
         cloudWrap.classList.remove('hidden');
         renderWordCloud('host-leaderboard-word-cloud', q.word_cloud || []);
     }
+
+    hideHostLiveRanking();
+}
+
+function hideHostLiveRanking() {
+    const wrap = document.getElementById('host-mid-leaderboard-wrap');
+    const hostCard = document.getElementById('host-leaderboard');
+    if (wrap) wrap.classList.add('hidden');
+    if (hostCard) hostCard.classList.remove('has-live-rank');
+}
+
+function renderHostLiveRanking(state) {
+    const wrap = document.getElementById('host-mid-leaderboard-wrap');
+    const title = document.getElementById('host-mid-leaderboard-title');
+    const list = (state && state.leaderboard) || [];
+    if (title) title.textContent = _t('host.live_ranking');
+    if (!wrap) return;
+    wrap.classList.remove('hidden');
+    renderLeaderboardList(list, 'host-mid-leaderboard', 1);
 }
 
 function startGame() {
@@ -609,6 +769,14 @@ function startGame() {
     }
     sendWs({ action: 'start_game' });
 }
+function hostPlayingAction() {
+    const playing = document.getElementById('host-playing');
+    if (playing && playing.classList.contains('host-playing-explanation')) {
+        nextQuestion();
+        return;
+    }
+    endQuestion();
+}
 function endQuestion() { sendWs({ action: 'end_question' }); }
 function nextQuestion() {
     const btn = document.getElementById('btn-next');
@@ -618,6 +786,8 @@ function nextQuestion() {
         btn.dataset.label = btn.textContent;
         btn.textContent = isEn ? 'Loading…' : '正在切题…';
     }
+    const playBtn = document.getElementById('btn-end-question');
+    if (playBtn) playBtn.disabled = true;
     sendWs({ action: 'next_question' });
 }
 
