@@ -533,21 +533,26 @@ function renderQuestionReveal(state) {
     answerWrap.classList.add('hidden');
 
     if (optionStats.length) {
-        const maxCount = Math.max(1, ...optionStats.map(s => s.count || 0));
+        const shapes = ['▲', '◆', '●', '■'];
         const colors = ['host-opt-a', 'host-opt-b', 'host-opt-c', 'host-opt-d'];
+        const maxCount = Math.max(1, ...optionStats.map(s => s.count || 0));
         chartEl.innerHTML = optionStats.map((stat, i) => {
             const count = stat.count || 0;
-            const pct = Math.max(6, Math.round((count / maxCount) * 100));
+            const pct = count > 0 ? Math.max(14, Math.round((count / maxCount) * 100)) : 8;
             const correctClass = stat.is_correct ? ' is-correct' : '';
+            const shape = shapes[i] || '●';
             return `
                 <div class="host-reveal-bar-col${correctClass}">
-                    <div class="host-reveal-bar-count">${count}</div>
                     <div class="host-reveal-bar-track">
+                        <div class="host-reveal-bar-count-pill">${count}</div>
                         <div class="host-reveal-bar-fill ${colors[i] || 'host-opt-a'}" style="height: ${pct}%;"></div>
                     </div>
-                    <div class="host-reveal-bar-label">
-                        <span class="host-reveal-bar-key">${escapeHtml(stat.key)}</span>
-                        <span class="host-reveal-bar-text">${escapeHtml(stat.text || '')}</span>
+                    <div class="host-reveal-bar-footer">
+                        <div class="host-reveal-shape-badge ${colors[i] || 'host-opt-a'}">
+                            <span>${shape}</span>
+                            <span>${escapeHtml(stat.key)}</span>
+                        </div>
+                        <div class="host-reveal-bar-text" title="${escapeHtml(stat.text || '')}">${escapeHtml(stat.text || '')}</div>
                     </div>
                     ${stat.is_correct ? '<span class="host-reveal-bar-badge">正确答案</span>' : ''}
                 </div>

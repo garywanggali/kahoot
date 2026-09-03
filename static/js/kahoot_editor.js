@@ -7,6 +7,13 @@
     const AUTO_SAVE_DEBOUNCE_MS = 900;
     const AUTO_SAVE_INTERVAL_MS = 60 * 1000;
 
+    function _t(key, ...args) {
+        if (typeof window !== 'undefined' && window.t) {
+            return window.t(key, ...args);
+        }
+        return key;
+    }
+
     let questions = Array.isArray(INITIAL_QUESTIONS) ? INITIAL_QUESTIONS.slice() : [];
     let activeIndex = questions.length > 0 ? 0 : -1;
     let correctKeys = new Set();
@@ -31,6 +38,7 @@
     }
 
     function showQuestionImage(url) {
+        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
         const src = normalizeImageUrl(url);
         if (!src) {
             els.previewImage.removeAttribute('src');
@@ -45,7 +53,7 @@
                 showQuestionImage(localImagePreviewUrl);
                 return;
             }
-            setSaveStatus('图片加载失败，请重新上传');
+            setSaveStatus(isEn ? 'Failed to load image, please re-upload' : '图片加载失败，请重新上传');
         };
         els.previewImage.onload = () => {
             if (src !== localImagePreviewUrl) {
@@ -103,6 +111,17 @@
     }
 
     function typeLabel(t) {
+        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+        if (isEn) {
+            const mapEn = {
+                single: 'Single',
+                multiple: 'Multiple',
+                judgment: 'True/False',
+                short_answer: 'Short Answer',
+                word_cloud: 'Word Cloud',
+            };
+            return mapEn[t] || 'Single';
+        }
         const map = {
             single: '单选',
             multiple: '多选',
@@ -132,24 +151,29 @@
     }
 
     function renderList() {
+        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
         els.list.innerHTML = '';
         questions.forEach((q, i) => {
             const li = document.createElement('li');
             li.className = 'kahoot-editor-q-item' + (i === activeIndex ? ' active' : '');
-            const label = (q.text || '').trim() || '（未填写题干）';
+            const emptyLabel = isEn ? '(Untitled question)' : '（未填写题干）';
+            const label = (q.text || '').trim() || emptyLabel;
             li.innerHTML = `<span class="kahoot-editor-q-num">${i + 1}</span>
                 <span class="kahoot-editor-q-label">${typeLabel(q.question_type)} · ${label.slice(0, 28)}</span>`;
             li.onclick = () => { void selectQuestion(i); };
             els.list.appendChild(li);
         });
         if (questions.length === 0) {
-            els.list.innerHTML = '<li class="kahoot-editor-q-empty">暂无题目，点击「+ 添加」</li>';
+            els.list.innerHTML = `<li class="kahoot-editor-q-empty">${isEn ? 'No questions, click "+ Add"' : '暂无题目，点击「+ 添加」'}</li>`;
         }
     }
 
     function updateCorrectMarks() {
+        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+        const markTitle = isEn ? 'Mark as correct' : '标为正确答案';
         document.querySelectorAll('.kahoot-editor-mark-correct').forEach(btn => {
             const key = btn.dataset.key;
+            btn.title = markTitle;
             btn.classList.toggle('is-correct', correctKeys.has(key));
         });
     }
@@ -164,6 +188,7 @@
     }
 
     function applyTypeUi(type) {
+        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
         const isShort = type === 'short_answer';
         const isWord = type === 'word_cloud';
         const isJudgment = type === 'judgment';
@@ -172,36 +197,37 @@
         els.wordPanel.classList.toggle('hidden', !isWord);
 
         if (isJudgment) {
-            els.optionA.placeholder = '正确';
-            els.optionB.placeholder = '错误';
+            els.optionA.placeholder = isEn ? 'True' : '正确';
+            els.optionB.placeholder = isEn ? 'False' : '错误';
             els.optionC.parentElement.classList.add('hidden');
             els.optionD.parentElement.classList.add('hidden');
         } else if (!isShort && !isWord) {
-            els.optionA.placeholder = '选项 A';
-            els.optionB.placeholder = '选项 B';
+            els.optionA.placeholder = isEn ? 'Option A' : '选项 A';
+            els.optionB.placeholder = isEn ? 'Option B' : '选项 B';
             els.optionC.parentElement.classList.remove('hidden');
             els.optionD.parentElement.classList.remove('hidden');
         }
 
         if (type === 'multiple') {
-            els.typeHint.textContent = '多选：可标记多个 ✓，须全部选对才得分';
+            els.typeHint.textContent = isEn ? 'Multiple: Click ✓ on multiple options (at least 2)' : '多选：可标记多个 ✓，须全部选对才得分';
         } else if (type === 'single') {
-            els.typeHint.textContent = '单选：点击 ✓ 标记唯一正确答案';
+            els.typeHint.textContent = isEn ? 'Single: Click ✓ to mark the single correct answer' : '单选：点击 ✓ 标记唯一正确答案';
         } else if (type === 'judgment') {
-            els.typeHint.textContent = '判断：标记正确项为 A 或 B';
+            els.typeHint.textContent = isEn ? 'True/False: Option A is True, B is False. Click ✓ to mark' : '判断：标记正确项为 A 或 B';
         } else if (type === 'short_answer') {
-            els.typeHint.textContent = '简答：填写参考答案';
+            els.typeHint.textContent = isEn ? 'Short Answer: Enter accepted text (separate with |)' : '简答：填写参考答案（多个用 | 分隔）';
         } else {
-            els.typeHint.textContent = '词云：学生自由输入';
+            els.typeHint.textContent = isEn ? 'Word Cloud: Students submit text live without scoring' : '词云：学生自由输入实时聚合展示';
         }
     }
 
     function fillForm(q) {
+        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
         els.text.value = q.text || '';
         els.type.value = q.question_type || 'single';
         els.time.value = String(q.time_limit || 20);
-        els.optionA.value = q.question_type === 'judgment' ? (q.option_a || '正确') : (q.option_a || '');
-        els.optionB.value = q.question_type === 'judgment' ? (q.option_b || '错误') : (q.option_b || '');
+        els.optionA.value = q.question_type === 'judgment' ? (q.option_a || (isEn ? 'True' : '正确')) : (q.option_a || '');
+        els.optionB.value = q.question_type === 'judgment' ? (q.option_b || (isEn ? 'False' : '错误')) : (q.option_b || '');
         els.optionC.value = q.option_c || '';
         els.optionD.value = q.option_d || '';
         els.shortCorrect.value = q.short_correct || q.option_a || '';
@@ -215,7 +241,7 @@
             showQuestionImage('');
         }
         els.previewNumber.textContent = questions.length
-            ? `第 ${activeIndex + 1} / ${questions.length} 题（预览）`
+            ? (isEn ? `Question ${activeIndex + 1} / ${questions.length} (Preview)` : `第 ${activeIndex + 1} / ${questions.length} 题（预览）`)
             : '';
         if (!saveInFlight) setSaveStatus('');
     }
@@ -271,6 +297,7 @@
     }
 
     async function apiPost(url, body) {
+        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
         const token = csrfToken();
         const opts = {
             method: 'POST',
@@ -292,13 +319,16 @@
         const res = await fetch(url, opts);
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
-            const fallback = res.status === 403 ? 'CSRF 校验失败，请刷新页面重试' : `请求失败 (${res.status})`;
+            const fallback = res.status === 403
+                ? (isEn ? 'CSRF verification failed, please refresh' : 'CSRF 校验失败，请刷新页面重试')
+                : (isEn ? `Request failed (${res.status})` : `请求失败 (${res.status})`);
             throw new Error(data.error || fallback);
         }
         return data;
     }
 
     async function saveQuestion(options = {}) {
+        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
         const silent = options.silent;
         const force = options.force;
 
@@ -313,7 +343,7 @@
         if (!q) return true;
 
         const task = (async () => {
-            if (!silent) setSaveStatus('保存中…');
+            if (!silent) setSaveStatus(isEn ? 'Saving…' : '保存中…');
             try {
                 const data = await apiPost(
                     `/teacher/kahoot/${quizId}/questions/save/`,
@@ -326,11 +356,11 @@
                 fillForm(data.question);
                 renderList();
                 if (silent) {
-                    setSaveStatus('已自动保存');
-                    showTopSaveToast('已快速保存');
+                    setSaveStatus(isEn ? 'Auto-saved' : '已自动保存');
+                    showTopSaveToast(isEn ? 'Saved' : '已快速保存');
                 } else {
-                    setSaveStatus('已保存');
-                    showTopSaveToast('已保存');
+                    setSaveStatus(isEn ? 'Saved' : '已保存');
+                    showTopSaveToast(isEn ? 'Saved' : '已保存');
                 }
                 return true;
             } catch (e) {
@@ -408,9 +438,10 @@
     }
 
     async function deleteQuestion() {
+        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
         const q = currentQuestion();
         if (!q || !q.id) return;
-        if (!confirm('确定删除这道题？')) return;
+        if (!confirm(isEn ? 'Are you sure you want to delete this question?' : '确定删除这道题？')) return;
         try {
             await apiPost(`/teacher/kahoot/${quizId}/questions/${q.id}/delete/`, new FormData());
             questions.splice(activeIndex, 1);
@@ -443,21 +474,22 @@
     }
 
     async function saveOnly() {
+        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
         const btn = document.getElementById('btn-save-quiz');
         const label = btn ? btn.textContent : '';
         if (btn) {
             btn.disabled = true;
-            btn.textContent = '保存中…';
+            btn.textContent = isEn ? 'Saving…' : '保存中…';
         }
-        setSaveStatus('正在保存…');
+        setSaveStatus(isEn ? 'Saving changes…' : '正在保存…');
         try {
             await saveAllChanges({ silent: false, forceQuestion: true });
-            setSaveStatus('✓ 已保存全部更改');
-            showTopSaveToast('已保存');
+            setSaveStatus(isEn ? '✓ All changes saved' : '✓ 已保存全部更改');
+            showTopSaveToast(isEn ? 'Saved' : '已保存');
             setTimeout(() => setSaveStatus(''), 2500);
         } catch (e) {
-            const msg = e.message || '保存失败';
-            setSaveStatus('保存失败：' + msg);
+            const msg = e.message || (isEn ? 'Failed to save' : '保存失败');
+            setSaveStatus((isEn ? 'Save failed: ' : '保存失败：') + msg);
             alert(msg);
         } finally {
             if (btn) {
@@ -468,10 +500,11 @@
     }
 
     async function saveCurrentQuestion() {
+        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
         try {
             await saveQuestion({ silent: false });
         } catch (e) {
-            alert(e.message || '保存失败');
+            alert(e.message || (isEn ? 'Failed to save' : '保存失败'));
         }
     }
 
@@ -495,13 +528,14 @@
     }
 
     async function confirmLeave() {
+        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
         const shouldSave = els.modalSaveChanges ? els.modalSaveChanges.checked : false;
-        const label = btnConfirmExit ? btnConfirmExit.textContent : '确认离开';
+        const label = btnConfirmExit ? btnConfirmExit.textContent : (isEn ? 'Confirm & Exit' : '确认离开');
 
         try {
             if (btnConfirmExit) {
                 btnConfirmExit.disabled = true;
-                btnConfirmExit.textContent = '处理中…';
+                btnConfirmExit.textContent = isEn ? 'Processing…' : '处理中…';
             }
 
             if (shouldSave) {
@@ -516,7 +550,7 @@
 
             window.location.href = dashboardUrl;
         } catch (e) {
-            alert('离开失败：' + (e.message || '操作失败'));
+            alert((isEn ? 'Failed to exit: ' : '离开失败：') + (e.message || (isEn ? 'Action failed' : '操作失败')));
             if (btnConfirmExit) {
                 btnConfirmExit.disabled = false;
                 btnConfirmExit.textContent = label;
@@ -555,10 +589,11 @@
     });
 
     els.type.addEventListener('change', () => {
+        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
         applyTypeUi(els.type.value);
         if (els.type.value === 'judgment') {
-            if (!els.optionA.value) els.optionA.value = '正确';
-            if (!els.optionB.value) els.optionB.value = '错误';
+            if (!els.optionA.value) els.optionA.value = isEn ? 'True' : '正确';
+            if (!els.optionB.value) els.optionB.value = isEn ? 'False' : '错误';
             correctKeys = new Set(['A']);
             updateCorrectMarks();
         }
@@ -584,10 +619,11 @@
         els.mediaPlaceholder.addEventListener('click', () => els.imageInput.click());
     }
     els.imageInput.addEventListener('change', () => {
+        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
         const file = els.imageInput.files[0];
         if (!file) return;
         if (file.size > MAX_IMAGE_MB * 1024 * 1024) {
-            alert(`图片不能超过 ${MAX_IMAGE_MB}MB`);
+            alert(isEn ? `Image cannot exceed ${MAX_IMAGE_MB}MB` : `图片不能超过 ${MAX_IMAGE_MB}MB`);
             return;
         }
         revokeLocalImagePreview();

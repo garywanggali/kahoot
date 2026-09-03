@@ -418,6 +418,24 @@
         };
     }
 
+    function getFaceName(index) {
+        const idx = typeof index === 'number' ? index : 0;
+        const f = FACES[idx] || FACES[0];
+        if (window.t) {
+            return window.t('face.' + f.id);
+        }
+        return f.name;
+    }
+
+    function getHairName(index) {
+        const idx = typeof index === 'number' ? index : 0;
+        const h = HAIRS[idx] || HAIRS[0];
+        if (window.t) {
+            return window.t('hair.' + h.id);
+        }
+        return h.name;
+    }
+
     const AvatarSystem = {
         FACES,
         HAIRS,
@@ -425,8 +443,11 @@
         renderSvg,
         random: getRandomAvatar,
         getPalette,
+        getFaceName,
+        getHairName,
     };
 
     global.AvatarSystem = AvatarSystem;
 
 })(typeof window !== 'undefined' ? window : this);
+

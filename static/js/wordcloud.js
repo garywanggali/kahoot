@@ -3,7 +3,8 @@ function renderWordCloud(containerId, words) {
     if (!container) return;
 
     if (!words || words.length === 0) {
-        container.innerHTML = '<p class="text-muted-block">暂无回答，等待大家提交...</p>';
+        const emptyMsg = window.t ? t('host.word_cloud_empty') : '暂无回答，等待大家提交...';
+        container.innerHTML = `<p class="text-muted-block">${escapeWordCloudText(emptyMsg)}</p>`;
         return;
     }
 
