@@ -1106,3 +1106,61 @@ class RevealThenRankingFlowTests(TestCase):
         self.assertEqual(state['status'], Room.STATUS_ENDED)
 
 
+class ClickThroughSafetyTests(TestCase):
+    def test_language_switcher_uses_document_delegation(self):
+        from pathlib import Path
+
+        from django.conf import settings
+
+        js = (Path(settings.BASE_DIR) / 'static' / 'js' / 'i18n.js').read_text()
+        self.assertIn("closest('[data-action=\"toggle-lang\"]')", js)
+        self.assertIn("document.addEventListener('click'", js)
+        self.assertIn('_langDelegated', js)
+        self.assertIn('turbo:load', js)
+        self.assertIn('csrf-token', js)
+        self.assertNotIn(
+            "querySelectorAll('[data-action=\"toggle-lang\"]').forEach",
+            js,
+        )
+
+    def test_hidden_overlays_cannot_intercept_clicks(self):
+        from pathlib import Path
+
+        from django.conf import settings
+
+        css = (Path(settings.BASE_DIR) / 'static' / 'css' / 'style.css').read_text()
+        self.assertIn('.q-countdown.hidden', css)
+        self.assertIn('.play-feedback-stage.hidden', css)
+        self.assertIn('.settings-overlay.hidden', css)
+        self.assertIn('.ai-loading-overlay.hidden', css)
+        self.assertIn('pointer-events: none !important', css)
+        self.assertIn('.q-countdown:not(.hidden)', css)
+        self.assertIn('.landing-main-flow', css)
+        self.assertIn('.turbo-progress-bar', css)
+        self.assertIn('.btn-lang-toggle', css)
+        self.assertIn('pointer-events: none !important', css)
+
+        editor_css = (Path(settings.BASE_DIR) / 'static' / 'css' / 'kahoot_editor.css').read_text()
+        self.assertIn('.modal-overlay.hidden', editor_css)
+        self.assertIn('pointer-events: none !important', editor_css)
+
+        countdown = (Path(settings.BASE_DIR) / 'static' / 'js' / 'question_countdown.js').read_text()
+        self.assertIn("el.setAttribute('inert', '')", countdown)
+        self.assertIn("el.removeAttribute('inert')", countdown)
+
+        bgm = (Path(settings.BASE_DIR) / 'static' / 'js' / 'bgm.js').read_text()
+        self.assertIn('setTimeout(recoverStuckTurbo, 2000)', bgm)
+
+    def test_base_template_exposes_csrf_and_cache_bust(self):
+        from django.template.loader import render_to_string
+        from django.test import RequestFactory
+
+        request = RequestFactory().get('/')
+        html = render_to_string('base.html', request=request)
+        self.assertIn('name="csrf-token"', html)
+        self.assertIn('csrfmiddlewaretoken', html)
+        self.assertIn('style.css?v=467', html)
+        self.assertIn('i18n.js?v=8', html)
+        self.assertIn('data-action="toggle-lang"', html)
+
+

@@ -47,6 +47,7 @@
             el.classList.add('hidden');
             el.classList.remove('is-go', 'is-n3', 'is-n2', 'is-n1');
             el.setAttribute('aria-hidden', 'true');
+            el.setAttribute('inert', '');
         }
 
         function cancel() {
@@ -105,6 +106,7 @@
             }
 
             el.classList.remove('hidden');
+            el.removeAttribute('inert');
             el.setAttribute('aria-hidden', 'false');
             var endsAt = Date.now() + remaining;
 

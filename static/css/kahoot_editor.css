@@ -617,6 +617,8 @@ button.kahoot-create-card {
 
 .modal-overlay.hidden {
     display: none !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
 }
 
 @keyframes modalFadeIn {

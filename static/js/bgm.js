@@ -88,7 +88,7 @@
     let busyTimer = null;
     function armBusyWatch() {
         clearTimeout(busyTimer);
-        busyTimer = setTimeout(recoverStuckTurbo, 8000);
+        busyTimer = setTimeout(recoverStuckTurbo, 2000);
     }
     function clearBusyWatch() {
         clearTimeout(busyTimer);

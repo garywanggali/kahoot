@@ -138,6 +138,9 @@ a:hover {
     align-items: center;
     padding-top: 4vh;
     margin: 0;
+    position: relative;
+    z-index: 2;
+    pointer-events: auto;
 }
 
 /* ==========================================================================
@@ -156,8 +159,8 @@ a:hover {
 
 .keycap {
     position: absolute;
-    pointer-events: auto !important;
-    cursor: pointer !important;
+    pointer-events: none !important;
+    cursor: default !important;
     user-select: none;
     border-radius: 16px;
     padding: 3.5px;
@@ -883,6 +886,8 @@ body.settings-open {
 
 .settings-overlay.hidden {
     display: none !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
 }
 
 .settings-card {
@@ -7165,15 +7170,26 @@ html[lang="en"] .room-quiz-filter-tabs .tab-pill {
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    pointer-events: auto;
+    pointer-events: none;
     isolation: isolate;
 }
 
 .q-countdown.hidden,
-.play-feedback-stage.hidden {
+.play-feedback-stage.hidden,
+.settings-overlay.hidden,
+.ai-loading-overlay.hidden,
+.modal-overlay.hidden {
     display: none !important;
     pointer-events: none !important;
     visibility: hidden !important;
+}
+
+.q-countdown:not(.hidden),
+.play-feedback-stage:not(.hidden),
+.settings-overlay:not(.hidden),
+.ai-loading-overlay:not(.hidden),
+.modal-overlay:not(.hidden) {
+    pointer-events: auto;
 }
 
 /* Semi-transparent frosted backdrop with subtle dark blur */
@@ -7339,6 +7355,34 @@ html[lang="en"] .room-quiz-filter-tabs .tab-pill {
     .q-countdown-num-box.q-countdown-pop {
         animation: none;
     }
+}
+
+/* ==========================================================================
+   Click-through safety: hidden overlays / chrome must never steal taps
+   ========================================================================== */
+.settings-overlay.hidden,
+.q-countdown.hidden,
+.play-feedback-stage.hidden,
+.ai-loading-overlay.hidden,
+.modal-overlay.hidden {
+    display: none !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+}
+
+.turbo-progress-bar {
+    pointer-events: none !important;
+}
+
+.btn-lang-toggle,
+.global-page-topbar,
+.studio-header-actions,
+.landing-main-flow button,
+.landing-main-flow a,
+.landing-main-flow input {
+    position: relative;
+    z-index: 30;
+    pointer-events: auto;
 }
 
 

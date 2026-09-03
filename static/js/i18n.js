@@ -659,7 +659,10 @@
             form.style.display = 'none';
 
             const csrfInput = document.querySelector('input[name=csrfmiddlewaretoken]');
-            const csrfToken = csrfInput ? csrfInput.value : getCookie('csrftoken');
+            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            const csrfToken = (csrfInput && csrfInput.value)
+                || (csrfMeta && csrfMeta.getAttribute('content'))
+                || getCookie('csrftoken');
 
             if (csrfToken) {
                 const csrfField = document.createElement('input');
@@ -690,11 +693,15 @@
         },
 
         initLanguageSwitchers() {
-            document.querySelectorAll('[data-action="toggle-lang"]').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.toggleLanguage();
-                });
+            if (this._langDelegated) return;
+            this._langDelegated = true;
+            // Delegate on document so Turbo body swaps keep the language toggle clickable.
+            document.addEventListener('click', (e) => {
+                const btn = e.target.closest && e.target.closest('[data-action="toggle-lang"]');
+                if (!btn) return;
+                e.preventDefault();
+                e.stopPropagation();
+                this.toggleLanguage();
             });
         }
     };
@@ -704,10 +711,8 @@
         return KahootI18n.t(key, ...args);
     };
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => KahootI18n.initLanguageSwitchers());
-    } else {
-        KahootI18n.initLanguageSwitchers();
-    }
+    KahootI18n.initLanguageSwitchers();
+    document.addEventListener('turbo:load', () => KahootI18n.initLanguageSwitchers());
+    document.addEventListener('DOMContentLoaded', () => KahootI18n.initLanguageSwitchers());
 
 })(typeof window !== 'undefined' ? window : this);
