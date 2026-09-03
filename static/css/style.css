@@ -3943,209 +3943,170 @@ body:has(.play-app) .container {
 }
 
 .host-podium-outer {
-    margin: 1.5rem 0 2.5rem;
+    margin: 2rem 0 3rem;
+    width: 100%;
 }
 
 .podium-stage {
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    gap: 2.25rem;
-    min-height: 330px;
+    gap: 3rem;
+    min-height: 360px;
+    padding-bottom: 0.5rem;
 }
 
 .podium-slot {
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 200px;
+    width: 175px;
     position: relative;
-    cursor: default;
-    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+    cursor: pointer;
+    transition: transform 0.28s cubic-bezier(0.34, 1.3, 0.64, 1);
 }
 
-/* 鼠标悬停交互：整组奖台升起，光晕激活 */
 .podium-slot:hover {
     transform: translateY(-8px);
 }
 
-.podium-badge-wrap {
-    margin-bottom: 0.65rem;
-    position: relative;
-    z-index: 2;
-    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+.podium-avatar-wrap {
+    margin-bottom: 0.75rem;
+    transition: transform 0.28s cubic-bezier(0.34, 1.3, 0.64, 1);
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.06));
 }
 
-.podium-slot:hover .podium-badge-wrap {
-    transform: translateY(-4px) scale(1.1);
-}
-
-.podium-badge-svg {
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    transition: box-shadow 0.28s ease;
-}
-
-/* 冠军金奖徽章 (高端矢量) */
-.podium-badge-svg.badge-gold {
-    background: linear-gradient(135deg, #FFFBEB 0%, #FEF08A 50%, #F59E0B 100%);
-    color: #92400E;
-    border: 1.5px solid rgba(245, 158, 11, 0.5);
-    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.25), inset 0 1px 1px #ffffff;
-}
-
-.podium-slot:hover .podium-badge-svg.badge-gold {
-    box-shadow: 0 12px 28px rgba(245, 158, 11, 0.45), 0 0 16px rgba(253, 224, 71, 0.6);
-}
-
-/* 亚军银奖徽章 */
-.podium-badge-svg.badge-silver {
-    background: linear-gradient(135deg, #FFFFFF 0%, #E2E8F0 50%, #94A3B8 100%);
-    color: #334155;
-    border: 1.5px solid rgba(148, 163, 184, 0.45);
-    box-shadow: 0 8px 20px rgba(100, 116, 139, 0.2), inset 0 1px 1px #ffffff;
-}
-
-.podium-slot:hover .podium-badge-svg.badge-silver {
-    box-shadow: 0 12px 28px rgba(100, 116, 139, 0.35), 0 0 16px rgba(203, 213, 225, 0.6);
-}
-
-/* 季军铜奖徽章 */
-.podium-badge-svg.badge-bronze {
-    background: linear-gradient(135deg, #FFF7ED 0%, #FED7AA 50%, #D97706 100%);
-    color: #78350F;
-    border: 1.5px solid rgba(217, 119, 6, 0.4);
-    box-shadow: 0 8px 20px rgba(180, 83, 9, 0.2), inset 0 1px 1px #ffffff;
-}
-
-.podium-slot:hover .podium-badge-svg.badge-bronze {
-    box-shadow: 0 12px 28px rgba(180, 83, 9, 0.35), 0 0 16px rgba(253, 186, 116, 0.6);
+.podium-slot:hover .podium-avatar-wrap {
+    transform: translateY(-6px) scale(1.08);
 }
 
 .podium-name {
     font-family: var(--token-font-hero);
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     font-weight: 800;
-    color: var(--token-text-primary);
+    color: #18181b;
     text-align: center;
     margin-bottom: 0.35rem;
-    max-width: 170px;
+    max-width: 160px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
 }
 
 .podium-score-pill {
     display: inline-flex;
     align-items: baseline;
     gap: 0.2rem;
-    padding: 0.22rem 0.75rem;
-    background: rgba(0, 0, 0, 0.05);
-    border-radius: var(--token-radius-pill);
-    margin-bottom: 0.85rem;
-    transition: background-color 0.2s ease;
+    padding: 0.25rem 0.85rem;
+    background: #f4f4f5;
+    border-radius: var(--token-radius-pill, 9999px);
+    margin-bottom: 1.25rem;
+    transition: all 0.2s ease;
 }
 
 .podium-slot:hover .podium-score-pill {
-    background: rgba(255, 79, 0, 0.12);
+    background: #18181b;
+}
+
+.podium-slot:hover .podium-score-pill .score-val,
+.podium-slot:hover .podium-score-pill .score-lbl {
+    color: #ffffff;
 }
 
 .score-val {
     font-family: var(--token-font-mono);
     font-size: 0.95rem;
-    font-weight: 900;
-    color: var(--token-color-orange);
+    font-weight: 800;
+    color: #18181b;
+    transition: color 0.2s ease;
 }
 
 .score-lbl {
     font-size: 0.75rem;
     font-weight: 700;
-    color: var(--token-text-secondary);
+    color: #71717a;
+    transition: color 0.2s ease;
 }
 
-/* 领奖台基座 (去除粗硬黑边阴影，采用高级微光立体渐变) */
+/* 极简现代柱体 (Minimalist Pastel Bar Chart Aesthetic) */
 .podium-stand {
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 20px 20px 0 0;
+    border-radius: 16px 16px 0 0;
     position: relative;
-    overflow: hidden;
-    transition: all 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
     box-sizing: border-box;
+    transition: all 0.28s cubic-bezier(0.34, 1.3, 0.64, 1);
 }
 
-/* 冠军 1 号台 (Gold Stand) */
+/* 冠军 1 号柱 (Center Highlight - 清爽高亮天蓝) */
 .podium-stand-1 {
-    height: 195px;
-    background: linear-gradient(180deg, #FEF9C3 0%, #FDE047 30%, #EAB308 100%);
-    border: 1.5px solid rgba(202, 138, 4, 0.45);
-    border-bottom: none;
-    box-shadow: 0 16px 36px rgba(234, 179, 8, 0.22), inset 0 2px 0 rgba(255, 255, 255, 0.9);
+    height: 220px;
+    background: #93C5FD;
+    box-shadow: 0 4px 18px rgba(59, 130, 246, 0.16);
 }
 
 .podium-slot:hover .podium-stand-1 {
-    box-shadow: 0 24px 48px rgba(234, 179, 8, 0.35), 0 0 24px rgba(253, 224, 71, 0.4), inset 0 2px 0 rgba(255, 255, 255, 1);
-    border-color: rgba(161, 98, 7, 0.6);
+    background: #60A5FA;
+    box-shadow: 0 10px 28px rgba(37, 99, 235, 0.25);
+    transform: scaleY(1.03);
 }
 
-/* 亚军 2 号台 (Silver Stand) */
+/* 亚军 2 号柱 (Left - Soft Pastel Blue) */
 .podium-stand-2 {
-    height: 145px;
-    background: linear-gradient(180deg, #F8FAFC 0%, #E2E8F0 35%, #94A3B8 100%);
-    border: 1.5px solid rgba(148, 163, 184, 0.45);
-    border-bottom: none;
-    box-shadow: 0 12px 28px rgba(100, 116, 139, 0.16), inset 0 2px 0 rgba(255, 255, 255, 0.9);
+    height: 155px;
+    background: #DBEAFE;
+    box-shadow: 0 4px 14px rgba(147, 197, 253, 0.12);
 }
 
 .podium-slot:hover .podium-stand-2 {
-    box-shadow: 0 20px 40px rgba(100, 116, 139, 0.28), 0 0 20px rgba(203, 213, 225, 0.4), inset 0 2px 0 rgba(255, 255, 255, 1);
-    border-color: rgba(71, 85, 105, 0.6);
+    background: #BFDBFE;
+    box-shadow: 0 8px 22px rgba(59, 130, 246, 0.18);
+    transform: scaleY(1.03);
 }
 
-/* 季军 3 号台 (Bronze Stand) */
+/* 季军 3 号柱 (Right - Soft Light Pastel Blue) */
 .podium-stand-3 {
-    height: 105px;
-    background: linear-gradient(180deg, #FFF7ED 0%, #FED7AA 35%, #D97706 100%);
-    border: 1.5px solid rgba(217, 119, 6, 0.4);
+    height: 110px;
+    background: #EFF6FF;
+    border: 1.5px solid rgba(191, 219, 254, 0.5);
     border-bottom: none;
-    box-shadow: 0 10px 24px rgba(180, 83, 9, 0.14), inset 0 2px 0 rgba(255, 255, 255, 0.9);
+    box-shadow: 0 4px 12px rgba(147, 197, 253, 0.08);
 }
 
 .podium-slot:hover .podium-stand-3 {
-    box-shadow: 0 18px 36px rgba(180, 83, 9, 0.28), 0 0 20px rgba(251, 146, 60, 0.4), inset 0 2px 0 rgba(255, 255, 255, 1);
-    border-color: rgba(146, 64, 14, 0.6);
+    background: #DBEAFE;
+    border-color: #BFDBFE;
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.15);
+    transform: scaleY(1.03);
 }
 
-/* 台上的大号排位数字 */
+/* 柱体内的排位数字 (现代极简无衬线数字) */
 .podium-place-label {
-    font-family: var(--token-font-mono);
-    font-size: 3.4rem;
+    font-family: var(--token-font-hero);
+    font-size: 2.75rem;
     font-weight: 900;
-    color: #ffffff;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
     user-select: none;
     z-index: 2;
     transition: transform 0.28s ease;
 }
 
-.podium-slot:hover .podium-place-label {
-    transform: scale(1.08);
+.podium-stand-1 .podium-place-label {
+    color: #1E40AF;
 }
 
-/* 基座微光浮层 */
-.podium-stand-glow {
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.6) 0%, transparent 70%);
-    pointer-events: none;
+.podium-stand-2 .podium-place-label {
+    color: #3B82F6;
+}
+
+.podium-stand-3 .podium-place-label {
+    color: #60A5FA;
+}
+
+.podium-slot:hover .podium-place-label {
+    transform: scale(1.12);
 }
 
 .final-rankings-title {
