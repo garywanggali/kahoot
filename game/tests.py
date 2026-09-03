@@ -665,7 +665,10 @@ def _tiny_png(name='slide.png'):
     return SimpleUploadedFile(name, buf.getvalue(), content_type='image/png')
 
 
-@override_settings(MEDIA_ROOT='/Users/garywit/work/kahoot/.test-media')
+import tempfile
+
+
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
 class ExplanationQuestionTests(TestCase):
     def _make_explanation(self, with_image=True) -> Question:
         q = Question(
