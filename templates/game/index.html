@@ -82,10 +82,17 @@
                 <div class="flip-card-side flip-card-back card-industrial">
                     <form method="post" action="{% url 'teacher_login' %}" id="teacher-login-form">
                         {% csrf_token %}
+                        {% for message in messages %}
+                        {% if 'error' in message.tags %}
+                        <div class="join-inline-error">
+                            <p>{{ message }}</p>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
                         <div class="form-group-industrial">
                             <label for="teacher_username">{% trans "用户名" %}</label>
                             <input type="text" id="teacher_username" name="username" class="input-industrial"
-                                   placeholder="{% trans '输入老师用户名' %}" required autocomplete="username">
+                                   placeholder="{% trans '输入老师用户名' %}" value="{{ username|default:'' }}" required autocomplete="username">
                         </div>
                         <div class="form-group-industrial">
                             <label for="password">{% trans "密码" %}</label>
@@ -336,6 +343,9 @@ function toggleCardFlip(flipToTeacher) {
     window.addEventListener('pointerdown', () => SoundEngine.init(), { once: true });
 })();
 
+{% if flip_teacher %}
+toggleCardFlip(true);
+{% endif %}
 if (window.location.search.includes('tab=teacher') || window.location.hash === '#teacher') {
     toggleCardFlip(true);
 }

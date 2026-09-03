@@ -133,22 +133,22 @@ def teacher_login(request):
         password = request.POST.get('password', '')
         if not username or not password:
             messages.error(request, '请输入用户名和密码')
-            return render(request, 'game/teacher_login.html', {'username': username})
+            return render(request, 'game/index.html', {'username': username, 'flip_teacher': True}, status=422)
 
         try:
             teacher = Teacher.objects.get(username=username, is_active=True)
         except Teacher.DoesNotExist:
             messages.error(request, '用户名或密码错误')
-            return render(request, 'game/teacher_login.html', {'username': username})
+            return render(request, 'game/index.html', {'username': username, 'flip_teacher': True}, status=422)
 
         if not teacher.check_password(password):
             messages.error(request, '用户名或密码错误')
-            return render(request, 'game/teacher_login.html', {'username': username})
+            return render(request, 'game/index.html', {'username': username, 'flip_teacher': True}, status=422)
 
         login_teacher(request, teacher)
         return redirect('teacher_dashboard')
 
-    return render(request, 'game/teacher_login.html')
+    return redirect('/?tab=teacher')
 
 
 def teacher_register(request):
