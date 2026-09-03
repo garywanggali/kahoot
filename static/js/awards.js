@@ -53,14 +53,10 @@ function renderPodiumSlot(rank, player) {
     return `
         <div class="podium-slot podium-rank-${rank}${emptyClass}">
             ${avatarHtml}
-            <div class="podium-badge-wrap">
-                ${getMedalSvg(rank)}
-            </div>
             <div class="podium-name" title="${name}">${name}</div>
             ${score !== null ? `<div class="podium-score-pill"><span class="score-val">${score}</span><span class="score-lbl">分</span></div>` : ''}
             <div class="podium-stand podium-stand-${rank}">
                 <span class="podium-place-label">${rank}</span>
-                <div class="podium-stand-glow"></div>
             </div>
         </div>
     `;

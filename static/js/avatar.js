@@ -378,51 +378,24 @@
         const width = size;
         const height = size;
         const className = options.className || 'kahoot-avatar-svg';
-        const isPodium = options.podium || false;
-        const rank = options.rank || 0;
-
-        let medalBadge = '';
-        if (isPodium && rank >= 1 && rank <= 3) {
-            const crownColor = rank === 1 ? '#FFD700' : (rank === 2 ? '#E0E0E0' : '#CD7F32');
-            medalBadge = `
-                <!-- 颁奖专属头饰皇冠 (只在冠军时显现) -->
-                ${rank === 1 ? `
-                    <g transform="translate(36, -14) scale(0.28)">
-                        <path d="M 0 50 L 20 15 L 50 38 L 80 15 L 100 50 Z" fill="#FFD700" stroke="#B8860B" stroke-width="6"/>
-                        <circle cx="20" cy="15" r="7" fill="#FF4757"/>
-                        <circle cx="50" cy="38" r="7" fill="#00D2D3"/>
-                        <circle cx="80" cy="15" r="7" fill="#5F27CD"/>
-                    </g>
-                ` : ''}
-            `;
-        }
 
         return `
-            <svg class="${className}" width="${width}" height="${height}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="头像">
+            <svg class="${className}" width="${width}" height="${height}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="头像" style="overflow: visible;">
                 <defs>
-                    <!-- 身体光泽高光 -->
-                    <radialGradient id="kh-av-glow-${avatar.face}-${avatar.hair}" cx="35%" cy="30%" r="65%">
-                        <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.32"/>
-                        <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
-                    </radialGradient>
                     <!-- 投影底盘 -->
-                    <filter id="kh-av-shadow" x="-10%" y="-10%" width="120%" height="120%">
-                        <feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000000" flood-opacity="0.18"/>
+                    <filter id="kh-av-shadow-${avatar.face}-${avatar.hair}" x="-10%" y="-10%" width="120%" height="120%">
+                        <feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000000" flood-opacity="0.14"/>
                     </filter>
                 </defs>
 
-                ${medalBadge}
-
                 <!-- 卡通圆形主身躯 (Kahoot 标志性圆润角色) -->
-                <g filter="url(#kh-av-shadow)">
+                <g filter="url(#kh-av-shadow-${avatar.face}-${avatar.hair})">
                     <!-- 身体底色 -->
                     <rect x="14" y="14" width="72" height="72" rx="36" fill="${palette.body.bg}"/>
                     <!-- 立体底阴影微弧 -->
                     <path d="M 16 60 Q 50 92 84 60 A 36 36 0 0 1 16 60 Z" fill="${palette.body.shadow}" opacity="0.3"/>
-                    <!-- 顶光高光层 -->
-                    <rect x="14" y="14" width="72" height="72" rx="36" fill="url(#kh-av-glow-${avatar.face}-${avatar.hair})"/>
-                    <!-- 边框收边 (MK-78 精密手感) -->
-                    <rect x="14" y="14" width="72" height="72" rx="36" stroke="rgba(0,0,0,0.18)" stroke-width="2.5"/>
+                    <!-- 边框收边 -->
+                    <rect x="14" y="14" width="72" height="72" rx="36" stroke="rgba(0,0,0,0.12)" stroke-width="2"/>
                 </g>
 
                 <!-- 脸部表情层 (眼睛、腮红、嘴巴) -->
