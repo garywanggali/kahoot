@@ -1878,7 +1878,7 @@ body:has(.play-app) .container {
 }
 
 /* ==========================================================================
-   Play Screen Feedback Stage (极简大气的居中反馈卡片)
+   Play Screen Feedback Stage (高对比度 Kahoot 风格沉浸式即时反馈卡片)
    ========================================================================== */
 .play-feedback-stage {
     flex: 1;
@@ -1887,7 +1887,8 @@ body:has(.play-app) .container {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: calc(100vh - 12rem);
+    min-height: 0;
+    height: 100%;
     margin: auto 0;
     box-sizing: border-box;
     padding: 1.5rem 1rem;
@@ -1895,82 +1896,158 @@ body:has(.play-app) .container {
 }
 
 @keyframes feedbackFadeIn {
-    from { opacity: 0; transform: translateY(16px) scale(0.96); }
+    from { opacity: 0; transform: translateY(20px) scale(0.94); }
     to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .feedback-card {
     background: #ffffff;
-    border: 1.5px solid rgba(0, 0, 0, 0.08);
-    border-radius: 28px;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-    padding: 3rem 2.5rem 2.75rem;
+    border-radius: 32px;
+    padding: 3.25rem 2.5rem 3rem;
     width: 100%;
-    max-width: 480px;
+    max-width: 520px;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
     gap: 1.5rem;
-    transition: all 0.2s ease;
+    position: relative;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.15);
+    transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
 }
 
-/* 状态主题高光修饰 */
+/* 1. 回答正确：高能翡翠绿大卡片 (Kahoot Correct) */
 .feedback-card.card-correct {
-    border-color: rgba(16, 185, 129, 0.35);
-    box-shadow: 0 20px 48px rgba(16, 185, 129, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    background: linear-gradient(150deg, #10B981 0%, #059669 100%);
+    box-shadow: 0 24px 64px rgba(5, 150, 105, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    border: 2.5px solid rgba(255, 255, 255, 0.3);
 }
 
+.feedback-card.card-correct .feedback-title,
+.feedback-card.card-correct .feedback-text-main {
+    color: #ffffff !important;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.feedback-card.card-correct .feedback-points-pill {
+    background: #ffffff;
+    color: #047857;
+    border: none;
+    font-size: 1.65rem;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+
+.feedback-card.card-correct .feedback-detail {
+    background: rgba(255, 255, 255, 0.22);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.feedback-card.card-correct .inter-question-hint {
+    background: rgba(0, 0, 0, 0.18);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.feedback-card.card-correct .waiting-dots-pulse span {
+    background: #ffffff;
+}
+
+/* 2. 回答错误 / 做错了：高能热情红大卡片 (Kahoot Wrong) */
 .feedback-card.card-wrong {
-    border-color: rgba(239, 68, 68, 0.3);
-    box-shadow: 0 20px 48px rgba(239, 68, 68, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    background: linear-gradient(150deg, #EF4444 0%, #DC2626 100%);
+    box-shadow: 0 24px 64px rgba(220, 38, 38, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    border: 2.5px solid rgba(255, 255, 255, 0.3);
 }
 
+.feedback-card.card-wrong .feedback-title,
+.feedback-card.card-wrong .feedback-text-main {
+    color: #ffffff !important;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.feedback-card.card-wrong .feedback-detail {
+    background: rgba(255, 255, 255, 0.22);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.feedback-card.card-wrong .inter-question-hint {
+    background: rgba(0, 0, 0, 0.18);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.feedback-card.card-wrong .waiting-dots-pulse span {
+    background: #ffffff;
+}
+
+/* 3. 超时 / 时间到：高能金黄大卡片 (Kahoot Time Up) */
 .feedback-card.card-timeup {
-    border-color: rgba(245, 158, 11, 0.35);
-    box-shadow: 0 20px 48px rgba(245, 158, 11, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    background: linear-gradient(150deg, #F59E0B 0%, #D97706 100%);
+    box-shadow: 0 24px 64px rgba(217, 119, 6, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    border: 2.5px solid rgba(255, 255, 255, 0.3);
+}
+
+.feedback-card.card-timeup .feedback-title,
+.feedback-card.card-timeup .feedback-text-main {
+    color: #ffffff !important;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.feedback-card.card-timeup .feedback-detail {
+    background: rgba(255, 255, 255, 0.22);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.feedback-card.card-timeup .inter-question-hint {
+    background: rgba(0, 0, 0, 0.18);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.feedback-card.card-timeup .waiting-dots-pulse span {
+    background: #ffffff;
+}
+
+/* 4. 已提交：高能电光蓝卡片 (Kahoot Submitted) */
+.feedback-card.card-submitted {
+    background: linear-gradient(150deg, #3B82F6 0%, #2563EB 100%);
+    box-shadow: 0 24px 64px rgba(37, 99, 235, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    border: 2.5px solid rgba(255, 255, 255, 0.3);
+}
+
+.feedback-card.card-submitted .feedback-title,
+.feedback-card.card-submitted .feedback-text-main {
+    color: #ffffff !important;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.feedback-card.card-submitted .inter-question-hint {
+    background: rgba(0, 0, 0, 0.18);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.feedback-card.card-submitted .waiting-dots-pulse span {
+    background: #ffffff;
 }
 
 /* 矢量圆圈图标 */
 .feedback-icon-circle {
-    width: 76px;
-    height: 76px;
+    width: 84px;
+    height: 84px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: 0.25rem;
-}
-
-.icon-correct {
-    background: #10B981;
+    background: rgba(255, 255, 255, 0.24);
+    border: 2.5px solid #ffffff;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
     color: #ffffff;
-    box-shadow: 0 10px 24px rgba(16, 185, 129, 0.35);
-}
-
-.icon-wrong {
-    background: #EF4444;
-    color: #ffffff;
-    box-shadow: 0 10px 24px rgba(239, 68, 68, 0.35);
-}
-
-.icon-timeup {
-    background: #F59E0B;
-    color: #ffffff;
-    box-shadow: 0 10px 24px rgba(245, 158, 11, 0.35);
-}
-
-.icon-submitted {
-    background: #2563EB;
-    color: #ffffff;
-    box-shadow: 0 10px 24px rgba(37, 99, 235, 0.35);
-}
-
-.icon-waiting {
-    background: #71717A;
-    color: #ffffff;
-    box-shadow: 0 8px 20px rgba(113, 113, 122, 0.25);
 }
 
 /* 文字与积分排版 */
@@ -1978,20 +2055,20 @@ body:has(.play-app) .container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.65rem;
+    gap: 0.75rem;
     width: 100%;
 }
 
 .feedback-title {
     font-family: var(--token-font-hero);
-    font-size: 2.25rem;
-    font-weight: 800;
+    font-size: 2.5rem;
+    font-weight: 900;
     color: #18181b;
     letter-spacing: -0.02em;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.75rem;
+    gap: 0.85rem;
     flex-wrap: wrap;
     margin: 0;
 }
@@ -2007,21 +2084,21 @@ body:has(.play-app) .container {
     color: #059669;
     border: 1.5px solid rgba(16, 185, 129, 0.3);
     border-radius: var(--token-radius-pill, 9999px);
-    padding: 0.15rem 0.85rem;
+    padding: 0.2rem 0.95rem;
     font-family: var(--token-font-mono, monospace);
     font-size: 1.6rem;
     font-weight: 800;
 }
 
 .feedback-detail {
-    font-size: 1.05rem;
-    font-weight: 600;
+    font-size: 1.15rem;
+    font-weight: 700;
     color: #52525b;
     line-height: 1.5;
-    margin: 0.25rem 0 0;
+    margin: 0.15rem 0 0;
     background: #f4f4f5;
-    border-radius: 12px;
-    padding: 0.45rem 1rem;
+    border-radius: 14px;
+    padding: 0.5rem 1.25rem;
     border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
@@ -2033,10 +2110,10 @@ body:has(.play-app) .container {
     background: #f4f4f5;
     border: 1px solid rgba(0, 0, 0, 0.06);
     border-radius: var(--token-radius-pill, 9999px);
-    padding: 0.55rem 1.35rem;
+    padding: 0.55rem 1.4rem;
     font-family: var(--token-font-hero);
     font-size: 0.95rem;
-    font-weight: 600;
+    font-weight: 700;
     color: #52525b;
     margin-top: 0.25rem;
 }
