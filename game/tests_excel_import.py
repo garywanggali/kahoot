@@ -45,3 +45,20 @@ class ExcelImportTests(TestCase):
         import_quiz_set_from_xlsx(self.teacher, '套题', build_template_xlsx())
         self.assertEqual(QuizSet.objects.count(), before_s + 1)
         self.assertEqual(Question.objects.count(), before_q + 4)
+
+    def test_template_dropdown_validation(self):
+        import io
+        from openpyxl import load_workbook
+        xlsx = build_template_xlsx()
+        wb = load_workbook(io.BytesIO(xlsx))
+        ws = wb.active
+        validations = ws.data_validations.dataValidation
+        self.assertGreaterEqual(len(validations), 1)
+        dv = validations[0]
+        self.assertEqual(dv.type, 'list')
+        self.assertIn('单选题', dv.formula1)
+        self.assertIn('多选题', dv.formula1)
+        self.assertIn('判断题', dv.formula1)
+        self.assertIn('简答题', dv.formula1)
+        self.assertIn('A2:A200', dv.sqref)
+        self.assertEqual(ws.column_dimensions['A'].width, 14)

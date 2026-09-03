@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}数据分析报告 - {{ room.name|default:room.code }} - Kahoot Studio{% endblock %}
+
+{% block content %}
+<div class="studio-header-bar host-header-bar" style="margin-bottom: 1.5rem;">
+    <div class="studio-title-group">
+        <a href="{% url 'teacher_dashboard' %}" class="btn-back">
+            <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>返回控制台</span>
+        </a>
+        <h1 class="studio-main-title" style="font-size: 1.6rem; margin-bottom: 0;">
+            📊 {{ room.name|default:"互动测验" }} - 对战数据分析报告
+        </h1>
+        <p class="form-hint" style="margin-top: 0.25rem;">房间号：<code>{{ room.code }}</code></p>
+    </div>
+
+    <div class="host-header-status">
+        <a href="{% url 'room_host' room.pk %}" class="btn btn-outline btn-sm">返回大厅主持</a>
+    </div>
+</div>
+
+<div class="token-card" style="padding: 1.75rem; background: #ffffff; border-radius: 20px;">
+    <div id="standalone-analytics-container"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const INITIAL_ANALYTICS_DATA = {{ analytics_json|safe }};
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.AnalyticsRenderer) {
+            const renderer = new window.AnalyticsRenderer('standalone-analytics-container', INITIAL_ANALYTICS_DATA);
+            renderer.render();
+        }
+    });
+</script>
+{% endblock %}

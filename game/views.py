@@ -36,6 +36,7 @@ from .models import (
     TeacherInviteCode,
 )
 from .quiz_set_utils import add_question_to_quiz_set, clone_quiz_set, create_room_from_quiz_set
+from .analytics import get_room_analytics_data
 from .question_save import (
     QuestionFormError,
     apply_question_fields,
@@ -972,3 +973,30 @@ def room_state_api(request, room_code):
         return JsonResponse({'error': '房间不存在'}, status=404)
     runtime = get_runtime(room)
     return JsonResponse(get_room_state(room, runtime=runtime))
+
+
+def room_analytics_data(request, pk):
+    teacher, err_resp = require_teacher_api(request)
+    if err_resp:
+        return err_resp
+    room = get_object_or_404(Room, pk=pk)
+    if not can_host_room(teacher, room):
+        return JsonResponse({'error': '无权查看该房间分析数据'}, status=403)
+    data = get_room_analytics_data(room)
+    return JsonResponse(data)
+
+
+def room_analytics_page(request, pk):
+    teacher, redirect_resp = require_teacher_or_redirect(request)
+    if redirect_resp:
+        return redirect_resp
+    room = get_object_or_404(Room, pk=pk)
+    if not can_host_room(teacher, room):
+        messages.error(request, '无权查看该房间分析数据')
+        return redirect('teacher_dashboard')
+    data = get_room_analytics_data(room)
+    return render(request, 'game/room_analytics.html', {
+        'room': room,
+        'analytics_json': json.dumps(data, ensure_ascii=False),
+    })
+

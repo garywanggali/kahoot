@@ -83,6 +83,40 @@
             </div>
 
         </div>
+
+        {% if rooms %}
+        <div class="dashboard-recent-rooms token-card" style="margin-top: 1.5rem; padding: 1.25rem 1.5rem; background: #ffffff; border-radius: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="font-size: 1.1rem; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    <span>📊</span>
+                    <span>近期测验房间与学情分析</span>
+                </h3>
+                <span class="text-muted" style="font-size: 0.85rem; font-weight: 600;">共 {{ rooms|length }} 场</span>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                {% for r in rooms %}
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; padding: 0.75rem 1rem; border: 1.5px solid var(--token-border-solid, #18181b); border-radius: 10px; background: #fafafa; box-shadow: 0 2px 0 var(--token-border-solid, #18181b);">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="font-family: var(--token-font-mono); font-weight: 800; background: #18181b; color: #fff; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.85rem;">{{ r.code }}</span>
+                        <div>
+                            <div style="font-weight: 800; font-size: 0.95rem; color: #18181b;">{{ r.name|default:"未命名房间" }}</div>
+                            <div style="font-size: 0.78rem; color: #71717a;">{{ r.created_at|date:"Y-m-d H:i" }} · 状态: {% if r.status == 'ended' %}<span style="color: #16a34a; font-weight: 700;">已完结</span>{% else %}<span style="color: #ff5e00; font-weight: 700;">进行中</span>{% endif %}</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <a href="{% url 'room_analytics_page' r.pk %}" class="btn btn-outline btn-sm" style="font-weight: 700; display: inline-flex; align-items: center; gap: 0.35rem;">
+                            <span>📊 数据分析报告</span>
+                        </a>
+                        <a href="{% url 'room_host' r.pk %}" class="btn btn-primary btn-sm" style="font-weight: 700;">
+                            <span>{% if r.status == 'ended' %}复盘大屏{% else %}进入主持{% endif %}</span>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
     </div>
 
 </div>

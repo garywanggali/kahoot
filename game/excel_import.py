@@ -8,6 +8,7 @@ from typing import Any
 from django.db import transaction
 
 from openpyxl import Workbook, load_workbook
+from openpyxl.worksheet.datavalidation import DataValidation
 
 from .models import Question, QuizSet
 from .quiz_set_utils import add_question_to_quiz_set
@@ -38,19 +39,22 @@ TYPE_ALIASES = {
     '多选': Question.TYPE_MULTIPLE,
     '多选题': Question.TYPE_MULTIPLE,
     'judgment': Question.TYPE_JUDGMENT,
+    'judgement': Question.TYPE_JUDGMENT,
     '判断': Question.TYPE_JUDGMENT,
     '判断题': Question.TYPE_JUDGMENT,
     'short_answer': Question.TYPE_SHORT_ANSWER,
+    'shortanswer': Question.TYPE_SHORT_ANSWER,
     '简答': Question.TYPE_SHORT_ANSWER,
     '简答题': Question.TYPE_SHORT_ANSWER,
     'word_cloud': Question.TYPE_WORD_CLOUD,
+    'wordcloud': Question.TYPE_WORD_CLOUD,
     '词云': Question.TYPE_WORD_CLOUD,
     '词云题': Question.TYPE_WORD_CLOUD,
 }
 
 EXAMPLE_ROWS = [
     {
-        '题型': 'single',
+        '题型': '单选题',
         '题目': '中国的首都是？',
         '选项A': '北京',
         '选项B': '上海',
@@ -60,7 +64,7 @@ EXAMPLE_ROWS = [
         '时限秒': 20,
     },
     {
-        '题型': 'multiple',
+        '题型': '多选题',
         '题目': '下列哪些是偶数？',
         '选项A': '2',
         '选项B': '3',
@@ -70,7 +74,7 @@ EXAMPLE_ROWS = [
         '时限秒': 30,
     },
     {
-        '题型': 'judgment',
+        '题型': '判断题',
         '题目': '地球是圆的。',
         '选项A': '正确',
         '选项B': '错误',
@@ -80,7 +84,7 @@ EXAMPLE_ROWS = [
         '时限秒': 15,
     },
     {
-        '题型': 'short_answer',
+        '题型': '简答题',
         '题目': '水的化学式？',
         '选项A': 'H2O',
         '选项B': '',
@@ -119,7 +123,7 @@ def _normalize_type(raw: str) -> str:
     if raw.strip() in TYPE_ALIASES:
         return TYPE_ALIASES[raw.strip()]
     raise ExcelImportError(
-        f'题型无效「{raw}」，须为：single / multiple / judgment / short_answer / word_cloud'
+        f'题型无效「{raw}」，须为：单选题 / 多选题 / 判断题 / 简答题（或 single / multiple / judgment / short_answer）'
     )
 
 
@@ -269,6 +273,32 @@ def build_template_xlsx() -> bytes:
     ws.append(REQUIRED_HEADERS)
     for row in EXAMPLE_ROWS:
         ws.append([row[h] for h in REQUIRED_HEADERS])
+
+    col_widths = {
+        'A': 14,
+        'B': 30,
+        'C': 18,
+        'D': 18,
+        'E': 18,
+        'F': 18,
+        'G': 14,
+        'H': 12,
+    }
+    for col, width in col_widths.items():
+        ws.column_dimensions[col].width = width
+
+    dv = DataValidation(
+        type='list',
+        formula1='"单选题,多选题,判断题,简答题"',
+        allow_blank=True,
+    )
+    dv.error = '请从下拉列表中选择有效题型（单选题、多选题、判断题、简答题）'
+    dv.errorTitle = '题型无效'
+    dv.prompt = '请点击右侧下拉箭头选择题型'
+    dv.promptTitle = '选择题型'
+    ws.add_data_validation(dv)
+    dv.add('A2:A200')
+
     buf = io.BytesIO()
     wb.save(buf)
     return buf.getvalue()
