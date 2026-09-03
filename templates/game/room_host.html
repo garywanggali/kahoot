@@ -161,19 +161,25 @@
     </div>
 
     <!-- 4. 颁奖典礼 (Podium & Finals) -->
-    <div id="host-ended" class="host-stage-card token-card hidden">
-        <div class="host-stage-title-wrap">
-            <h2 class="host-stage-title">{% trans "颁奖典礼" %}</h2>
+    <div id="host-ended" class="host-stage-card host-awards-stage token-card hidden">
+        <div class="host-awards-top-wrap">
+            <div class="host-awards-kicker-row">
+                <span class="host-awards-kicker-pill">✨ {% trans "终局对决 · 荣耀加冕" %}</span>
+            </div>
+            <h2 class="host-awards-hero-title">🏆 {% trans "颁奖典礼" %}</h2>
+            <p class="host-awards-subtitle">{% trans "全场答题对决圆满结束 · 见证冠军诞生" %}</p>
         </div>
 
         <!-- 3D 领奖台容器 -->
-        <div id="host-podium-container" class="host-podium-outer"></div>
+        <div class="host-awards-stage-body">
+            <div id="host-podium-container" class="host-podium-outer"></div>
 
-        <!-- 其余排名 -->
-        <h3 class="final-rankings-title hidden" id="host-final-rankings-title">{% trans "完整排名" %}</h3>
-        <div id="host-final-leaderboard" class="host-leaderboard-scroll-list" style="max-height: 180px;"></div>
+            <!-- 其余排名 -->
+            <h3 class="final-rankings-title hidden" id="host-final-rankings-title">{% trans "完整排名" %}</h3>
+            <div id="host-final-leaderboard" class="host-leaderboard-scroll-list" style="max-height: 180px;"></div>
+        </div>
 
-        <div class="host-stage-foot" style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <div class="host-awards-foot-row">
             <button type="button" class="token-btn-primary btn-host-analytics" onclick="showAnalyticsScreen()">
                 <span>{% trans "查看数据分析" %}</span>
                 <span>→</span>
@@ -212,7 +218,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/awards.js' %}?v=4"></script>
+<script src="{% static 'js/awards.js' %}?v=5"></script>
 <script src="{% static 'js/wordcloud.js' %}?v=3"></script>
 <script src="{% static 'js/analytics.js' %}?v=4"></script>
 <script>

@@ -5,63 +5,91 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-function getMedalSvg(rank) {
-    const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
-    const title = rank === 1
-        ? (isEn ? 'Champion' : '冠军')
-        : (rank === 2 ? (isEn ? '2nd Place' : '亚军') : (isEn ? '3rd Place' : '季军'));
+function _tr(key, fallback) {
+    if (window._t) {
+        const val = _t(key);
+        if (val && val !== key) return val;
+    }
+    if (window.t) {
+        const val = t(key);
+        if (val && val !== key) return val;
+    }
+    return fallback;
+}
 
+function getRankBadge(rank) {
+    const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
     if (rank === 1) {
-        // 金牌冠军奖章 (矢量高光图标)
-        return `
-            <div class="podium-badge-svg badge-gold" title="${title}">
-                <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
-                    <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/>
-                </svg>
-            </div>
-        `;
+        return {
+            emoji: '👑',
+            title: isEn ? '1st Champion' : '冠军',
+            label: '1st',
+            colorClass: 'rank-badge-gold'
+        };
     } else if (rank === 2) {
-        // 银牌亚军星芒奖章
-        return `
-            <div class="podium-badge-svg badge-silver" title="${title}">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                </svg>
-            </div>
-        `;
+        return {
+            emoji: '🥈',
+            title: isEn ? '2nd Place' : '亚军',
+            label: '2nd',
+            colorClass: 'rank-badge-silver'
+        };
     } else {
-        // 铜牌季军荣誉奖章
-        return `
-            <div class="podium-badge-svg badge-bronze" title="${title}">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                    <path d="M12 15a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm-6.2 3.8l3.6-1.5 1.5 3.6 1.1-3.9 1.1 3.9 1.5-3.6 3.6 1.5-2.6-4.2a6.9 6.9 0 0 1-7.1 0l-2.7 4.2z"/>
-                </svg>
-            </div>
-        `;
+        return {
+            emoji: '🥉',
+            title: isEn ? '3rd Place' : '季军',
+            label: '3rd',
+            colorClass: 'rank-badge-bronze'
+        };
     }
 }
 
 function renderPodiumSlot(rank, player) {
-    const name = player ? escapeHtml(player.nickname) : '—';
-    const score = player ? player.score : null;
-    const emptyClass = player ? '' : ' podium-slot-empty';
-    const ptsUnit = window.t ? t('awards.pts_unit') : '分';
+    const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+    const badge = getRankBadge(rank);
+    const ptsUnit = isEn ? 'PTS' : '分';
+    const emptyText = isEn ? 'Awaiting Winner' : '虚位以待';
 
-    const avatarHtml = (player && window.AvatarSystem)
+    if (!player) {
+        return `
+            <div class="podium-slot podium-rank-${rank} podium-slot-empty">
+                <div class="podium-slot-ghost-wrap">
+                    <div class="podium-ghost-badge">${badge.emoji}</div>
+                    <div class="podium-ghost-title">${badge.title}</div>
+                    <div class="podium-ghost-hint">${emptyText}</div>
+                </div>
+                <div class="podium-stand podium-stand-${rank}">
+                    <span class="podium-place-label">${rank}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    const name = escapeHtml(player.nickname);
+    const score = player.score !== undefined ? player.score : 0;
+    const avatarHtml = window.AvatarSystem
         ? `<div class="podium-avatar-wrap podium-avatar-rank-${rank}">
-            ${window.AvatarSystem.renderSvg(player.avatar, rank === 1 ? 84 : 68, {
+            ${window.AvatarSystem.renderSvg(player.avatar, rank === 1 ? 92 : 76, {
                 nickname: player.nickname,
                 podium: true,
                 rank: rank,
             })}
            </div>`
-        : '';
+        : `<div class="podium-avatar-fallback">${name.slice(0, 1).toUpperCase()}</div>`;
 
     return `
-        <div class="podium-slot podium-rank-${rank}${emptyClass}">
-            ${avatarHtml}
-            <div class="podium-name" title="${name}">${name}</div>
-            ${score !== null ? `<div class="podium-score-pill"><span class="score-val">${score}</span><span class="score-lbl">${ptsUnit}</span></div>` : ''}
+        <div class="podium-slot podium-rank-${rank}">
+            <div class="podium-slot-hero-top">
+                <div class="podium-crown-badge ${badge.colorClass}">
+                    <span>${badge.emoji}</span>
+                    <span>${badge.title}</span>
+                </div>
+                ${avatarHtml}
+                <div class="podium-name" title="${name}">${name}</div>
+                <div class="podium-score-pill">
+                    <span class="score-val">${score}</span>
+                    <span class="score-lbl">${ptsUnit}</span>
+                </div>
+            </div>
             <div class="podium-stand podium-stand-${rank}">
                 <span class="podium-place-label">${rank}</span>
             </div>
@@ -80,7 +108,8 @@ function renderPodium(leaderboard, containerId) {
         3: list.find(p => p.rank === 3),
     };
 
-    const podiumAria = window.t ? t('awards.ceremony') : '前三名荣誉领奖台';
+    const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+    const podiumAria = isEn ? 'Top 3 Champions Podium' : '前三名荣誉领奖台';
 
     container.innerHTML = `
         <div class="podium-stage" role="list" aria-label="${podiumAria}">

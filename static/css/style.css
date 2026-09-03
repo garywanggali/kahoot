@@ -4599,16 +4599,93 @@ body:has(.host-app-viewport):has(#host-analytics:not(.hidden)) .host-app-viewpor
     justify-content: flex-start !important;
 }
 
+/* ==========================================================================
+   4. Host Awards Ceremony Stage (3D Neo-Brutalist Champions Podium)
+   ========================================================================== */
+.host-stage-card.host-awards-stage {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    min-height: 520px;
+    padding: 1.5rem 2.25rem 1.75rem !important;
+    box-sizing: border-box;
+}
+
+.host-awards-top-wrap {
+    text-align: center;
+    width: 100%;
+    flex-shrink: 0;
+    margin-bottom: 0.35rem;
+}
+
+.host-awards-kicker-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.35rem;
+}
+
+.host-awards-kicker-pill {
+    font-family: var(--font-mono, monospace);
+    font-size: 0.85rem;
+    font-weight: 800;
+    background: #111111;
+    color: #FFD700;
+    padding: 0.25rem 0.85rem;
+    border-radius: 999px;
+    letter-spacing: 0.04em;
+    box-shadow: 0 2px 0 #111111;
+}
+
+.host-awards-hero-title {
+    font-family: var(--font-hero, -apple-system, sans-serif);
+    font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+    font-weight: 900;
+    color: #111111;
+    line-height: 1.2;
+    margin: 0.15rem auto 0.25rem;
+    text-align: center;
+}
+
+.host-awards-subtitle {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #52525b;
+    margin: 0;
+}
+
+.host-awards-stage-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-height: 300px;
+    margin: 0.25rem 0 0.85rem;
+    position: relative;
+}
+
+.host-podium-outer {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+}
+
 .podium-stage {
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    gap: clamp(1.5rem, 3.5vw, 3rem);
+    gap: clamp(1.2rem, 3vw, 2.2rem);
     width: 100%;
-    max-width: 720px;
-    min-height: 0;
-    max-height: calc(100vh - 250px);
-    padding-bottom: 0;
+    max-width: 820px;
+    padding: 1rem 1rem 0;
+    border-bottom: 4px solid #111111;
+    box-sizing: border-box;
+    position: relative;
 }
 
 .podium-slot {
@@ -4616,162 +4693,281 @@ body:has(.host-app-viewport):has(#host-analytics:not(.hidden)) .host-app-viewpor
     flex-direction: column;
     align-items: center;
     flex: 1;
-    max-width: 180px;
+    max-width: 200px;
     position: relative;
-    cursor: pointer;
+    cursor: default;
     transition: transform 0.28s cubic-bezier(0.34, 1.3, 0.64, 1);
 }
 
 .podium-slot:hover {
-    transform: translateY(-6px);
+    transform: translateY(-4px);
+}
+
+.podium-slot-hero-top {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+/* Medals / Crown Badge */
+.podium-crown-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-family: var(--font-mono, monospace);
+    font-size: 0.8rem;
+    font-weight: 900;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    border: 2px solid #111111;
+    box-shadow: 0 2px 0 #111111;
+    margin-bottom: 0.45rem;
+    white-space: nowrap;
+    animation: correctPillPop 0.4s ease;
+}
+
+.rank-badge-gold {
+    background: #FEF08A;
+    color: #854D0E;
+    border-color: #111111;
+}
+
+.rank-badge-silver {
+    background: #E2E8F0;
+    color: #334155;
+    border-color: #111111;
+}
+
+.rank-badge-bronze {
+    background: #FFEDD5;
+    color: #9A3412;
+    border-color: #111111;
 }
 
 .podium-avatar-wrap {
-    margin-bottom: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 3px solid #111111;
+    box-shadow: 0 4px 0 #111111;
+    background: #ffffff;
+    padding: 0.35rem;
+    margin-bottom: 0.4rem;
     transition: transform 0.28s cubic-bezier(0.34, 1.3, 0.64, 1);
-    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.06));
+}
+
+.podium-avatar-rank-1 {
+    box-shadow: 0 5px 0 #111111, 0 0 20px rgba(250, 204, 21, 0.45);
 }
 
 .podium-slot:hover .podium-avatar-wrap {
     transform: translateY(-4px) scale(1.06);
 }
 
+.podium-avatar-fallback {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #111111;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 900;
+    border: 3px solid #111111;
+    margin-bottom: 0.4rem;
+}
+
 .podium-name {
-    font-family: var(--token-font-hero);
+    font-family: var(--font-hero, sans-serif);
     font-size: 1.15rem;
-    font-weight: 800;
-    color: #18181b;
+    font-weight: 900;
+    color: #111111;
     text-align: center;
-    margin-bottom: 0.25rem;
     max-width: 150px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    letter-spacing: -0.01em;
+    margin-bottom: 0.25rem;
 }
 
 .podium-score-pill {
     display: inline-flex;
     align-items: baseline;
-    gap: 0.2rem;
+    gap: 0.25rem;
     padding: 0.2rem 0.75rem;
-    background: #f4f4f5;
-    border-radius: var(--token-radius-pill, 9999px);
-    margin-bottom: 0.75rem;
-    transition: all 0.2s ease;
-}
-
-.podium-slot:hover .podium-score-pill {
-    background: #18181b;
-}
-
-.podium-slot:hover .podium-score-pill .score-val,
-.podium-slot:hover .podium-score-pill .score-lbl {
+    background: #111111;
     color: #ffffff;
+    border-radius: 999px;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.4);
+    margin-bottom: 0.4rem;
 }
 
-.score-val {
-    font-family: var(--token-font-mono);
-    font-size: 0.9rem;
+.podium-score-pill .score-val {
+    font-family: var(--font-mono, monospace);
+    font-size: 0.95rem;
+    font-weight: 900;
+    color: #FACC15;
+}
+
+.podium-score-pill .score-lbl {
+    font-size: 0.7rem;
     font-weight: 800;
-    color: #18181b;
-    transition: color 0.2s ease;
+    color: #E2E8F0;
 }
 
-.score-lbl {
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: #71717a;
-    transition: color 0.2s ease;
-}
-
-/* 极简现代柱体 (Minimalist Pastel Bar Chart Aesthetic - 贴合全站主色调) */
+/* 3D Neo-Brutalist Solid Pillars */
 .podium-stand {
     width: 100%;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    border-radius: 16px 16px 0 0;
-    position: relative;
-    box-sizing: border-box;
-    transition: all 0.28s cubic-bezier(0.34, 1.3, 0.64, 1);
-}
-
-/* 冠军 1 号柱 (Center Highlight - 贴合全站核心活力橙色) */
-.podium-stand-1 {
-    height: clamp(140px, 22vh, 195px);
-    background: #FFDFD4;
-    box-shadow: 0 4px 18px rgba(255, 79, 0, 0.14);
-}
-
-.podium-slot:hover .podium-stand-1 {
-    background: #FFC4B0;
-    box-shadow: 0 10px 28px rgba(255, 79, 0, 0.24);
-    transform: scaleY(1.03);
-}
-
-/* 亚军 2 号柱 (Left - 柔和电光蓝) */
-.podium-stand-2 {
-    height: clamp(100px, 16vh, 140px);
-    background: #DBEAFE;
-    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.12);
-}
-
-.podium-slot:hover .podium-stand-2 {
-    background: #BFDBFE;
-    box-shadow: 0 8px 22px rgba(37, 99, 235, 0.18);
-    transform: scaleY(1.03);
-}
-
-/* 季军 3 号柱 (Right - 柔和琥珀金) */
-.podium-stand-3 {
-    height: clamp(70px, 11vh, 100px);
-    background: #FEF3C7;
-    border: 1.5px solid rgba(245, 158, 11, 0.35);
+    border-radius: 14px 14px 0 0;
+    border: 3px solid #111111;
     border-bottom: none;
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.08);
+    box-sizing: border-box;
+    position: relative;
+    box-shadow: inset 0 4px 0 rgba(255, 255, 255, 0.45);
+    transition: transform 0.24s cubic-bezier(0.34, 1.3, 0.64, 1);
 }
 
-.podium-slot:hover .podium-stand-3 {
-    background: #FDE68A;
-    border-color: #FCD34D;
-    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.16);
-    transform: scaleY(1.03);
+.podium-stand-1 {
+    height: 185px;
+    background: linear-gradient(180deg, #FACC15 0%, #EAB308 100%);
+    box-shadow: inset 0 4px 0 rgba(255, 255, 255, 0.65), 0 -4px 16px rgba(234, 179, 8, 0.25);
 }
 
-/* 柱体内的排位数字 (现代极简无衬线数字，与柱体色彩呼应) */
+.podium-stand-2 {
+    height: 135px;
+    background: linear-gradient(180deg, #CBD5E1 0%, #94A3B8 100%);
+    box-shadow: inset 0 4px 0 rgba(255, 255, 255, 0.65);
+}
+
+.podium-stand-3 {
+    height: 95px;
+    background: linear-gradient(180deg, #FDBA74 0%, #FB923C 100%);
+    box-shadow: inset 0 4px 0 rgba(255, 255, 255, 0.65);
+}
+
 .podium-place-label {
-    font-family: var(--token-font-hero);
-    font-size: clamp(2rem, 3.5vw, 2.75rem);
+    font-family: var(--font-hero, sans-serif);
+    font-size: clamp(2.4rem, 4.5vw, 3.2rem);
     font-weight: 900;
+    color: #111111;
+    line-height: 1;
     user-select: none;
-    z-index: 2;
-    transition: transform 0.28s ease;
+    text-shadow: 0 2px 0 rgba(255, 255, 255, 0.4);
 }
 
-.podium-stand-1 .podium-place-label {
-    color: #FF4F00;
+/* Empty / Ghost slot */
+.podium-slot-empty .podium-slot-ghost-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.6rem 0.5rem;
+    margin-bottom: 0.5rem;
+    border: 2.5px dashed #cbd5e1;
+    border-radius: 14px;
+    background: #f8fafc;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.podium-stand-2 .podium-place-label {
-    color: #2563EB;
+.podium-ghost-badge {
+    font-size: 1.6rem;
+    margin-bottom: 0.15rem;
 }
 
-.podium-stand-3 .podium-place-label {
-    color: #D97706;
+.podium-ghost-title {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #475569;
 }
 
-.podium-slot:hover .podium-place-label {
-    transform: scale(1.12);
+.podium-ghost-hint {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #94a3b8;
 }
 
 .final-rankings-title {
-    font-family: var(--token-font-hero);
+    font-family: var(--font-hero, sans-serif);
     font-size: 1.1rem;
     font-weight: 800;
-    color: var(--token-text-primary);
+    color: var(--token-text-primary, #111111);
     margin: 1rem 0 0.5rem;
     text-align: center;
+}
+
+/* Awards Action Row */
+.host-awards-foot-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.25rem;
+    width: 100%;
+    flex-shrink: 0;
+    padding-top: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.host-awards-foot-row .btn-host-analytics {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    padding: 0.85rem 2.75rem !important;
+    font-size: 1.15rem !important;
+    font-weight: 900 !important;
+    border-radius: 16px !important;
+    border: 2.5px solid #111111 !important;
+    background: #ff4f00 !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 0 #111111 !important;
+    cursor: pointer;
+    transition: all 0.16s ease !important;
+}
+
+.host-awards-foot-row .btn-host-analytics:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 0 #111111 !important;
+}
+
+.host-awards-foot-row .btn-host-analytics:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #111111 !important;
+}
+
+.host-awards-foot-row .btn-host-finish {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.85rem 2rem !important;
+    font-size: 1.05rem !important;
+    font-weight: 800 !important;
+    border-radius: 16px !important;
+    border: 2.5px solid #111111 !important;
+    background: #ffffff !important;
+    color: #111111 !important;
+    box-shadow: 0 5px 0 #111111 !important;
+    text-decoration: none !important;
+    transition: all 0.16s ease !important;
+}
+
+.host-awards-foot-row .btn-host-finish:hover {
+    background: #f4f4f5 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 7px 0 #111111 !important;
+}
+
+.host-awards-foot-row .btn-host-finish:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #111111 !important;
 }
 
 /* ==========================================================================
