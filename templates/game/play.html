@@ -604,12 +604,15 @@ function renderFeedbackCard(opts) {
 
     const type = opts.type || 'waiting';
     card.className = 'feedback-card' + (type ? ` card-${type}` : '');
+    if (stage) {
+        stage.className = 'play-feedback-stage' + (type ? ` stage-${type}` : '');
+    }
 
     let iconSvg = '';
     if (type === 'correct') {
         iconSvg = `
             <div class="feedback-icon-circle icon-correct">
-                <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M20 6L9 17l-5-5"/>
                 </svg>
             </div>
@@ -617,7 +620,7 @@ function renderFeedbackCard(opts) {
     } else if (type === 'wrong') {
         iconSvg = `
             <div class="feedback-icon-circle icon-wrong">
-                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <svg viewBox="0 0 24 24" width="50" height="50" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M18 6L6 18M6 6l12 12"/>
                 </svg>
             </div>
@@ -625,7 +628,7 @@ function renderFeedbackCard(opts) {
     } else if (type === 'timeup') {
         iconSvg = `
             <div class="feedback-icon-circle icon-timeup">
-                <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg viewBox="0 0 24 24" width="52" height="52" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"/>
                     <polyline points="12 6 12 12 16 14"/>
                 </svg>
@@ -634,7 +637,7 @@ function renderFeedbackCard(opts) {
     } else if (type === 'submitted') {
         iconSvg = `
             <div class="feedback-icon-circle icon-submitted">
-                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M22 2L11 13"/>
                     <polygon points="22 2 15 22 11 13 2 9 22 2"/>
                 </svg>
@@ -643,7 +646,7 @@ function renderFeedbackCard(opts) {
     } else {
         iconSvg = `
             <div class="feedback-icon-circle icon-waiting">
-                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"/>
                     <polyline points="12 6 12 12 14 14"/>
                 </svg>
