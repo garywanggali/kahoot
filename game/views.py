@@ -9,6 +9,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.utils.translation import gettext as _
 
 from .ai_kahoot import (
     AIKahootError,
@@ -87,17 +88,17 @@ def join_room(request):
         nickname = request.POST.get('nickname', '').strip()
 
         if not code or not nickname:
-            messages.error(request, '请输入房间号和昵称')
+            messages.error(request, _('请输入房间号和昵称'))
             return render(request, 'game/index.html', {'code': code, 'nickname': nickname}, status=422)
 
         try:
             room = Room.objects.get(code=code)
         except Room.DoesNotExist:
-            messages.error(request, '房间号不存在')
+            messages.error(request, _('房间号不存在'))
             return render(request, 'game/index.html', {'code': code, 'nickname': nickname}, status=422)
 
         if room.status == Room.STATUS_ENDED:
-            messages.error(request, '该房间游戏已结束')
+            messages.error(request, _('该房间游戏已结束'))
             return render(request, 'game/index.html', {'code': code, 'nickname': nickname}, status=422)
 
         request.session['nickname'] = nickname
@@ -132,17 +133,17 @@ def teacher_login(request):
         username = normalize_username(request.POST.get('username', ''))
         password = request.POST.get('password', '')
         if not username or not password:
-            messages.error(request, '请输入用户名和密码')
+            messages.error(request, _('请输入用户名和密码'))
             return render(request, 'game/index.html', {'username': username, 'flip_teacher': True})
 
         try:
             teacher = Teacher.objects.get(username=username, is_active=True)
         except Teacher.DoesNotExist:
-            messages.error(request, '用户名或密码错误')
+            messages.error(request, _('用户名或密码错误'))
             return render(request, 'game/index.html', {'username': username, 'flip_teacher': True})
 
         if not teacher.check_password(password):
-            messages.error(request, '用户名或密码错误')
+            messages.error(request, _('用户名或密码错误'))
             return render(request, 'game/index.html', {'username': username, 'flip_teacher': True})
 
         login_teacher(request, teacher)
@@ -169,33 +170,33 @@ def teacher_register(request):
         }
 
         if not invite_code:
-            messages.error(request, '请输入邀请码')
+            messages.error(request, _('请输入邀请码'))
             return render(request, 'game/teacher_register.html', ctx)
 
         if not USERNAME_PATTERN.match(username_raw):
-            messages.error(request, '用户名须为 3–50 位字母、数字或下划线')
+            messages.error(request, _('用户名须为 3–50 位字母、数字或下划线'))
             return render(request, 'game/teacher_register.html', ctx)
 
         if len(password) < MIN_TEACHER_PASSWORD_LEN:
-            messages.error(request, f'密码至少 {MIN_TEACHER_PASSWORD_LEN} 位')
+            messages.error(request, _('密码至少 %(min)s 位') % {'min': MIN_TEACHER_PASSWORD_LEN})
             return render(request, 'game/teacher_register.html', ctx)
 
         if password != password_confirm:
-            messages.error(request, '两次输入的密码不一致')
+            messages.error(request, _('两次输入的密码不一致'))
             return render(request, 'game/teacher_register.html', ctx)
 
         try:
             invite = TeacherInviteCode.objects.get(code=invite_code)
         except TeacherInviteCode.DoesNotExist:
-            messages.error(request, '邀请码无效')
+            messages.error(request, _('邀请码无效'))
             return render(request, 'game/teacher_register.html', ctx)
 
         if not invite.can_use():
-            messages.error(request, '邀请码已用完或已停用')
+            messages.error(request, _('邀请码已用完或已停用'))
             return render(request, 'game/teacher_register.html', ctx)
 
         if Teacher.objects.filter(username=username).exists():
-            messages.error(request, '用户名已被占用')
+            messages.error(request, _('用户名已被占用'))
             return render(request, 'game/teacher_register.html', ctx)
 
         teacher = Teacher(username=username, display_name=username_raw)
@@ -203,7 +204,7 @@ def teacher_register(request):
         teacher.save()
         invite.consume()
         login_teacher(request, teacher)
-        messages.success(request, f'注册成功，欢迎 {username_raw}！请牢记用户名和密码。')
+        messages.success(request, _('注册成功，欢迎 %(user)s！请牢记用户名和密码。') % {'user': username_raw})
         return redirect('teacher_dashboard')
 
     return render(request, 'game/teacher_register.html', ctx)
@@ -247,7 +248,7 @@ def _get_editable_quiz_set(request, teacher, quiz_set_id):
         return None, None
     quiz_set = get_object_or_404(QuizSet, pk=quiz_set_id)
     if not can_edit_quiz_set(teacher, quiz_set):
-        messages.error(request, '无权编辑该套题')
+        messages.error(request, _('无权编辑该套题'))
         return None, redirect('question_list')
     return quiz_set, None
 
@@ -275,7 +276,7 @@ def question_edit(request, pk):
         return redirect_resp
     question = get_object_or_404(Question, pk=pk)
     if not can_edit_question(teacher, question):
-        messages.error(request, '只能编辑自己的题目')
+        messages.error(request, _('只能编辑自己的题目'))
         return redirect('question_list')
     quiz_set = None
     quiz_set_id = request.GET.get('quiz_set') or request.POST.get('quiz_set_id')
@@ -299,12 +300,12 @@ def question_delete(request, pk):
         return redirect_resp
     question = get_object_or_404(Question, pk=pk)
     if not can_edit_question(teacher, question):
-        messages.error(request, '只能删除自己的题目')
+        messages.error(request, _('只能删除自己的题目'))
         return redirect('question_list')
     quiz_set_id = request.GET.get('quiz_set') or request.POST.get('quiz_set_id')
     if request.method == 'POST':
         question.delete()
-        messages.success(request, '题目已删除')
+        messages.success(request, _('题目已删除'))
         if quiz_set_id:
             return redirect('kahoot_editor', pk=quiz_set_id)
         return redirect('question_list')
@@ -342,7 +343,7 @@ def _save_question(request, teacher, question=None, quiz_set=None):
     if question_type == Question.TYPE_SHORT_ANSWER:
         option_a = request.POST.get('short_correct', '').strip() or option_a
         if not text or not option_a:
-            messages.error(request, '简答题请填写题目和参考答案')
+            messages.error(request, _('简答题请填写题目和参考答案'))
             return render(request, 'game/question_form.html', form_ctx)
         option_b = Question.TEXT_OPTION_PLACEHOLDER
         option_c = Question.TEXT_OPTION_PLACEHOLDER
@@ -350,7 +351,7 @@ def _save_question(request, teacher, question=None, quiz_set=None):
         correct_option = 'A'
     elif question_type == Question.TYPE_WORD_CLOUD:
         if not text:
-            messages.error(request, '词云题请填写题目')
+            messages.error(request, _('词云题请填写题目'))
             return render(request, 'game/question_form.html', form_ctx)
         option_a = Question.TEXT_OPTION_PLACEHOLDER
         option_b = Question.TEXT_OPTION_PLACEHOLDER
@@ -359,7 +360,7 @@ def _save_question(request, teacher, question=None, quiz_set=None):
         correct_option = ''
     elif question_type == Question.TYPE_JUDGMENT:
         if not text or not option_a or not option_b:
-            messages.error(request, '判断题请填写题目和正确/错误选项')
+            messages.error(request, _('判断题请填写题目和正确/错误选项'))
             return render(request, 'game/question_form.html', form_ctx)
         option_c = Question.JUDGMENT_OPTION_PLACEHOLDER
         option_d = Question.JUDGMENT_OPTION_PLACEHOLDER
@@ -368,19 +369,19 @@ def _save_question(request, teacher, question=None, quiz_set=None):
             correct_option = 'A'
     elif question_type == Question.TYPE_MULTIPLE:
         if not all([text, option_a, option_b, option_c, option_d]):
-            messages.error(request, '请填写所有字段')
+            messages.error(request, _('请填写所有字段'))
             return render(request, 'game/question_form.html', form_ctx)
         correct_options = sorted({
             opt.upper() for opt in request.POST.getlist('correct_options')
             if opt.upper() in ('A', 'B', 'C', 'D')
         })
         if len(correct_options) < 2:
-            messages.error(request, '多选题请至少选择 2 个正确答案')
+            messages.error(request, _('多选题请至少选择 2 个正确答案'))
             return render(request, 'game/question_form.html', form_ctx)
         correct_option = ','.join(correct_options)
     elif question_type == Question.TYPE_SINGLE:
         if not all([text, option_a, option_b, option_c, option_d]):
-            messages.error(request, '请填写所有字段')
+            messages.error(request, _('请填写所有字段'))
             return render(request, 'game/question_form.html', form_ctx)
         correct_option = request.POST.get('correct_option', 'A').upper()
         if correct_option not in ('A', 'B', 'C', 'D'):
@@ -411,7 +412,7 @@ def _save_question(request, teacher, question=None, quiz_set=None):
                 question.image.delete(save=False)
             question.image = image_file
         question.save()
-        messages.success(request, '题目已更新')
+        messages.success(request, _('题目已更新'))
         if quiz_set:
             return redirect('kahoot_editor', pk=quiz_set.pk)
     else:
@@ -430,7 +431,9 @@ def _save_question(request, teacher, question=None, quiz_set=None):
         )
         if quiz_set:
             add_question_to_quiz_set(quiz_set, new_question)
-        messages.success(request, '题目已创建')
+        messages.success(request, _('题目已创建'))
+        if quiz_set:
+            return redirect('kahoot_editor', pk=quiz_set.pk)
         if quiz_set:
             return redirect('kahoot_editor', pk=quiz_set.pk)
 
@@ -458,7 +461,7 @@ def kahoot_start(request):
     title = request.POST.get('title', '').strip()
     action = request.POST.get('action', 'manual')
     if not title:
-        messages.error(request, '请填写题库名称')
+        messages.error(request, _('请填写题库名称'))
         request.session['kahoot_pending_title'] = title
         return redirect('kahoot_new')
 
@@ -473,7 +476,7 @@ def kahoot_start(request):
 
     # manual action
     quiz_set = QuizSet.objects.create(title=title[:200], teacher=teacher)
-    messages.success(request, f'已创建「{quiz_set.title}」，请编辑第一道题')
+    messages.success(request, _('已创建「%(title)s」，请编辑第一道题') % {'title': quiz_set.title})
     return redirect('kahoot_editor', pk=quiz_set.pk)
 
 
@@ -492,13 +495,13 @@ def kahoot_import(request):
         title = ctx['title']
         upload = request.FILES.get('excel_file')
         if not title:
-            messages.error(request, '请填写 Kahoot 名称')
+            messages.error(request, _('请填写 Kahoot 名称'))
             return render(request, 'game/kahoot_import.html', ctx)
         if not upload:
-            messages.error(request, '请选择要上传的 Excel 文件')
+            messages.error(request, _('请选择要上传的 Excel 文件'))
             return render(request, 'game/kahoot_import.html', ctx)
         if not upload.name.lower().endswith('.xlsx'):
-            messages.error(request, '仅支持 .xlsx 格式（Excel 2007+）')
+            messages.error(request, _('仅支持 .xlsx 格式（Excel 2007+）'))
             return render(request, 'game/kahoot_import.html', ctx)
 
         try:
@@ -512,7 +515,7 @@ def kahoot_import(request):
 
         messages.success(
             request,
-            f'已从 Excel 导入 {quiz_set.question_count()} 道题到「{quiz_set.title}」',
+            _('已从 Excel 导入 %(count)s 道题到「%(title)s」') % {'count': quiz_set.question_count(), 'title': quiz_set.title},
         )
         return redirect('kahoot_editor', pk=quiz_set.pk)
 
@@ -539,7 +542,7 @@ def kahoot_editor(request, pk):
         return redirect_resp
     quiz_set = get_object_or_404(QuizSet, pk=pk)
     if not can_edit_quiz_set(teacher, quiz_set):
-        messages.error(request, '只能编辑自己的套题')
+        messages.error(request, _('只能编辑自己的套题'))
         return redirect('question_list')
 
     questions = list(quiz_set.get_questions())
@@ -692,14 +695,14 @@ def kahoot_public_clone(request, pk):
         return redirect_resp
     source = get_object_or_404(QuizSet, pk=pk)
     if not can_use_quiz_set(teacher, source) or can_edit_quiz_set(teacher, source):
-        messages.error(request, '只能复制其他老师的公开套题')
+        messages.error(request, _('只能复制其他老师的公开套题'))
         return redirect('kahoot_public_list')
     if request.method != 'POST':
         return redirect('kahoot_public_list')
 
     title = request.POST.get('title', '').strip()
     new_set = clone_quiz_set(source, teacher, title=title)
-    messages.success(request, f'已复制到我的题库：「{new_set.title}」')
+    messages.success(request, _('已复制到我的题库：「%(title)s」') % {'title': new_set.title})
     return redirect('kahoot_editor', pk=new_set.pk)
 
 
@@ -712,7 +715,7 @@ def kahoot_detail(request, pk):
     can_edit = can_edit_quiz_set(teacher, quiz_set)
     can_use = can_use_quiz_set(teacher, quiz_set)
     if not can_edit and not can_use:
-        messages.error(request, '无权查看该套题')
+        messages.error(request, _('无权查看该套题'))
         return redirect('question_list')
 
     if can_edit:
@@ -727,7 +730,7 @@ def kahoot_delete(request, pk):
         return redirect_resp
     quiz_set = get_object_or_404(QuizSet, pk=pk)
     if not can_edit_quiz_set(teacher, quiz_set):
-        messages.error(request, '只能删除自己的套题')
+        messages.error(request, _('只能删除自己的套题'))
         return redirect('question_list')
     if request.method == 'POST':
         title = quiz_set.title
@@ -736,7 +739,7 @@ def kahoot_delete(request, pk):
         )
         quiz_set.delete()
         Question.objects.filter(pk__in=question_ids, teacher=teacher).delete()
-        messages.success(request, f'已删除套题「{title}」')
+        messages.success(request, _('已删除套题「%(title)s」') % {'title': title})
         return redirect('question_list')
     return render(request, 'game/kahoot_confirm_delete.html', {'quiz_set': quiz_set})
 
@@ -747,7 +750,7 @@ def kahoot_create_room(request, pk):
         return redirect_resp
     quiz_set = get_object_or_404(QuizSet, pk=pk)
     if not can_use_quiz_set(teacher, quiz_set):
-        messages.error(request, '无权使用该套题')
+        messages.error(request, _('无权使用该套题'))
         return redirect('question_list')
     if request.method != 'POST':
         return redirect('kahoot_editor', pk=pk)
@@ -761,7 +764,7 @@ def kahoot_create_room(request, pk):
             show_question_stem=parse_show_question_stem(request.POST),
         )
     except ValueError:
-        messages.error(request, '套题中还没有题目，请先添加题目')
+        messages.error(request, _('套题中还没有题目，请先添加题目'))
         return redirect('kahoot_editor', pk=pk)
 
     return redirect('room_host', pk=room.pk)
@@ -837,7 +840,7 @@ def kahoot_ai(request):
 
     if request.method == 'POST' and request.POST.get('action') == 'save':
         if not preview:
-            messages.error(request, '没有待保存的题目，请重新生成')
+            messages.error(request, _('没有待保存的题目，请重新生成'))
             return render(request, 'game/kahoot_ai.html', _ai_form_context(
                 request, kahoot_title=kahoot_title,
             ))
@@ -848,7 +851,7 @@ def kahoot_ai(request):
             or kahoot_title
         )
         if not title:
-            messages.error(request, '缺少套题名称，请返回新建页重新设定名称')
+            messages.error(request, _('缺少套题名称，请返回新建页重新设定名称'))
             return render(request, 'game/kahoot_ai.html', _ai_form_context(
                 request, kahoot_title=kahoot_title, preview=_preview_labels_from(preview),
             ))
@@ -858,7 +861,10 @@ def kahoot_ai(request):
         request.session.pop('kahoot_pending_title', None)
         messages.success(
             request,
-            f'已保存 {quiz_set.question_count()} 道题到「{quiz_set.title}」，可在可视化编辑器中审核修改',
+            _('已保存 %(count)s 道题到「%(title)s」，可在可视化编辑器中审核修改') % {
+                'count': quiz_set.question_count(),
+                'title': quiz_set.title,
+            },
         )
         return redirect('kahoot_editor', pk=quiz_set.pk)
 
@@ -869,17 +875,17 @@ def kahoot_ai(request):
         total = sum(counts.values())
 
         if not topic:
-            messages.error(request, '请填写主题/方向')
+            messages.error(request, _('请填写主题/方向'))
             return render(request, 'game/kahoot_ai.html', _ai_form_context(
                 request, counts=counts,
             ))
         if total == 0:
-            messages.error(request, '请至少指定 1 道题')
+            messages.error(request, _('请至少指定 1 道题'))
             return render(request, 'game/kahoot_ai.html', _ai_form_context(
                 request, counts=counts,
             ))
         if total > MAX_TOTAL_QUESTIONS:
-            messages.error(request, f'题目总数不能超过 {MAX_TOTAL_QUESTIONS} 道')
+            messages.error(request, _('题目总数不能超过 %(max)s 道') % {'max': MAX_TOTAL_QUESTIONS})
             return render(request, 'game/kahoot_ai.html', _ai_form_context(
                 request, counts=counts,
             ))
@@ -903,7 +909,7 @@ def kahoot_ai(request):
             'description': description,
             'counts': counts,
         }
-        messages.success(request, f'已生成 {len(questions)} 道题目，请预览后保存并进入编辑')
+        messages.success(request, _('已生成 %(count)s 道题目，请预览后保存并进入编辑') % {'count': len(questions)})
         return redirect('kahoot_ai')
 
     preview_labels = _preview_labels_from(preview) if preview else None
@@ -921,7 +927,7 @@ def kahoot_ai_discard(request):
         return redirect_resp
     if request.method == 'POST':
         request.session.pop('ai_kahoot_preview', None)
-        messages.info(request, '已放弃本次 AI 生成结果')
+        messages.info(request, _('已放弃本次 AI 生成结果'))
     return redirect('kahoot_ai')
 
 
@@ -943,12 +949,12 @@ def room_create(request):
         }
 
         if not quiz_set_id:
-            messages.error(request, '请选择一套 Kahoot 题目')
+            messages.error(request, _('请选择一套 Kahoot 题目'))
             return render(request, 'game/room_create.html', form_ctx)
 
         quiz_set = get_object_or_404(QuizSet, pk=quiz_set_id)
         if not can_use_quiz_set(teacher, quiz_set):
-            messages.error(request, '所选套题无效或无权使用')
+            messages.error(request, _('所选套题无效或无权使用'))
             return render(request, 'game/room_create.html', form_ctx)
 
         try:
@@ -959,7 +965,7 @@ def room_create(request):
                 show_question_stem=show_question_stem,
             )
         except ValueError:
-            messages.error(request, '该套题还没有题目')
+            messages.error(request, _('该套题还没有题目'))
             return render(request, 'game/room_create.html', form_ctx)
 
         return redirect('room_host', pk=room.pk)
@@ -979,7 +985,7 @@ def room_host(request, pk):
         return redirect_resp
     room = get_object_or_404(Room, pk=pk)
     if not can_host_room(teacher, room):
-        messages.error(request, '无权主持该房间')
+        messages.error(request, _('无权主持该房间'))
         return redirect('teacher_dashboard')
     questions = room.get_questions()
     return render(request, 'game/room_host.html', {
@@ -993,7 +999,7 @@ def room_state_api(request, room_code):
     try:
         room = Room.objects.get(code=room_code)
     except Room.DoesNotExist:
-        return JsonResponse({'error': '房间不存在'}, status=404)
+        return JsonResponse({'error': _('房间不存在')}, status=404)
     runtime = get_runtime(room)
     return JsonResponse(get_room_state(room, runtime=runtime))
 
@@ -1004,7 +1010,7 @@ def room_analytics_data(request, pk):
         return err_resp
     room = get_object_or_404(Room, pk=pk)
     if not can_host_room(teacher, room):
-        return JsonResponse({'error': '无权查看该房间分析数据'}, status=403)
+        return JsonResponse({'error': _('无权查看该房间分析数据')}, status=403)
     data = get_room_analytics_data(room)
     return JsonResponse(data)
 
@@ -1015,7 +1021,7 @@ def room_analytics_page(request, pk):
         return redirect_resp
     room = get_object_or_404(Room, pk=pk)
     if not can_host_room(teacher, room):
-        messages.error(request, '无权查看该房间分析数据')
+        messages.error(request, _('无权查看该房间分析数据'))
         return redirect('teacher_dashboard')
     data = get_room_analytics_data(room)
     return render(request, 'game/room_analytics.html', {

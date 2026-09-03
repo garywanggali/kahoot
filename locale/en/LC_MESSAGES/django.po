@@ -855,3 +855,160 @@ msgstr "Delete Question - Kahoot"
 
 msgid "确认删除题目？"
 msgstr "Confirm Deleting Question?"
+
+#: game/views.py
+msgid "请输入房间号和昵称"
+msgstr "Please enter Game PIN and Nickname."
+
+msgid "房间号不存在"
+msgstr "Game PIN does not exist."
+
+msgid "该房间游戏已结束"
+msgstr "This game has ended."
+
+msgid "请输入用户名和密码"
+msgstr "Please enter username and password."
+
+msgid "用户名或密码错误"
+msgstr "Invalid username or password."
+
+msgid "请输入邀请码"
+msgstr "Please enter invite code."
+
+msgid "用户名须为 3–50 位字母、数字或下划线"
+msgstr "Username must be 3-50 characters (letters, numbers, underscores)."
+
+msgid "密码至少 %(min)s 位"
+msgstr "Password must be at least %(min)s characters."
+
+msgid "两次输入的密码不一致"
+msgstr "Passwords do not match."
+
+msgid "邀请码无效"
+msgstr "Invalid invite code."
+
+msgid "邀请码已用完或已停用"
+msgstr "Invite code is used up or inactive."
+
+msgid "用户名已被占用"
+msgstr "Username is already taken."
+
+msgid "注册成功，欢迎 %(user)s！请牢记用户名和密码。"
+msgstr "Registered successfully, welcome %(user)s! Please keep your credentials safe."
+
+msgid "无权编辑该套题"
+msgstr "You do not have permission to edit this quiz set."
+
+msgid "只能编辑自己的题目"
+msgstr "You can only edit your own questions."
+
+msgid "只能删除自己的题目"
+msgstr "You can only delete your own questions."
+
+msgid "题目已删除"
+msgstr "Question deleted."
+
+msgid "简答题请填写题目和参考答案"
+msgstr "Please fill in question text and reference answer for short answer questions."
+
+msgid "词云题请填写题目"
+msgstr "Please fill in question text for word cloud questions."
+
+msgid "判断题请填写题目和正确/错误选项"
+msgstr "Please fill in question text and True/False options."
+
+msgid "请填写所有字段"
+msgstr "Please fill in all fields."
+
+msgid "多选题请至少选择 2 个正确答案"
+msgstr "Please select at least 2 correct answers for multiple choice questions."
+
+msgid "题目已更新"
+msgstr "Question updated."
+
+msgid "题目已创建"
+msgstr "Question created."
+
+msgid "请填写题库名称"
+msgstr "Please enter quiz set title."
+
+msgid "已创建「%(title)s」，请编辑第一道题"
+msgstr "Created \"%(title)s\", please edit the first question."
+
+msgid "请填写 Kahoot 名称"
+msgstr "Please enter Kahoot title."
+
+msgid "请选择要上传的 Excel 文件"
+msgstr "Please select an Excel file to upload."
+
+msgid "仅支持 .xlsx 格式（Excel 2007+）"
+msgstr "Only .xlsx format is supported (Excel 2007+)."
+
+msgid "已从 Excel 导入 %(count)s 道题到「%(title)s」"
+msgstr "Imported %(count)s questions from Excel to \"%(title)s\"."
+
+msgid "只能编辑自己的套题"
+msgstr "You can only edit your own quiz sets."
+
+msgid "只能复制其他老师的公开套题"
+msgstr "You can only clone public quiz sets from other teachers."
+
+msgid "已复制到我的题库：「%(title)s」"
+msgstr "Cloned to My Library: \"%(title)s\"."
+
+msgid "无权查看该套题"
+msgstr "You do not have permission to view this quiz set."
+
+msgid "只能删除自己的套题"
+msgstr "You can only delete your own quiz sets."
+
+msgid "已删除套题「%(title)s」"
+msgstr "Deleted quiz set \"%(title)s\"."
+
+msgid "无权使用该套题"
+msgstr "You do not have permission to use this quiz set."
+
+msgid "套题中还没有题目，请先添加题目"
+msgstr "The quiz set has no questions yet, please add questions first."
+
+msgid "没有待保存的题目，请重新生成"
+msgstr "No questions to save, please generate again."
+
+msgid "缺少套题名称，请返回新建页重新设定名称"
+msgstr "Missing quiz set title, please set title first."
+
+msgid "已保存 %(count)s 道题到「%(title)s」，可在可视化编辑器中审核修改"
+msgstr "Saved %(count)s questions to \"%(title)s\", you can review and edit in Studio."
+
+msgid "请填写主题/方向"
+msgstr "Please fill in topic/theme."
+
+msgid "请至少指定 1 道题"
+msgstr "Please specify at least 1 question."
+
+msgid "题目总数不能超过 %(max)s 道"
+msgstr "Total questions cannot exceed %(max)s."
+
+msgid "已生成 %(count)s 道题目，请预览后保存并进入编辑"
+msgstr "Generated %(count)s questions, please preview and save."
+
+msgid "已放弃本次 AI 生成结果"
+msgstr "Discarded AI generation results."
+
+msgid "请选择一套 Kahoot 题目"
+msgstr "Please select a Kahoot quiz set."
+
+msgid "所选套题无效或无权使用"
+msgstr "Selected quiz set is invalid or unauthorized."
+
+msgid "该套题还没有题目"
+msgstr "This quiz set has no questions."
+
+msgid "无权主持该房间"
+msgstr "You do not have permission to host this room."
+
+msgid "房间不存在"
+msgstr "Room does not exist."
+
+msgid "无权查看该房间分析数据"
+msgstr "You do not have permission to view analytics for this room."
