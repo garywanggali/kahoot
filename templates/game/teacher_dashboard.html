@@ -1,6 +1,7 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}老师控制台 - 互动测验工作台{% endblock %}
+{% block title %}{% trans "老师控制台 - 互动测验工作台" %}{% endblock %}
 
 {% block content %}
 <div class="teacher-dashboard-viewport">
@@ -8,16 +9,16 @@
     <!-- 顶部简洁头部 -->
     <div class="studio-header-bar">
         <div class="studio-title-group">
-            <h1 class="studio-main-title">老师控制台</h1>
-            <p class="form-hint" style="margin-top: 0.2rem;">当前账号：{{ teacher.display_name|default:teacher.username }}</p>
+            <h1 class="studio-main-title">{% trans "老师控制台" %}</h1>
+            <p class="form-hint" style="margin-top: 0.2rem;">{% blocktranslate with user=teacher.display_name|default:teacher.username %}当前账号：{{ user }}{% endblocktranslate %}</p>
         </div>
-        <a href="{% url 'teacher_logout' %}" class="btn-exit" title="安全退出">
+        <a href="{% url 'teacher_logout' %}" class="btn-exit" title="{% trans '安全退出' %}">
             <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                 <polyline points="16 17 21 12 16 7"></polyline>
                 <line x1="21" y1="12" x2="9" y2="12"></line>
             </svg>
-            <span>退出登录</span>
+            <span>{% trans "退出登录" %}</span>
         </a>
     </div>
 
@@ -38,15 +39,15 @@
                 </div>
                 
                 <div class="dual-card-body">
-                    <h2 class="dual-card-title">创建互动房间</h2>
+                    <h2 class="dual-card-title">{% trans "创建互动房间" %}</h2>
                     <p class="dual-card-desc">
-                        挑选一套测验题库，一键生成 6 位房间号并投屏至大屏，组织学生手机连线极速竞答。
+                        {% trans "挑选一套测验题库，一键生成 6 位房间号并投屏至大屏，组织学生手机连线极速竞答。" %}
                     </p>
                 </div>
 
                 <div class="dual-card-footer">
                     <a href="{% url 'room_create' %}" class="btn-dual-primary">
-                        <span>+ 发起新房间</span>
+                        <span>{% trans "+ 发起新房间" %}</span>
                         <span>→</span>
                     </a>
                 </div>
@@ -64,19 +65,19 @@
                 </div>
                 
                 <div class="dual-card-body">
-                    <h2 class="dual-card-title">新建 Kahoot / 我的题库</h2>
+                    <h2 class="dual-card-title">{% trans "新建 Kahoot / 我的题库" %}</h2>
                     <p class="dual-card-desc">
-                        支持手动编排或使用 AI 智能批量出题，自由配置单选、多选、判断与配图题型。
+                        {% trans "支持手动编排或使用 AI 智能批量出题，自由配置单选、多选、判断与配图题型。" %}
                     </p>
                 </div>
 
                 <div class="dual-card-footer dual-footer-stacked">
                     <a href="{% url 'kahoot_new' %}" class="btn-dual-secondary">
-                        <span>+ 新建 Kahoot</span>
+                        <span>{% trans "+ 新建 Kahoot" %}</span>
                         <span>→</span>
                     </a>
                     <a href="{% url 'question_list' %}" class="btn-dual-outline">
-                        <span>管理我的题库 ({{ quiz_set_count|default:0 }})</span>
+                        <span>{% blocktranslate with count=quiz_set_count|default:0 %}管理我的题库 ({{ count }}){% endblocktranslate %}</span>
                         <span>→</span>
                     </a>
                 </div>
@@ -87,4 +88,3 @@
 
 </div>
 {% endblock %}
-

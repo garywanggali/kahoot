@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static i18n %}
 
 {% block body_attrs %}data-turbo="false"{% endblock %}
 
-{% block title %}游戏 - {{ room.code }}{% endblock %}
+{% block title %}{% trans "游戏" %} - {{ room.code }}{% endblock %}
 
 {% block content %}
 <div id="app" class="play-app">
@@ -11,44 +11,44 @@
         <!-- 顶部房间状态条 -->
         <div class="lobby-header-bar">
             <div class="lobby-badge-item">
-                <span class="lobby-badge-label">房间号</span>
+                <span class="lobby-badge-label">{% trans "房间号" %}</span>
                 <span class="lobby-badge-value">{{ room.code }}</span>
             </div>
             <div class="lobby-badge-item">
-                <span class="lobby-badge-label">玩家</span>
+                <span class="lobby-badge-label">{% trans "玩家" %}</span>
                 <span class="lobby-badge-value">{{ nickname }}</span>
             </div>
             <div class="lobby-badge-item lobby-badge-status">
                 <span class="status-indicator-dot"></span>
-                <span>已连线 <strong id="player-count">0</strong> 人</span>
+                <span>{% blocktranslate with count='<strong id="player-count">0</strong>' %}已连线 {{ count }} 人{% endblocktranslate %}</span>
             </div>
         </div>
 
-        <!-- 核心等待卡片 (充满且简洁，无任何 emoji) -->
+        <!-- 核心等待卡片 -->
         <div class="lobby-main-stage">
             <div class="lobby-avatar-card">
                 <div class="lobby-avatar-preview-wrap">
                     <div id="lobby-avatar-preview" class="lobby-avatar-preview">
                         <!-- SVG 头像在此渲染 -->
                     </div>
-                    <button type="button" class="btn-avatar-random" onclick="randomizeAvatar()" title="随机换装">
+                    <button type="button" class="btn-avatar-random" onclick="randomizeAvatar()" title="{% trans '随机换装' %}">
                         <svg class="btn-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
                         </svg>
-                        <span>随机换装</span>
+                        <span>{% trans "随机换装" %}</span>
                     </button>
                 </div>
 
                 <div class="lobby-avatar-customizer">
                     <!-- 1. 脸部表情选择 -->
                     <div class="avatar-picker-row">
-                        <span class="picker-label">表情</span>
+                        <span class="picker-label">{% trans "表情" %}</span>
                         <div class="picker-control">
-                            <button type="button" class="picker-btn" onclick="cycleFace(-1)" aria-label="上一个表情">
+                            <button type="button" class="picker-btn" onclick="cycleFace(-1)" aria-label="{% trans '上一个表情' %}">
                                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
                             </button>
                             <span id="picker-face-name" class="picker-val-name">元气微笑</span>
-                            <button type="button" class="picker-btn" onclick="cycleFace(1)" aria-label="下一个表情">
+                            <button type="button" class="picker-btn" onclick="cycleFace(1)" aria-label="{% trans '下一个表情' %}">
                                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
                             </button>
                         </div>
@@ -56,13 +56,13 @@
 
                     <!-- 2. 发型样式选择 -->
                     <div class="avatar-picker-row">
-                        <span class="picker-label">发型</span>
+                        <span class="picker-label">{% trans "发型" %}</span>
                         <div class="picker-control">
-                            <button type="button" class="picker-btn" onclick="cycleHair(-1)" aria-label="上一个发型">
+                            <button type="button" class="picker-btn" onclick="cycleHair(-1)" aria-label="{% trans '上一个发型' %}">
                                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
                             </button>
                             <span id="picker-hair-name" class="picker-val-name">动感短发</span>
-                            <button type="button" class="picker-btn" onclick="cycleHair(1)" aria-label="下一个发型">
+                            <button type="button" class="picker-btn" onclick="cycleHair(1)" aria-label="{% trans '下一个发型' %}">
                                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
                             </button>
                         </div>
@@ -72,7 +72,7 @@
 
             <!-- 等待状态提示 -->
             <div class="lobby-waiting-status">
-                <h2 class="lobby-waiting-title">等待老师开始游戏</h2>
+                <h2 class="lobby-waiting-title">{% trans "等待老师开始游戏" %}</h2>
                 <div class="waiting-dots-pulse">
                     <span></span><span></span><span></span>
                 </div>
@@ -84,7 +84,7 @@
         <p class="question-number" id="question-number"></p>
         <div class="timer-bar" id="timer-bar"><div class="timer-fill" id="timer-fill"></div></div>
         <div id="question-image-wrap" class="question-image-wrap hidden">
-            <img id="question-image" src="" alt="题目图片">
+            <img id="question-image" src="" alt="{% trans '题目图片' %}">
         </div>
         <h2 class="question-text" id="question-text"></h2>
 
@@ -93,19 +93,19 @@
         <div id="text-answer-group" class="text-answer-group hidden">
             <div class="text-answer-hero-card">
                 <input type="text" id="text-answer-input" class="text-answer-input"
-                       maxlength="100" placeholder="在此输入你的答案..." autocomplete="off">
+                       maxlength="100" placeholder="{% trans '在此输入你的答案...' %}" autocomplete="off">
                 <button type="button" id="submit-text-btn" class="submit-text-btn"
                         onclick="submitTextAnswer()">
-                    <span>提交答案</span>
+                    <span>{% trans "提交答案" %}</span>
                     <span>→</span>
                 </button>
             </div>
         </div>
 
         <button type="button" id="submit-multi-btn" class="btn btn-primary submit-multi-btn hidden"
-                onclick="submitMultiAnswer()">提交答案</button>
+                onclick="submitMultiAnswer()">{% trans "提交答案" %}</button>
 
-        <!-- 核心答题反馈与转场舞台 (全屏居中卡片，简洁大气，无 emoji) -->
+        <!-- 核心答题反馈与转场舞台 -->
         <div id="feedback-stage" class="play-feedback-stage hidden">
             <div class="feedback-card" id="feedback-card">
                 <div class="feedback-icon" id="feedback-icon"></div>
@@ -117,7 +117,7 @@
                     <div class="waiting-dots-pulse">
                         <span></span><span></span><span></span>
                     </div>
-                    <span>等待下一题...</span>
+                    <span>{% trans "等待下一题..." %}</span>
                 </div>
             </div>
         </div>
@@ -125,21 +125,21 @@
 
     <div id="ended-screen" class="play-ended hidden">
         <div class="host-stage-title-wrap" style="margin-bottom: 1.5rem;">
-            <h2 class="host-stage-title" style="font-size: 2.2rem;">颁奖典礼</h2>
+            <h2 class="host-stage-title" style="font-size: 2.2rem;">{% trans "颁奖典礼" %}</h2>
         </div>
 
         <div id="player-podium-container" class="host-podium-outer" style="width: 100%;"></div>
 
-        <h3 class="final-rankings-title hidden" id="player-final-rankings-title">完整排名</h3>
+        <h3 class="final-rankings-title hidden" id="player-final-rankings-title">{% trans "完整排名" %}</h3>
         <div id="player-final-leaderboard" class="host-leaderboard-scroll-list" style="max-height: 200px; width: 100%; max-width: 600px;"></div>
 
         <div class="host-stage-foot" style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
             <button type="button" class="token-btn-primary btn-host-analytics" onclick="showPlayerAnalyticsScreen()">
-                <span>查看数据分析</span>
+                <span>{% trans "查看数据分析" %}</span>
                 <span>→</span>
             </button>
             <a href="{% url 'index' %}" class="token-btn-secondary" style="display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none;">
-                <span>返回首页</span>
+                <span>{% trans "返回首页" %}</span>
             </a>
         </div>
     </div>
@@ -147,17 +147,17 @@
     <!-- 答题数据分析阶段 (Student Analytics View) -->
     <div id="player-analytics-screen" class="play-ended host-stage-card token-card hidden" style="width: 100%; max-width: 1100px; margin: 0 auto; text-align: left;">
         <div class="host-stage-title-wrap" style="text-align: center; margin-bottom: 1.5rem;">
-            <h2 class="host-stage-title" style="font-size: 2.2rem;">答题数据分析</h2>
+            <h2 class="host-stage-title" style="font-size: 2.2rem;">{% trans "答题数据分析" %}</h2>
         </div>
 
         <div id="player-analytics-container" style="min-height: 300px; margin: 1rem 0;"></div>
 
         <div class="host-stage-foot" style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap;">
             <button type="button" class="token-btn-secondary" onclick="backToPlayerPodium()">
-                <span>← 返回荣誉领奖台</span>
+                <span>{% trans "← 返回荣誉领奖台" %}</span>
             </button>
             <a href="{% url 'index' %}" class="token-btn-primary" style="text-decoration: none;">
-                <span>返回首页 →</span>
+                <span>{% trans "返回首页" %} →</span>
             </a>
         </div>
     </div>
@@ -167,14 +167,14 @@
     <div id="danmaku-layer" class="danmaku-layer"></div>
 </div>
 
-<!-- 浮动收起式弹幕控制器 (不占据主屏幕高度空间) -->
+<!-- 浮动收起式弹幕控制器 -->
 <div id="danmaku-container" class="danmaku-container hidden">
     <!-- 展开后的输入气泡 -->
     <div id="danmaku-drawer" class="danmaku-drawer hidden">
         <input type="text" id="danmaku-input" class="danmaku-input" maxlength="40"
-               placeholder="输入弹幕..." autocomplete="off">
-        <button type="button" class="btn danmaku-send-btn" onclick="sendDanmaku()">发送</button>
-        <button type="button" class="danmaku-close-btn" onclick="toggleDanmakuDrawer(false)" title="收起">
+               placeholder="{% trans '输入弹幕...' %}" autocomplete="off">
+        <button type="button" class="btn danmaku-send-btn" onclick="sendDanmaku()">{% trans "发送" %}</button>
+        <button type="button" class="danmaku-close-btn" onclick="toggleDanmakuDrawer(false)" title="{% trans '收起' %}">
             <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -183,19 +183,26 @@
     </div>
 
     <!-- 默认浮动触发胶囊 -->
-    <button type="button" id="danmaku-toggle-btn" class="danmaku-toggle-btn" onclick="toggleDanmakuDrawer(true)" title="发弹幕">
+    <button type="button" id="danmaku-toggle-btn" class="danmaku-toggle-btn" onclick="toggleDanmakuDrawer(true)" title="{% trans '发弹幕' %}">
         <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
         </svg>
-        <span>发弹幕</span>
+        <span>{% trans "发弹幕" %}</span>
     </button>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/awards.js' %}?v=3"></script>
-<script src="{% static 'js/analytics.js' %}?v=2"></script>
+<script src="{% static 'js/awards.js' %}?v=4"></script>
+<script src="{% static 'js/analytics.js' %}?v=4"></script>
 <script>
+function _t(key, ...args) {
+    if (typeof window !== 'undefined' && window.t) {
+        return window.t(key, ...args);
+    }
+    return key;
+}
+
 const ROOM_CODE = '{{ room.code }}';
 const NICKNAME = '{{ nickname }}';
 const INITIAL_STATE = {{ initial_state_json|safe }};
@@ -226,15 +233,15 @@ function updateAvatarUi() {
             className: 'lobby-avatar-bounce-svg',
         });
     }
-    const faceObj = window.AvatarSystem.FACES[myAvatar.face];
-    const hairObj = window.AvatarSystem.HAIRS[myAvatar.hair];
+    const faceName = window.AvatarSystem.getFaceName ? window.AvatarSystem.getFaceName(myAvatar.face) : '';
+    const hairName = window.AvatarSystem.getHairName ? window.AvatarSystem.getHairName(myAvatar.hair) : '';
     const faceEl = document.getElementById('picker-face-name');
     const hairEl = document.getElementById('picker-hair-name');
-    if (faceEl && faceObj) {
-        faceEl.textContent = `${faceObj.name} (${myAvatar.face + 1}/${window.AvatarSystem.FACES.length})`;
+    if (faceEl) {
+        faceEl.textContent = `${faceName} (${myAvatar.face + 1}/${window.AvatarSystem.FACES.length})`;
     }
-    if (hairEl && hairObj) {
-        hairEl.textContent = `${hairObj.name} (${myAvatar.hair + 1}/${window.AvatarSystem.HAIRS.length})`;
+    if (hairEl) {
+        hairEl.textContent = `${hairName} (${myAvatar.hair + 1}/${window.AvatarSystem.HAIRS.length})`;
     }
 }
 
@@ -385,7 +392,7 @@ function handleEvent(event, data) {
             if (hasAnswered) {
                 const fb = document.getElementById('answer-feedback');
                 if (fb && !fb.textContent) {
-                    fb.textContent = '已提交';
+                    fb.textContent = _t('fb.submitted_short');
                 }
             } else {
                 alert(data.message);
@@ -410,7 +417,7 @@ function showInterQuestionWaiting() {
     if (!stage || stage.classList.contains('hidden') || !titleEl.textContent.trim()) {
         renderFeedbackCard({
             type: 'waiting',
-            title: '请准备',
+            title: _t('fb.get_ready'),
             showWaitingHint: true,
         });
     } else {
@@ -499,7 +506,7 @@ function showQuestion(state) {
     applyStemMode(state);
 
     document.getElementById('question-number').textContent =
-        `第 ${state.current_question_index + 1} / ${state.total_questions} 题`;
+        _t('play.question_num', state.current_question_index + 1, state.total_questions);
     document.getElementById('question-number').classList.toggle('hidden', !showStem);
     document.getElementById('question-text').textContent = q.text;
     document.getElementById('question-text').classList.toggle('hidden', !showStem);
@@ -516,7 +523,7 @@ function showQuestion(state) {
         textInput.value = '';
         textInput.disabled = false;
         textInput.maxLength = q.question_type === 'word_cloud' ? 40 : 100;
-        textInput.placeholder = q.question_type === 'word_cloud' ? '输入一个词或短语...' : '在此输入你的答案...';
+        textInput.placeholder = q.question_type === 'word_cloud' ? _t('play.text_placeholder_wordcloud') : _t('play.text_placeholder');
         textBtn.disabled = false;
         setTimeout(() => textInput.focus(), 80);
     }
@@ -576,7 +583,7 @@ function startTimer(seconds) {
                 hideQuestionInputUi();
                 renderFeedbackCard({
                     type: 'waiting',
-                    title: '时间到，等待揭晓',
+                    title: _t('fb.timeup'),
                     showWaitingHint: true,
                 });
             }
@@ -771,7 +778,7 @@ function showAnswerFeedback(data) {
     hideQuestionInputUi();
     renderFeedbackCard({
         type: 'submitted',
-        title: '已提交，等待揭晓',
+        title: _t('fb.submitted'),
         showWaitingHint: true,
     });
 }
@@ -790,7 +797,7 @@ function showQuestionResult(state) {
     if (isWordCloud || lastAnswerResult.no_score) {
         renderFeedbackCard({
             type: 'submitted',
-            title: lastAnswerResult.answered ? '已提交' : '本题已结束',
+            title: lastAnswerResult.answered ? _t('fb.submitted_short') : _t('fb.question_ended'),
             showWaitingHint: true,
         });
         return;
@@ -799,43 +806,8 @@ function showQuestionResult(state) {
     const isCorrect = lastAnswerResult.answered && lastAnswerResult.is_correct;
     renderFeedbackCard({
         type: isCorrect ? 'correct' : 'wrong',
-        title: isCorrect ? '对' : '错',
+        title: isCorrect ? _t('fb.correct') : _t('fb.wrong'),
         showWaitingHint: true,
-    });
-}
-
-function getCorrectKeys(state) {
-    const q = state.question;
-    if (!q) return [];
-    if (q.correct_options && q.correct_options.length) {
-        return q.correct_options;
-    }
-    if (q.correct_option) {
-        return [q.correct_option];
-    }
-    return [];
-}
-
-function formatCorrectLabel(question) {
-    if (!question) return '';
-    if (question.question_type === 'short_answer' && question.correct_answer) {
-        return question.correct_answer;
-    }
-    if (TEXT_TYPES.has(question.question_type) && question.question_type !== 'short_answer') {
-        return '';
-    }
-    return getCorrectKeys({ question }).join(', ');
-}
-
-function highlightCorrectAnswers(correctKeys) {
-    const correctSet = new Set(correctKeys);
-    document.querySelectorAll('.option-btn').forEach(btn => {
-        const key = btn.dataset.key;
-        if (correctSet.has(key)) {
-            btn.classList.add('correct');
-        } else if (btn.classList.contains('selected')) {
-            btn.classList.add('wrong');
-        }
     });
 }
 
@@ -929,12 +901,12 @@ function renderEndedPlayerInfo(leaderboard) {
         });
     }
     if (info && me) {
-        const medalLabels = ['冠军', '亚军', '季军'];
-        const rankStr = me.rank <= 3 ? medalLabels[me.rank - 1] : `第 ${me.rank} 名`;
+        const medalLabels = [_t('awards.champion'), _t('awards.runner_up'), _t('awards.third_place')];
+        const rankStr = me.rank <= 3 ? medalLabels[me.rank - 1] : _t('awards.rank_n', me.rank);
         info.innerHTML = `
             <div class="ended-player-stat">
                 <span class="ended-badge">${rankStr}</span>
-                <span class="ended-score">最终积分: <strong>${me.score}</strong> 分</span>
+                <span class="ended-score">${_t('awards.final_score', me.score)}</span>
             </div>
         `;
         info.classList.remove('hidden');

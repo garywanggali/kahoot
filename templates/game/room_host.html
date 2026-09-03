@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static i18n %}
 
 {% block body_attrs %}data-turbo="false"{% endblock %}
 
-{% block title %}主持游戏 - {{ room.code }} - 互动测验工作台{% endblock %}
+{% block title %}{% trans "主持游戏" %} - {{ room.code }} - Kahoot Studio{% endblock %}
 
 {% block content %}
 <div class="host-app-viewport" id="host-app">
@@ -16,9 +16,9 @@
                     <line x1="19" y1="12" x2="5" y2="12"></line>
                     <polyline points="12 19 5 12 12 5"></polyline>
                 </svg>
-                <span>返回控制台</span>
+                <span>{% trans "返回控制台" %}</span>
             </a>
-            <h1 class="studio-main-title" style="font-size: 1.6rem; margin-bottom: 0;">{{ room.name|default:"互动测验房间" }}</h1>
+            <h1 class="studio-main-title" style="font-size: 1.6rem; margin-bottom: 0;">{{ room.name|default:_("互动测验房间") }}</h1>
         </div>
 
         <span id="conn-status" class="hidden"></span>
@@ -27,7 +27,7 @@
     <!-- 1. 等待学生加入大厅 (Waiting Lobby) -->
     <div id="host-waiting" class="host-stage-card token-card">
         <div class="host-waiting-head">
-            <p class="host-join-hint">请使用手机浏览器访问并输入 6 位房间号加入</p>
+            <p class="host-join-hint">{% trans "请使用手机浏览器访问并输入 6 位房间号加入" %}</p>
             
             <!-- 3D 实体超大房间号卡片 -->
             <div class="host-pin-hero-card">
@@ -39,18 +39,18 @@
             <div class="host-meta-pills">
                 <span class="host-meta-pill">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                    已加入：<strong id="host-player-count">0</strong> 人
+                    <span>{% blocktranslate with count='<strong id="host-player-count">0</strong>' %}已加入：{{ count }} 人{% endblocktranslate %}</span>
                 </span>
                 <span class="host-meta-pill">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
-                    共 <strong>{{ questions|length }}</strong> 道试题
+                    <span>{% blocktranslate with count=questions|length %}共 <strong>{{ count }}</strong> 道试题{% endblocktranslate %}</span>
                 </span>
             </div>
         </div>
 
         <!-- 玩家昵称墙 -->
         <div class="host-player-wall-section">
-            <div class="host-wall-title">已进入玩家</div>
+            <div class="host-wall-title">{% trans "已进入玩家" %}</div>
             <div id="host-waiting-leaderboard" class="host-players-wall">
                 <div class="host-empty-players">
                     <div class="host-radar-wrap">
@@ -62,7 +62,7 @@
                             <path d="M12 15v6"></path>
                         </svg>
                     </div>
-                    <p>等待学生连线中… 手机输入房间号后将实时在此处显示</p>
+                    <p>{% trans "等待学生连线中… 手机输入房间号后将实时在此处显示" %}</p>
                 </div>
             </div>
         </div>
@@ -70,7 +70,7 @@
         <!-- 底部开始游戏控制条 -->
         <div class="host-waiting-foot">
             <button id="btn-start" class="token-btn-primary btn-host-large-start" onclick="startGame()">
-                <span>开始游戏</span>
+                <span>{% trans "开始游戏" %}</span>
                 <span>→</span>
             </button>
         </div>
@@ -81,7 +81,7 @@
         <div class="host-playing-topbar">
             <span class="host-q-type-badge token-badge-mono" id="host-question-number">【单选】 第 1 / 1 题</span>
             <div class="host-answer-progress">
-                已答：<strong id="answer-count">0</strong> / <span id="total-players">0</span> 人
+                <span>{% blocktranslate with count='<strong id="answer-count">0</strong>' total='<span id="total-players">0</span>' %}已答：{{ count }} / {{ total }} 人{% endblocktranslate %}</span>
             </div>
         </div>
 
@@ -90,12 +90,12 @@
 
         <!-- 配图展示区 -->
         <div id="host-question-image-wrap" class="host-question-image-wrap hidden">
-            <img id="host-question-image" src="" alt="题目图片" class="host-question-img">
+            <img id="host-question-image" src="" alt="{% trans '题目图片' %}" class="host-question-img">
         </div>
 
         <!-- 居中题干大字框 -->
         <div class="host-stem-box">
-            <h2 class="host-stem-text" id="host-question-text">加载题干中…</h2>
+            <h2 class="host-stem-text" id="host-question-text">{% trans "加载题干中…" %}</h2>
         </div>
 
         <!-- 四色选项网格 -->
@@ -103,14 +103,14 @@
 
         <!-- 词云展示区 -->
         <div id="host-word-cloud-wrap" class="word-cloud-wrap hidden">
-            <p class="word-cloud-title">实时词云汇总</p>
+            <p class="word-cloud-title">{% trans "实时词云汇总" %}</p>
             <div id="host-word-cloud-display" class="word-cloud-display"></div>
         </div>
 
         <!-- 底部操作栏 -->
         <div class="host-playing-foot">
             <button class="token-btn-secondary btn-host-end-q" onclick="endQuestion()">
-                <span>结束本题</span>
+                <span>{% trans "结束本题" %}</span>
                 <span>→</span>
             </button>
         </div>
@@ -119,9 +119,9 @@
     <!-- 3. 本题揭晓 (答案统计) -->
     <div id="host-leaderboard" class="host-stage-card token-card hidden">
         <div class="host-stage-title-wrap">
-            <p class="host-reveal-kicker" id="host-reveal-kicker">答题揭晓</p>
-            <h2 class="host-stage-title host-reveal-stem" id="host-reveal-title">本题统计</h2>
-            <p class="host-stage-subtitle" id="host-reveal-subtitle">各选项作答人数与正确答案</p>
+            <p class="host-reveal-kicker" id="host-reveal-kicker">{% trans "答题揭晓" %}</p>
+            <h2 class="host-stage-title host-reveal-stem" id="host-reveal-title">{% trans "本题统计" %}</h2>
+            <p class="host-stage-subtitle" id="host-reveal-subtitle">{% trans "各选项作答人数与正确答案" %}</p>
         </div>
 
         <div id="host-reveal-chart" class="host-reveal-chart hidden"></div>
@@ -129,24 +129,24 @@
         <div id="host-reveal-short" class="host-reveal-short hidden">
             <div class="host-reveal-short-count">
                 <span class="host-reveal-short-num" id="host-reveal-correct-count">0</span>
-                <span class="host-reveal-short-label">人答对</span>
+                <span class="host-reveal-short-label">{% trans "人答对" %}</span>
             </div>
             <p class="host-reveal-short-meta" id="host-reveal-short-meta"></p>
         </div>
 
         <div id="host-leaderboard-word-cloud-wrap" class="word-cloud-wrap hidden">
-            <p class="word-cloud-title">本题词云</p>
+            <p class="word-cloud-title">{% trans "本题词云" %}</p>
             <div id="host-leaderboard-word-cloud" class="word-cloud-display"></div>
         </div>
 
         <div id="host-reveal-answer" class="host-reveal-answer hidden">
-            <span class="host-reveal-answer-label">正确答案</span>
+            <span class="host-reveal-answer-label">{% trans "正确答案" %}</span>
             <span class="host-reveal-answer-text" id="host-reveal-answer-text"></span>
         </div>
 
         <div class="host-stage-foot">
             <button id="btn-next" class="token-btn-primary btn-host-next-q" onclick="nextQuestion()">
-                <span>下一题</span>
+                <span>{% trans "下一题" %}</span>
                 <span>→</span>
             </button>
         </div>
@@ -155,23 +155,23 @@
     <!-- 4. 颁奖典礼 (Podium & Finals) -->
     <div id="host-ended" class="host-stage-card token-card hidden">
         <div class="host-stage-title-wrap">
-            <h2 class="host-stage-title">颁奖典礼</h2>
+            <h2 class="host-stage-title">{% trans "颁奖典礼" %}</h2>
         </div>
 
         <!-- 3D 领奖台容器 -->
         <div id="host-podium-container" class="host-podium-outer"></div>
 
         <!-- 其余排名 -->
-        <h3 class="final-rankings-title hidden" id="host-final-rankings-title">完整排名</h3>
+        <h3 class="final-rankings-title hidden" id="host-final-rankings-title">{% trans "完整排名" %}</h3>
         <div id="host-final-leaderboard" class="host-leaderboard-scroll-list" style="max-height: 180px;"></div>
 
         <div class="host-stage-foot" style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
             <button type="button" class="token-btn-primary btn-host-analytics" onclick="showAnalyticsScreen()">
-                <span>查看数据分析</span>
+                <span>{% trans "查看数据分析" %}</span>
                 <span>→</span>
             </button>
             <a href="{% url 'teacher_dashboard' %}" class="token-btn-secondary btn-host-finish">
-                <span>返回控制台</span>
+                <span>{% trans "返回控制台" %}</span>
             </a>
         </div>
     </div>
@@ -179,17 +179,17 @@
     <!-- 5. 数据分析复盘 (Analytics & Review) -->
     <div id="host-analytics" class="host-stage-card token-card hidden">
         <div class="host-stage-title-wrap">
-            <h2 class="host-stage-title">对战数据分析</h2>
+            <h2 class="host-stage-title">{% trans "答题数据分析" %}</h2>
         </div>
 
         <div id="host-analytics-container" style="min-height: 300px; margin: 1rem 0;"></div>
 
         <div class="host-stage-foot" style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;">
             <button type="button" class="token-btn-secondary" onclick="backToPodium()">
-                <span>← 返回荣誉领奖台</span>
+                <span>{% trans "← 返回荣誉领奖台" %}</span>
             </button>
             <a href="{% url 'teacher_dashboard' %}" class="token-btn-primary">
-                <span>结束并返回控制台</span>
+                <span>{% trans "结束并返回控制台" %}</span>
                 <span>→</span>
             </a>
         </div>
@@ -204,10 +204,17 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/awards.js' %}?v=3"></script>
-<script src="{% static 'js/wordcloud.js' %}?v=2"></script>
-<script src="{% static 'js/analytics.js' %}?v=3"></script>
+<script src="{% static 'js/awards.js' %}?v=4"></script>
+<script src="{% static 'js/wordcloud.js' %}?v=3"></script>
+<script src="{% static 'js/analytics.js' %}?v=4"></script>
 <script>
+function _t(key, ...args) {
+    if (typeof window !== 'undefined' && window.t) {
+        return window.t(key, ...args);
+    }
+    return key;
+}
+
 const ROOM_CODE = '{{ room.code }}';
 const INITIAL_STATE = {{ initial_state_json|safe }};
 let ws = null;
@@ -226,7 +233,7 @@ function sendWs(data) {
         ws.send(JSON.stringify(data));
     } else {
         pendingActions.push(data);
-        setConnStatus('连接中，操作将稍后发送...');
+        setConnStatus(_t('conn.connecting'));
     }
 }
 
@@ -239,7 +246,7 @@ function connect() {
 
     ws.onopen = () => {
         wsConnected = true;
-        setConnStatus('已连接');
+        setConnStatus(_t('conn.connected'));
         pendingActions.forEach(d => ws.send(JSON.stringify(d)));
         pendingActions.length = 0;
         ws.send(JSON.stringify({ action: 'get_state' }));
@@ -250,10 +257,10 @@ function connect() {
         handleHostEvent(msg.event, msg.data);
     };
 
-    ws.onerror = () => setConnStatus('连接异常，正在重试...');
+    ws.onerror = () => setConnStatus(_t('conn.error'));
     ws.onclose = () => {
         wsConnected = false;
-        setConnStatus('连接断开，正在重连...');
+        setConnStatus(_t('conn.closed'));
         setTimeout(connect, 2000);
     };
 }
@@ -287,18 +294,18 @@ function handleHostEvent(event, data) {
             renderWordCloud('host-word-cloud-display', data.words);
             break;
         case 'error':
-            const errMsg = data.message || '操作失败';
+            const errMsg = data.message || _t('status.error');
             setConnStatus(errMsg);
             alert(errMsg);
             const startBtn = document.getElementById('btn-start');
             if (startBtn) {
                 startBtn.disabled = false;
-                startBtn.innerHTML = '<span>开始游戏</span><span>→</span>';
+                startBtn.innerHTML = `<span>${_t('host.btn_start')}</span><span>→</span>`;
             }
             const nextBtn = document.getElementById('btn-next');
             if (nextBtn) {
                 nextBtn.disabled = false;
-                nextBtn.textContent = nextBtn.dataset.label || '下一题';
+                nextBtn.textContent = nextBtn.dataset.label || _t('host.btn_next_q');
             }
             break;
     }
@@ -323,7 +330,7 @@ function applyHostState(state) {
         const startBtn = document.getElementById('btn-start');
         if (startBtn) {
             startBtn.disabled = false;
-            startBtn.innerHTML = '<span>开始游戏</span><span>→</span>';
+            startBtn.innerHTML = `<span>${_t('host.btn_start')}</span><span>→</span>`;
         }
         showHostQuestion(state);
     } else if (state.status === 'leaderboard') {
@@ -332,9 +339,9 @@ function applyHostState(state) {
         renderQuestionReveal(state);
         const btn = document.getElementById('btn-next');
         if (state.current_question_index + 1 >= state.total_questions) {
-            btn.innerHTML = '<span>颁奖典礼</span><span>→</span>';
+            btn.innerHTML = `<span>${_t('host.btn_ceremony')}</span><span>→</span>`;
         } else {
-            btn.innerHTML = '<span>下一题</span><span>→</span>';
+            btn.innerHTML = `<span>${_t('host.btn_next_q')}</span><span>→</span>`;
         }
         btn.disabled = false;
         btn.dataset.label = btn.textContent;
@@ -388,15 +395,13 @@ function showHostQuestion(state) {
     if (currentHostQuestionId === q.id) return;
     currentHostQuestionId = q.id;
 
-    const typeLabels = {
-        multiple: '【多选】',
-        judgment: '【判断】',
-        short_answer: '【简答】',
-        word_cloud: '【词云】',
-    };
-    const typeLabel = typeLabels[q.question_type] || '【单选】';
-    document.getElementById('host-question-number').textContent =
-        `${typeLabel} 第 ${state.current_question_index + 1} / ${state.total_questions} 题`;
+    const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+    const typeLabel = _t('qtype.' + q.question_type);
+    const qNumText = isEn
+        ? `${typeLabel} Question ${state.current_question_index + 1} of ${state.total_questions}`
+        : `${typeLabel} 第 ${state.current_question_index + 1} / ${state.total_questions} 题`;
+
+    document.getElementById('host-question-number').textContent = qNumText;
     document.getElementById('host-question-text').textContent = q.text;
 
     const isShortAnswer = q.question_type === 'short_answer';
@@ -481,7 +486,7 @@ function renderWaitingLobbyPlayers(leaderboard) {
                         <path d="M12 15v6"></path>
                     </svg>
                 </div>
-                <p>等待学生连线中… 手机输入房间号后将实时在此处显示</p>
+                <p>${_t('host.waiting_players_tip')}</p>
             </div>
         `;
         return;
@@ -503,20 +508,20 @@ function renderWaitingLobbyPlayers(leaderboard) {
 function renderQuestionReveal(state) {
     const q = state.question || {};
     const reveal = q.reveal || {};
-    const typeLabels = {
-        multiple: '多选题',
-        judgment: '判断题',
-        short_answer: '问答题',
-        word_cloud: '词云题',
-        single: '选择题',
-    };
-    const typeLabel = typeLabels[q.question_type] || '选择题';
+    const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+    const typeLabel = _t('qtype.label.' + (q.question_type || 'single'));
+
     const kicker = document.getElementById('host-reveal-kicker');
     const title = document.getElementById('host-reveal-title');
     const subtitle = document.getElementById('host-reveal-subtitle');
-    kicker.textContent = `第 ${state.current_question_index + 1} / ${state.total_questions} 题 · ${typeLabel}`;
-    title.textContent = q.text || '本题统计';
-    subtitle.textContent = `${reveal.answered_count || 0} 人已作答 · ${reveal.player_count || state.player_count || 0} 人在场`;
+
+    kicker.textContent = isEn
+        ? `Question ${state.current_question_index + 1} of ${state.total_questions} · ${typeLabel}`
+        : `第 ${state.current_question_index + 1} / ${state.total_questions} 题 · ${typeLabel}`;
+    title.textContent = q.text || _t('host.reveal_title');
+    subtitle.textContent = isEn
+        ? `${reveal.answered_count || 0} answered · ${reveal.player_count || state.player_count || 0} present`
+        : `${reveal.answered_count || 0} 人已作答 · ${reveal.player_count || state.player_count || 0} 人在场`;
 
     const chartEl = document.getElementById('host-reveal-chart');
     const shortEl = document.getElementById('host-reveal-short');
@@ -536,6 +541,7 @@ function renderQuestionReveal(state) {
         const shapes = ['▲', '◆', '●', '■'];
         const colors = ['host-opt-a', 'host-opt-b', 'host-opt-c', 'host-opt-d'];
         const maxCount = Math.max(1, ...optionStats.map(s => s.count || 0));
+        const correctBadgeText = _t('host.correct_answer');
         chartEl.innerHTML = optionStats.map((stat, i) => {
             const count = stat.count || 0;
             const pct = count > 0 ? Math.max(14, Math.round((count / maxCount) * 100)) : 8;
@@ -554,7 +560,7 @@ function renderQuestionReveal(state) {
                         </div>
                         <div class="host-reveal-bar-text" title="${escapeHtml(stat.text || '')}">${escapeHtml(stat.text || '')}</div>
                     </div>
-                    ${stat.is_correct ? '<span class="host-reveal-bar-badge">正确答案</span>' : ''}
+                    ${stat.is_correct ? `<span class="host-reveal-bar-badge">${correctBadgeText}</span>` : ''}
                 </div>
             `;
         }).join('');
@@ -563,8 +569,7 @@ function renderQuestionReveal(state) {
         document.getElementById('host-reveal-correct-count').textContent = reveal.correct_count || 0;
         const answered = reveal.answered_count || 0;
         const unanswered = reveal.unanswered_count || 0;
-        document.getElementById('host-reveal-short-meta').textContent =
-            `共 ${answered} 人作答 · ${unanswered} 人未作答`;
+        document.getElementById('host-reveal-short-meta').textContent = _t('host.short_meta', answered, unanswered);
         shortEl.classList.remove('hidden');
     }
 
@@ -583,7 +588,7 @@ function startGame() {
     const btn = document.getElementById('btn-start');
     if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<span>正在开启游戏…</span>';
+        btn.innerHTML = `<span>${_t('host.btn_starting')}</span>`;
     }
     sendWs({ action: 'start_game' });
 }
@@ -592,9 +597,9 @@ function nextQuestion() {
     const btn = document.getElementById('btn-next');
     if (btn) {
         btn.disabled = true;
-        const label = btn.textContent;
-        btn.dataset.label = label;
-        btn.textContent = label === '结束游戏' ? '正在结束…' : '正在切题…';
+        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+        btn.dataset.label = btn.textContent;
+        btn.textContent = isEn ? 'Loading…' : '正在切题…';
     }
     sendWs({ action: 'next_question' });
 }

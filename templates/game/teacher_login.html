@@ -1,6 +1,7 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}老师登录 - Kahoot Studio{% endblock %}
+{% block title %}{% trans "老师登录 - Kahoot Studio" %}{% endblock %}
 
 {% block content %}
 <div class="landing-screen-viewport" style="height: auto; min-height: calc(100vh - 2.5rem); overflow: visible;">
@@ -31,32 +32,32 @@
                     {% csrf_token %}
                     
                     <div class="form-group-industrial">
-                        <label for="username">用户名</label>
+                        <label for="username">{% trans "用户名" %}</label>
                         <input type="text" id="username" name="username" class="input-industrial"
                                value="{{ username|default:'' }}" required autofocus autocomplete="username"
-                               placeholder="输入老师用户名">
+                               placeholder="{% trans '输入老师用户名' %}">
                     </div>
                     
                     <div class="form-group-industrial">
-                        <label for="password">密码</label>
+                        <label for="password">{% trans "密码" %}</label>
                         <input type="password" id="password" name="password" class="input-industrial"
-                               placeholder="注册时设置的密码（不是邀请码）" required autocomplete="current-password">
+                               placeholder="{% trans '注册时设置的密码（不是邀请码）' %}" required autocomplete="current-password">
                     </div>
                     
                     <button type="submit" class="btn-industrial-primary">
-                        <span>登录老师控制台</span>
+                        <span>{% trans "登录老师控制台" %}</span>
                         <span>→</span>
                     </button>
                 </form>
                 
                 <div class="flip-footer-switch">
                     <a href="{% url 'teacher_register' %}" class="flip-switch-action">
-                        还没有账号？<strong>邀请码注册 →</strong>
+                        {% blocktranslate %}还没有账号？<strong>邀请码注册 →</strong>{% endblocktranslate %}
                     </a>
                 </div>
                 
                 <div class="teacher-extra-links">
-                    <a href="{% url 'index' %}" class="link-mono">← 返回首页</a>
+                    <a href="{% url 'index' %}" class="link-mono">{% trans "← 返回首页" %}</a>
                 </div>
             </div>
         </div>
@@ -68,7 +69,6 @@
 
 {% block extra_js %}
 <script>
-// 鼠标微视差与键帽物理交互
 (function initKeycapsInteraction() {
     const stage = document.getElementById('keycaps-stage');
     if (!stage) return;
