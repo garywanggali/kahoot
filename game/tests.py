@@ -491,8 +491,8 @@ class QuestionRevealTests(TestCase):
             'room': room,
             'nickname': 'Test',
         })
-        self.assertIn('已提交，等待揭晓', html)
-        self.assertIn("title: isCorrect ? '对' : '错'", html)
+        self.assertTrue("已提交，等待揭晓" in html or "_t('fb.submitted')" in html)
+        self.assertTrue("title: isCorrect ? _t('fb.correct') : _t('fb.wrong')" in html or "title: isCorrect ? '对' : '错'" in html)
         self.assertNotIn('回答正确', html)
         self.assertNotIn('回答错误', html)
         self.assertIn('applyStemMode', html)
