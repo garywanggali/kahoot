@@ -156,8 +156,8 @@ a:hover {
 
 .keycap {
     position: absolute;
-    pointer-events: auto;
-    cursor: pointer;
+    pointer-events: none;
+    cursor: default;
     user-select: none;
     border-radius: 14px;
     padding: 3px;
@@ -1653,6 +1653,11 @@ button.kahoot-choice-button:focus-visible {
     backdrop-filter: blur(6px);
 }
 
+.ai-loading-overlay.hidden {
+    display: none !important;
+    pointer-events: none !important;
+}
+
 .ai-loading-panel {
     text-align: center;
     padding: 2rem 2.5rem;
@@ -1691,6 +1696,7 @@ button.kahoot-choice-button:focus-visible {
    ========================================================================== */
 .hidden {
     display: none !important;
+    pointer-events: none !important;
 }
 
 body:has(.play-app) {

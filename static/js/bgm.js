@@ -62,7 +62,39 @@
             ) {
                 anchor.setAttribute('data-turbo', 'false');
             }
+            anchor.setAttribute('data-turbo-prefetch', 'false');
         });
+    }
+
+    function disableTurboOnForms() {
+        document.querySelectorAll('form').forEach((form) => {
+            form.setAttribute('data-turbo', 'false');
+        });
+    }
+
+    function recoverStuckTurbo() {
+        try {
+            const visit = window.Turbo && window.Turbo.navigator && window.Turbo.navigator.currentVisit;
+            if (visit && typeof visit.cancel === 'function') {
+                visit.cancel();
+            }
+        } catch {
+            /* ignore */
+        }
+        document.documentElement.removeAttribute('aria-busy');
+        document.documentElement.removeAttribute('busy');
+    }
+
+    let busyTimer = null;
+    function armBusyWatch() {
+        clearTimeout(busyTimer);
+        busyTimer = setTimeout(recoverStuckTurbo, 8000);
+    }
+    function clearBusyWatch() {
+        clearTimeout(busyTimer);
+        busyTimer = null;
+        document.documentElement.removeAttribute('aria-busy');
+        document.documentElement.removeAttribute('busy');
     }
 
     if (!audio.dataset.bgmInit) {
@@ -94,9 +126,18 @@
 
         document.addEventListener('turbo:load', () => {
             optOutTurboForHeavyPages();
+            disableTurboOnForms();
+            clearBusyWatch();
             play();
         });
-        document.addEventListener('DOMContentLoaded', optOutTurboForHeavyPages);
+        document.addEventListener('turbo:render', clearBusyWatch);
+        document.addEventListener('turbo:submit-end', clearBusyWatch);
+        document.addEventListener('turbo:fetch-request-error', clearBusyWatch);
+        document.addEventListener('turbo:before-fetch-request', armBusyWatch);
+        document.addEventListener('DOMContentLoaded', () => {
+            optOutTurboForHeavyPages();
+            disableTurboOnForms();
+        });
 
         if (audio.readyState >= HTMLMediaElement.HAVE_METADATA) {
             tryResume();
@@ -107,4 +148,5 @@
     }
 
     optOutTurboForHeavyPages();
+    disableTurboOnForms();
 })();

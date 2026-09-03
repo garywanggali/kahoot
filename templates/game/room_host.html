@@ -313,6 +313,11 @@ function applyHostState(state) {
     if (state.status === 'waiting') {
         document.getElementById('host-waiting').classList.remove('hidden');
         renderWaitingLobbyPlayers(state.leaderboard);
+        const startBtn = document.getElementById('btn-start');
+        if (startBtn) {
+            startBtn.disabled = false;
+            startBtn.innerHTML = '<span>开始游戏</span><span>→</span>';
+        }
     } else if (state.status === 'playing' && state.question) {
         document.getElementById('host-playing').classList.remove('hidden');
         const startBtn = document.getElementById('btn-start');

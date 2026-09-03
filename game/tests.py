@@ -281,6 +281,15 @@ class JoinRoomViewTests(TestCase):
         content = resp.content.decode('utf-8')
         self.assertIn('turbo.min.js', content)
         self.assertNotIn('https://cdn.jsdelivr.net/npm/@hotwired/turbo@8.0.12/dist/turbo.min.js', content)
+        self.assertIn('turbo-cache-control', content)
+        self.assertIn('no-cache', content)
+
+    def test_bgm_disables_turbo_on_forms(self):
+        from pathlib import Path
+        from django.conf import settings
+        bgm = (Path(settings.BASE_DIR) / 'static' / 'js' / 'bgm.js').read_text()
+        self.assertIn('disableTurboOnForms', bgm)
+        self.assertIn("form.setAttribute('data-turbo', 'false')", bgm)
 
     def test_room_created_success_does_not_show_on_landing(self):
         from django.contrib import messages
