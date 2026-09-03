@@ -408,12 +408,15 @@ function showHostQuestion(state) {
         imgWrap.classList.add('hidden');
     }
 
+    const stemBox = document.querySelector('.host-stem-box');
     const container = document.getElementById('host-options');
     if (isTextType) {
-        container.innerHTML = isShortAnswer
-            ? '<p class="host-text-hint">学生输入文字答案，系统自动比对标准答案</p>'
-            : '<p class="host-text-hint">学生提交文字后实时汇总词云</p>';
+        if (stemBox) stemBox.classList.add('stem-hero');
+        container.innerHTML = '';
+        container.classList.add('hidden');
     } else {
+        if (stemBox) stemBox.classList.remove('stem-hero');
+        container.classList.remove('hidden');
         const optionClasses = ['host-opt-a', 'host-opt-b', 'host-opt-c', 'host-opt-d'];
         const icons = ['▲', '◆', '●', '■'];
         container.innerHTML = q.options.map((opt, i) =>

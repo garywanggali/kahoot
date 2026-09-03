@@ -91,10 +91,15 @@
         <div id="options-container" class="play-options"></div>
 
         <div id="text-answer-group" class="text-answer-group hidden">
-            <input type="text" id="text-answer-input" class="form-control text-answer-input"
-                   maxlength="100" placeholder="输入你的答案..." autocomplete="off">
-            <button type="button" id="submit-text-btn" class="btn btn-primary submit-text-btn"
-                    onclick="submitTextAnswer()">提交答案</button>
+            <div class="text-answer-hero-card">
+                <input type="text" id="text-answer-input" class="text-answer-input"
+                       maxlength="100" placeholder="在此输入你的答案..." autocomplete="off">
+                <button type="button" id="submit-text-btn" class="submit-text-btn"
+                        onclick="submitTextAnswer()">
+                    <span>提交答案</span>
+                    <span>→</span>
+                </button>
+            </div>
         </div>
 
         <button type="button" id="submit-multi-btn" class="btn btn-primary submit-multi-btn hidden"
@@ -469,8 +474,9 @@ function showQuestion(state) {
         textInput.value = '';
         textInput.disabled = false;
         textInput.maxLength = q.question_type === 'word_cloud' ? 40 : 100;
-        textInput.placeholder = q.question_type === 'word_cloud' ? '输入一个词或短语...' : '输入你的答案...';
+        textInput.placeholder = q.question_type === 'word_cloud' ? '输入一个词或短语...' : '在此输入你的答案...';
         textBtn.disabled = false;
+        setTimeout(() => textInput.focus(), 80);
     }
 
     const imgWrap = document.getElementById('question-image-wrap');
