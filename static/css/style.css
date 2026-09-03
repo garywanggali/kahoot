@@ -31,14 +31,14 @@
     --orange-subtle: rgba(255, 79, 0, 0.08);
 
     /* 4 Choice Button Colors */
-    --kh-option-a: #ff4f00; /* Safety Orange (▲) */
-    --kh-option-a-dark: #d94300;
-    --kh-option-b: #0066ff; /* Electric Blue (◆) */
-    --kh-option-b-dark: #0052cc;
-    --kh-option-c: #ffb800; /* Industrial Amber (●) */
-    --kh-option-c-dark: #d99c00;
-    --kh-option-d: #18181b; /* Matte Black (■) */
-    --kh-option-d-dark: #0d0d0f;
+    --kh-option-a: #FF4F00; /* Safety Orange (▲) */
+    --kh-option-a-dark: #D94300;
+    --kh-option-b: #2563EB; /* Electric Blue (◆) */
+    --kh-option-b-dark: #1D4ED8;
+    --kh-option-c: #F59E0B; /* Amber Gold (●) */
+    --kh-option-c-dark: #D97706;
+    --kh-option-d: #1F2937; /* Dark Slate (■) */
+    --kh-option-d-dark: #111827;
 
     --correct: #00b341;
     --error: #e53935;
@@ -1849,70 +1849,71 @@ body:has(.play-app) .container {
     box-sizing: border-box;
 }
 
-/* 选项色调 — 纯平年轻化高饱和色卡 (去除渐变，采用 3D 实体压感阴影) */
+/* 选项色调 — 与教师端完全对齐的统一色彩与粗黑实体阴影质感 */
+.play-screen .option-btn {
+    border: 2.5px solid #18181b !important;
+    border-radius: 24px;
+    box-shadow: 0 6px 0 #18181b !important;
+    font-size: 0;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
+    box-sizing: border-box;
+}
+
 .play-screen .option-a {
-    background: #E21B3C !important;
-    border: none !important;
-    box-shadow: 0 8px 0 #9E0D25, 0 12px 24px rgba(226, 27, 60, 0.22);
+    background: var(--token-color-choice-a, #FF4F00) !important;
     color: #ffffff !important;
 }
 
 .play-screen .option-b {
-    background: #1368CE !important;
-    border: none !important;
-    box-shadow: 0 8px 0 #094793, 0 12px 24px rgba(19, 104, 206, 0.22);
+    background: var(--token-color-choice-b, #2563EB) !important;
     color: #ffffff !important;
 }
 
 .play-screen .option-c {
-    background: #FFA602 !important;
-    border: none !important;
-    box-shadow: 0 8px 0 #B87300, 0 12px 24px rgba(255, 166, 2, 0.22);
-    color: #ffffff !important;
+    background: var(--token-color-choice-c, #F59E0B) !important;
+    color: #111111 !important;
 }
 
 .play-screen .option-d {
-    background: #18181C !important;
-    border: none !important;
-    box-shadow: 0 8px 0 #000000, 0 12px 24px rgba(0, 0, 0, 0.28);
+    background: var(--token-color-choice-d, #1F2937) !important;
     color: #ffffff !important;
 }
 
-/* 隐藏选项文字，只显示符号（不显示题干时：看大屏点色块） */
-.play-screen .option-btn {
-    font-size: 0;
-    color: #ffffff !important;
-}
-
+/* 选项符号 — 与教师端完全一致的质感与颜色 (Option C 为黑色实心圆) */
 .play-screen .option-btn::before {
     margin-right: 0;
     line-height: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #ffffff !important;
-    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     transform: translateZ(0);
 }
 
 .play-screen .option-a::before {
     content: '▲';
+    color: #ffffff !important;
     font-size: clamp(6rem, 16vmin, 10.5rem);
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 .play-screen .option-b::before {
     content: '◆';
+    color: #ffffff !important;
     font-size: clamp(6.5rem, 18vmin, 11.5rem);
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 .play-screen .option-c::before {
     content: '●';
+    color: #111111 !important;
     font-size: clamp(6.5rem, 18vmin, 11.5rem);
 }
 
 .play-screen .option-d::before {
     content: '■';
+    color: #ffffff !important;
     font-size: clamp(6.5rem, 18vmin, 11.5rem);
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 @media (max-width: 480px) {
@@ -1939,15 +1940,16 @@ body:has(.play-app) .container {
     font-size: 1.85rem;
 }
 
-/* hover/active */
+/* hover/active 与教师端一致的下压回弹手感 */
 .play-screen .option-btn:hover:not(:disabled) {
-    filter: brightness(1.06);
-    transform: translateY(-3px);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 0 #18181b !important;
+    filter: brightness(1.04);
 }
 
 .play-screen .option-btn:active:not(:disabled) {
     transform: translateY(4px);
-    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4) !important;
+    box-shadow: 0 2px 0 #18181b !important;
 }
 
 /* 选中状态 */
@@ -1966,6 +1968,17 @@ body:has(.play-app) .container {
 .play-screen .option-btn.wrong {
     opacity: 0.25;
     filter: grayscale(0.8) brightness(0.6);
+}
+
+/* 判断题两栏平分布局 (左边正确，右边错误) */
+.play-screen #options-container.judgment-options {
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-rows: 1fr !important;
+    height: 100%;
+}
+
+.host-options-grid.judgment-options {
+    grid-template-columns: 1fr 1fr !important;
 }
 
 /* ==========================================================================
