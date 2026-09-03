@@ -1398,16 +1398,7 @@ td {
     box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.1);
 }
 
-.alert {
-    padding: 1rem 1.5rem;
-    border-radius: var(--radius-sm);
-    margin-bottom: 1.75rem;
-    font-weight: 600;
-}
 
-.alert-error { background: #ffebee; color: var(--error); border: 1px solid #ffcdd2; }
-.alert-success { background: #e8f5e9; color: var(--correct); border: 1px solid #c8e6c9; }
-.alert-warning { background: #fff8e1; color: #f57f17; border: 1px solid #ffecb3; }
 
 /* 加入页面内联错误提示 */
 .join-inline-error {
