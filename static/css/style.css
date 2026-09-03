@@ -4600,7 +4600,7 @@ body:has(.host-app-viewport):has(#host-analytics:not(.hidden)) .host-app-viewpor
 }
 
 /* ==========================================================================
-   4. Host Awards Ceremony Stage (3D Neo-Brutalist Champions Podium)
+   4. Host Awards Ceremony Stage (Brand Flat Neo-Brutalist Champions Podium)
    ========================================================================== */
 .host-stage-card.host-awards-stage {
     display: flex;
@@ -4616,44 +4616,17 @@ body:has(.host-app-viewport):has(#host-analytics:not(.hidden)) .host-app-viewpor
     text-align: center;
     width: 100%;
     flex-shrink: 0;
-    margin-bottom: 0.35rem;
-}
-
-.host-awards-kicker-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    margin-bottom: 0.35rem;
-}
-
-.host-awards-kicker-pill {
-    font-family: var(--font-mono, monospace);
-    font-size: 0.85rem;
-    font-weight: 800;
-    background: #111111;
-    color: #FFD700;
-    padding: 0.25rem 0.85rem;
-    border-radius: 999px;
-    letter-spacing: 0.04em;
-    box-shadow: 0 2px 0 #111111;
+    margin-bottom: 0.5rem;
 }
 
 .host-awards-hero-title {
     font-family: var(--font-hero, -apple-system, sans-serif);
-    font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+    font-size: clamp(2rem, 3.8vw, 2.75rem);
     font-weight: 900;
-    color: #111111;
+    color: #18181b;
     line-height: 1.2;
-    margin: 0.15rem auto 0.25rem;
+    margin: 0.25rem auto 0.5rem;
     text-align: center;
-}
-
-.host-awards-subtitle {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #52525b;
-    margin: 0;
 }
 
 .host-awards-stage-body {
@@ -4683,7 +4656,7 @@ body:has(.host-app-viewport):has(#host-analytics:not(.hidden)) .host-app-viewpor
     width: 100%;
     max-width: 820px;
     padding: 1rem 1rem 0;
-    border-bottom: 4px solid #111111;
+    border-bottom: 3.5px solid #18181b;
     box-sizing: border-box;
     position: relative;
 }
@@ -4717,33 +4690,33 @@ body:has(.host-app-viewport):has(#host-analytics:not(.hidden)) .host-app-viewpor
     align-items: center;
     gap: 0.3rem;
     font-family: var(--font-mono, monospace);
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     font-weight: 900;
-    padding: 0.2rem 0.65rem;
+    padding: 0.22rem 0.75rem;
     border-radius: 999px;
-    border: 2px solid #111111;
-    box-shadow: 0 2px 0 #111111;
+    border: 2px solid #18181b;
+    box-shadow: 0 2px 0 #18181b;
     margin-bottom: 0.45rem;
     white-space: nowrap;
-    animation: correctPillPop 0.4s ease;
+    animation: correctPillPop 0.3s ease;
 }
 
-.rank-badge-gold {
-    background: #FEF08A;
-    color: #854D0E;
-    border-color: #111111;
+.rank-badge-orange {
+    background: #FF4F00;
+    color: #ffffff;
+    border-color: #18181b;
 }
 
-.rank-badge-silver {
-    background: #E2E8F0;
-    color: #334155;
-    border-color: #111111;
+.rank-badge-blue {
+    background: #2563EB;
+    color: #ffffff;
+    border-color: #18181b;
 }
 
-.rank-badge-bronze {
-    background: #FFEDD5;
-    color: #9A3412;
-    border-color: #111111;
+.rank-badge-amber {
+    background: #F59E0B;
+    color: #18181b;
+    border-color: #18181b;
 }
 
 .podium-avatar-wrap {
@@ -4751,8 +4724,8 @@ body:has(.host-app-viewport):has(#host-analytics:not(.hidden)) .host-app-viewpor
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    border: 3px solid #111111;
-    box-shadow: 0 4px 0 #111111;
+    border: 2.5px solid #18181b;
+    box-shadow: 0 3px 0 #18181b;
     background: #ffffff;
     padding: 0.35rem;
     margin-bottom: 0.4rem;
@@ -4760,7 +4733,8 @@ body:has(.host-app-viewport):has(#host-analytics:not(.hidden)) .host-app-viewpor
 }
 
 .podium-avatar-rank-1 {
-    box-shadow: 0 5px 0 #111111, 0 0 20px rgba(250, 204, 21, 0.45);
+    border: 3px solid #18181b;
+    box-shadow: 0 4px 0 #18181b;
 }
 
 .podium-slot:hover .podium-avatar-wrap {
@@ -4771,14 +4745,14 @@ body:has(.host-app-viewport):has(#host-analytics:not(.hidden)) .host-app-viewpor
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background: #111111;
+    background: #18181b;
     color: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.5rem;
     font-weight: 900;
-    border: 3px solid #111111;
+    border: 2.5px solid #18181b;
     margin-bottom: 0.4rem;
 }
 
@@ -4786,7 +4760,7 @@ body:has(.host-app-viewport):has(#host-analytics:not(.hidden)) .host-app-viewpor
     font-family: var(--font-hero, sans-serif);
     font-size: 1.15rem;
     font-weight: 900;
-    color: #111111;
+    color: #18181b;
     text-align: center;
     max-width: 150px;
     overflow: hidden;
@@ -4800,10 +4774,10 @@ body:has(.host-app-viewport):has(#host-analytics:not(.hidden)) .host-app-viewpor
     align-items: baseline;
     gap: 0.25rem;
     padding: 0.2rem 0.75rem;
-    background: #111111;
+    background: #18181b;
     color: #ffffff;
     border-radius: 999px;
-    box-shadow: 0 2px 0 rgba(0,0,0,0.4);
+    box-shadow: 0 2px 0 rgba(0,0,0,0.3);
     margin-bottom: 0.4rem;
 }
 
@@ -4820,7 +4794,7 @@ body:has(.host-app-viewport):has(#host-analytics:not(.hidden)) .host-app-viewpor
     color: #E2E8F0;
 }
 
-/* 3D Neo-Brutalist Solid Pillars */
+/* Solid Brand Pillars (No Gradients) */
 .podium-stand {
     width: 100%;
     display: flex;
@@ -4828,40 +4802,37 @@ body:has(.host-app-viewport):has(#host-analytics:not(.hidden)) .host-app-viewpor
     align-items: center;
     justify-content: center;
     border-radius: 14px 14px 0 0;
-    border: 3px solid #111111;
+    border: 2.5px solid #18181b;
     border-bottom: none;
     box-sizing: border-box;
     position: relative;
-    box-shadow: inset 0 4px 0 rgba(255, 255, 255, 0.45);
+    box-shadow: 0 4px 0 #18181b;
     transition: transform 0.24s cubic-bezier(0.34, 1.3, 0.64, 1);
 }
 
 .podium-stand-1 {
-    height: 185px;
-    background: linear-gradient(180deg, #FACC15 0%, #EAB308 100%);
-    box-shadow: inset 0 4px 0 rgba(255, 255, 255, 0.65), 0 -4px 16px rgba(234, 179, 8, 0.25);
+    height: 190px;
+    background: #FF4F00;
 }
 
 .podium-stand-2 {
-    height: 135px;
-    background: linear-gradient(180deg, #CBD5E1 0%, #94A3B8 100%);
-    box-shadow: inset 0 4px 0 rgba(255, 255, 255, 0.65);
+    height: 140px;
+    background: #2563EB;
 }
 
 .podium-stand-3 {
-    height: 95px;
-    background: linear-gradient(180deg, #FDBA74 0%, #FB923C 100%);
-    box-shadow: inset 0 4px 0 rgba(255, 255, 255, 0.65);
+    height: 100px;
+    background: #F59E0B;
 }
 
 .podium-place-label {
     font-family: var(--font-hero, sans-serif);
     font-size: clamp(2.4rem, 4.5vw, 3.2rem);
     font-weight: 900;
-    color: #111111;
+    color: #ffffff;
     line-height: 1;
     user-select: none;
-    text-shadow: 0 2px 0 rgba(255, 255, 255, 0.4);
+    text-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
 }
 
 /* Empty / Ghost slot */
@@ -4871,7 +4842,7 @@ body:has(.host-app-viewport):has(#host-analytics:not(.hidden)) .host-app-viewpor
     align-items: center;
     padding: 0.6rem 0.5rem;
     margin-bottom: 0.5rem;
-    border: 2.5px dashed #cbd5e1;
+    border: 2px dashed #cbd5e1;
     border-radius: 14px;
     background: #f8fafc;
     width: 100%;
@@ -4879,12 +4850,12 @@ body:has(.host-app-viewport):has(#host-analytics:not(.hidden)) .host-app-viewpor
 }
 
 .podium-ghost-badge {
-    font-size: 1.6rem;
+    font-size: 1.5rem;
     margin-bottom: 0.15rem;
 }
 
 .podium-ghost-title {
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     font-weight: 800;
     color: #475569;
 }
@@ -4899,7 +4870,7 @@ body:has(.host-app-viewport):has(#host-analytics:not(.hidden)) .host-app-viewpor
     font-family: var(--font-hero, sans-serif);
     font-size: 1.1rem;
     font-weight: 800;
-    color: var(--token-text-primary, #111111);
+    color: var(--token-text-primary, #18181b);
     margin: 1rem 0 0.5rem;
     text-align: center;
 }
@@ -4925,22 +4896,22 @@ body:has(.host-app-viewport):has(#host-analytics:not(.hidden)) .host-app-viewpor
     font-size: 1.15rem !important;
     font-weight: 900 !important;
     border-radius: 16px !important;
-    border: 2.5px solid #111111 !important;
-    background: #ff4f00 !important;
+    border: 2.5px solid #18181b !important;
+    background: #FF4F00 !important;
     color: #ffffff !important;
-    box-shadow: 0 6px 0 #111111 !important;
+    box-shadow: 0 6px 0 #18181b !important;
     cursor: pointer;
     transition: all 0.16s ease !important;
 }
 
 .host-awards-foot-row .btn-host-analytics:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 0 #111111 !important;
+    box-shadow: 0 8px 0 #18181b !important;
 }
 
 .host-awards-foot-row .btn-host-analytics:active {
     transform: translateY(2px);
-    box-shadow: 0 2px 0 #111111 !important;
+    box-shadow: 0 2px 0 #18181b !important;
 }
 
 .host-awards-foot-row .btn-host-finish {
@@ -4951,10 +4922,10 @@ body:has(.host-app-viewport):has(#host-analytics:not(.hidden)) .host-app-viewpor
     font-size: 1.05rem !important;
     font-weight: 800 !important;
     border-radius: 16px !important;
-    border: 2.5px solid #111111 !important;
+    border: 2.5px solid #18181b !important;
     background: #ffffff !important;
-    color: #111111 !important;
-    box-shadow: 0 5px 0 #111111 !important;
+    color: #18181b !important;
+    box-shadow: 0 5px 0 #18181b !important;
     text-decoration: none !important;
     transition: all 0.16s ease !important;
 }
@@ -4962,12 +4933,12 @@ body:has(.host-app-viewport):has(#host-analytics:not(.hidden)) .host-app-viewpor
 .host-awards-foot-row .btn-host-finish:hover {
     background: #f4f4f5 !important;
     transform: translateY(-2px);
-    box-shadow: 0 7px 0 #111111 !important;
+    box-shadow: 0 7px 0 #18181b !important;
 }
 
 .host-awards-foot-row .btn-host-finish:active {
     transform: translateY(2px);
-    box-shadow: 0 2px 0 #111111 !important;
+    box-shadow: 0 2px 0 #18181b !important;
 }
 
 /* ==========================================================================

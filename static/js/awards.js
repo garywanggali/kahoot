@@ -22,23 +22,23 @@ function getRankBadge(rank) {
     if (rank === 1) {
         return {
             emoji: '👑',
-            title: isEn ? '1st Champion' : '冠军',
+            title: isEn ? '1st' : '第 1 名',
             label: '1st',
-            colorClass: 'rank-badge-gold'
+            colorClass: 'rank-badge-orange'
         };
     } else if (rank === 2) {
         return {
             emoji: '🥈',
-            title: isEn ? '2nd Place' : '亚军',
+            title: isEn ? '2nd' : '第 2 名',
             label: '2nd',
-            colorClass: 'rank-badge-silver'
+            colorClass: 'rank-badge-blue'
         };
     } else {
         return {
             emoji: '🥉',
-            title: isEn ? '3rd Place' : '季军',
+            title: isEn ? '3rd' : '第 3 名',
             label: '3rd',
-            colorClass: 'rank-badge-bronze'
+            colorClass: 'rank-badge-amber'
         };
     }
 }

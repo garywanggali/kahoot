@@ -163,11 +163,7 @@
     <!-- 4. 颁奖典礼 (Podium & Finals) -->
     <div id="host-ended" class="host-stage-card host-awards-stage token-card hidden">
         <div class="host-awards-top-wrap">
-            <div class="host-awards-kicker-row">
-                <span class="host-awards-kicker-pill">✨ {% trans "终局对决 · 荣耀加冕" %}</span>
-            </div>
-            <h2 class="host-awards-hero-title">🏆 {% trans "颁奖典礼" %}</h2>
-            <p class="host-awards-subtitle">{% trans "全场答题对决圆满结束 · 见证冠军诞生" %}</p>
+            <h2 class="host-awards-hero-title">{% trans "颁奖典礼" %}</h2>
         </div>
 
         <!-- 3D 领奖台容器 -->
@@ -218,7 +214,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/awards.js' %}?v=5"></script>
+<script src="{% static 'js/awards.js' %}?v=6"></script>
 <script src="{% static 'js/wordcloud.js' %}?v=3"></script>
 <script src="{% static 'js/analytics.js' %}?v=4"></script>
 <script>
