@@ -1159,7 +1159,7 @@ class ClickThroughSafetyTests(TestCase):
         html = render_to_string('base.html', request=request)
         self.assertIn('name="csrf-token"', html)
         self.assertIn('csrfmiddlewaretoken', html)
-        self.assertIn('style.css?v=467', html)
+        self.assertIn('style.css?v=468', html)
         self.assertIn('i18n.js?v=8', html)
         self.assertIn('data-action="toggle-lang"', html)
 
