@@ -275,50 +275,9 @@ a:hover {
    ========================================================================== */
 .hero-section {
     text-align: center;
-    margin: 0.25rem auto 1.25rem;
+    margin: 0.5rem auto 1.5rem;
     position: relative;
     z-index: 1;
-}
-
-.hero-pill-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.3rem 0.85rem;
-    background: #ffffff;
-    border: 1.5px solid #18181b;
-    border-radius: 999px;
-    box-shadow: 0 2px 0 #18181b;
-    font-family: var(--token-font-hero);
-    font-size: 0.82rem;
-    font-weight: 800;
-    color: #18181b;
-    margin-bottom: 0.75rem;
-    letter-spacing: 0.02em;
-}
-
-.hero-pill-dot {
-    width: 8px;
-    height: 8px;
-    background: #FF4F00;
-    border-radius: 50%;
-    box-shadow: 0 0 8px rgba(255, 79, 0, 0.8);
-    animation: heroDotPulse 2s infinite ease-in-out;
-}
-
-@keyframes heroDotPulse {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.3); opacity: 0.7; }
-}
-
-.hero-pill-tag {
-    background: #18181b;
-    color: #ffffff;
-    font-size: 0.68rem;
-    font-weight: 900;
-    padding: 0.1rem 0.4rem;
-    border-radius: 6px;
-    letter-spacing: 0.04em;
 }
 
 .hero-headline {
