@@ -133,10 +133,31 @@
         <h3 class="final-rankings-title hidden" id="player-final-rankings-title">完整排名</h3>
         <div id="player-final-leaderboard" class="host-leaderboard-scroll-list" style="max-height: 200px; width: 100%; max-width: 600px;"></div>
 
-        <div style="margin-top: 1.5rem;">
-            <a href="{% url 'index' %}" class="token-btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none;">
-                <span>返回首页</span>
+        <div class="host-stage-foot" style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <button type="button" class="token-btn-primary btn-host-analytics" onclick="showPlayerAnalyticsScreen()">
+                <span>查看数据分析</span>
                 <span>→</span>
+            </button>
+            <a href="{% url 'index' %}" class="token-btn-secondary" style="display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none;">
+                <span>返回首页</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- 答题数据分析阶段 (Student Analytics View) -->
+    <div id="player-analytics-screen" class="play-ended host-stage-card token-card hidden" style="width: 100%; max-width: 1100px; margin: 0 auto; text-align: left;">
+        <div class="host-stage-title-wrap" style="text-align: center; margin-bottom: 1.5rem;">
+            <h2 class="host-stage-title" style="font-size: 2.2rem;">答题数据分析</h2>
+        </div>
+
+        <div id="player-analytics-container" style="min-height: 300px; margin: 1rem 0;"></div>
+
+        <div class="host-stage-foot" style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap;">
+            <button type="button" class="token-btn-secondary" onclick="backToPlayerPodium()">
+                <span>← 返回荣誉领奖台</span>
+            </button>
+            <a href="{% url 'index' %}" class="token-btn-primary" style="text-decoration: none;">
+                <span>返回首页 →</span>
             </a>
         </div>
     </div>
@@ -173,6 +194,7 @@
 
 {% block extra_js %}
 <script src="{% static 'js/awards.js' %}?v=3"></script>
+<script src="{% static 'js/analytics.js' %}?v=2"></script>
 <script>
 const ROOM_CODE = '{{ room.code }}';
 const NICKNAME = '{{ nickname }}';
@@ -917,6 +939,40 @@ function renderEndedPlayerInfo(leaderboard) {
         `;
         info.classList.remove('hidden');
     }
+}
+
+let cachedPlayerAnalyticsData = null;
+const ANALYTICS_DATA_URL = "{% url 'room_analytics_data' room.pk %}";
+
+function showPlayerAnalyticsScreen() {
+    const endedEl = document.getElementById('ended-screen');
+    if (endedEl) endedEl.classList.add('hidden');
+    const analyticsEl = document.getElementById('player-analytics-screen');
+    if (analyticsEl) {
+        analyticsEl.classList.remove('hidden');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    if (!cachedPlayerAnalyticsData && window.loadAndRenderAnalytics) {
+        window.loadAndRenderAnalytics('player-analytics-container', ANALYTICS_DATA_URL)
+            .then(data => { cachedPlayerAnalyticsData = data; })
+            .catch(err => { console.error('Failed to load analytics', err); });
+    } else if (cachedPlayerAnalyticsData && window.AnalyticsRenderer) {
+        const renderer = new window.AnalyticsRenderer('player-analytics-container', cachedPlayerAnalyticsData);
+        renderer.render();
+    }
+}
+
+function backToPlayerPodium() {
+    const analyticsEl = document.getElementById('player-analytics-screen');
+    if (analyticsEl) {
+        analyticsEl.classList.add('hidden');
+    }
+    const endedEl = document.getElementById('ended-screen');
+    if (endedEl) {
+        endedEl.classList.remove('hidden');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 updateAvatarUi();
