@@ -7345,6 +7345,179 @@ html[lang="en"] .room-quiz-filter-tabs .tab-pill {
 }
 
 /* ==========================================================================
+   Public quiz library — search + preview
+   ========================================================================== */
+.public-library-card {
+    padding: 1.35rem 1.5rem 1.5rem !important;
+}
+
+.public-search-form {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    width: 100%;
+    max-width: 640px;
+    margin: 0 0 1.15rem;
+    padding: 0.28rem 0.35rem 0.28rem 0.95rem;
+    background: #ffffff;
+    border: 1.5px solid #111111;
+    border-radius: 9999px;
+    box-shadow: 2px 2px 0 #111111;
+    box-sizing: border-box;
+}
+
+.public-search-icon {
+    flex-shrink: 0;
+    color: #111111;
+}
+
+.public-search-input {
+    flex: 1;
+    min-width: 0;
+    height: 36px;
+    border: none;
+    background: transparent;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #111111;
+    outline: none;
+}
+
+.public-search-input::placeholder {
+    color: var(--text-muted, #888);
+    font-weight: 600;
+}
+
+.public-search-submit {
+    flex-shrink: 0;
+    height: 32px;
+    padding: 0 0.95rem;
+    border: none;
+    border-radius: 9999px;
+    background: #111111;
+    color: #ffffff;
+    font-family: var(--font-mono, monospace);
+    font-size: 0.78rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.public-search-submit:hover {
+    background: var(--orange, #ff4f00);
+}
+
+.public-search-clear {
+    flex-shrink: 0;
+    margin-right: 0.35rem;
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #111111;
+    text-decoration: none;
+}
+
+.public-search-clear:hover {
+    color: var(--orange, #ff4f00);
+}
+
+.public-search-empty {
+    margin: 0.5rem 0 0;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.btn-action-preview {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 32px;
+    padding: 0 0.9rem;
+    background: #ffffff;
+    color: #111111;
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    font-weight: 800;
+    border-radius: var(--radius-pill);
+    text-decoration: none;
+    border: 2px solid #111111;
+    box-shadow: 0 2px 0 #111111;
+    box-sizing: border-box;
+}
+
+.btn-action-preview:hover {
+    background: #111111;
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.public-preview-card {
+    padding: 1.25rem 1.4rem 1.5rem !important;
+}
+
+.public-preview-item {
+    background: #ffffff;
+    border: 1.5px solid rgba(0, 0, 0, 0.08);
+    border-radius: 18px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.public-preview-index {
+    margin-left: auto;
+    font-family: var(--font-mono, monospace);
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--text-muted);
+}
+
+.public-preview-image-wrap {
+    margin: 0.35rem 0 0.75rem;
+}
+
+.public-preview-image {
+    display: block;
+    max-width: 100%;
+    max-height: 280px;
+    object-fit: contain;
+    border-radius: 14px;
+    border: 1.5px solid rgba(0, 0, 0, 0.08);
+    background: #f4f4f0;
+}
+
+.public-preview-options {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.4rem;
+}
+
+.public-preview-options li {
+    padding: 0.45rem 0.7rem;
+    border-radius: 10px;
+    background: #f4f4f0;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.public-preview-options li.is-correct {
+    background: #ecfce5;
+    border: 1.5px solid #26890C;
+    color: #185E07;
+}
+
+@media (max-width: 720px) {
+    .public-search-form {
+        flex-wrap: wrap;
+        border-radius: 18px;
+        padding: 0.55rem 0.7rem;
+    }
+    .public-search-input {
+        width: 100%;
+        flex-basis: 100%;
+    }
+}
+
+/* ==========================================================================
    Click-through safety: hidden overlays / chrome must never steal taps
    ========================================================================== */
 .settings-overlay.hidden,

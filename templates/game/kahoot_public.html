@@ -16,43 +16,103 @@
             <span>{% trans "返回创建题库" %}</span>
         </a>
         <h1 class="studio-main-title">{% trans "公共题库" %}</h1>
-        <p class="form-hint">{% trans "复制其他老师公开的套题到我的题库，可在编辑器中修改" %}</p>
+        <p class="form-hint">{% trans "预览其他老师公开的套题，再复制到我的题库修改" %}</p>
     </div>
     <div class="studio-header-actions">
         {% include "includes/lang_switcher.html" %}
     </div>
 </div>
 
-<div class="card">
+<div class="card card-glass quiz-list-card public-library-card">
+    <form method="get" action="{% url 'kahoot_public_list' %}" class="public-search-form" role="search">
+        <svg class="public-search-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+        </svg>
+        <input type="search" name="q" id="public-quiz-search" class="public-search-input"
+               value="{{ search_query }}" maxlength="80" autocomplete="off"
+               placeholder="{% trans '搜索套题名称、作者或题目内容' %}"
+               aria-label="{% trans '搜索公共题库' %}">
+        <button type="submit" class="public-search-submit">{% trans "搜索" %}</button>
+        {% if search_query %}
+        <a href="{% url 'kahoot_public_list' %}" class="public-search-clear">{% trans "清除" %}</a>
+        {% endif %}
+    </form>
+
     {% if public_quiz_sets %}
-    <table>
-        <thead>
-            <tr>
-                <th>{% trans "名称" %}</th>
-                <th>{% trans "作者" %}</th>
-                <th>{% trans "题数" %}</th>
-                <th>{% trans "操作" %}</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for qs in public_quiz_sets %}
-            <tr>
-                <td><strong>{{ qs.title }}</strong></td>
-                <td>{{ qs.teacher.username }}</td>
-                <td>{{ qs.question_count }}</td>
-                <td>
-                    <form method="post" action="{% url 'kahoot_public_clone' qs.pk %}" class="inline-form">
-                        {% csrf_token %}
-                        <input type="hidden" name="title" value="{{ qs.title }} ({% trans '副本' %})">
-                        <button type="submit" class="btn-link">{% trans "复制到我的题库" %}</button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="recent-table-wrap">
+        <table class="quiz-set-table" id="public-quiz-table">
+            <thead>
+                <tr>
+                    <th style="width: 38%;">{% trans "套题名称" %}</th>
+                    <th style="width: 18%;">{% trans "作者" %}</th>
+                    <th style="width: 14%;">{% trans "试题数量" %}</th>
+                    <th style="width: 30%; text-align: right;">{% trans "操作" %}</th>
+                </tr>
+            </thead>
+            <tbody id="public-quiz-rows">
+                {% for qs in public_quiz_sets %}
+                <tr class="quiz-set-row public-quiz-row">
+                    <td>
+                        <div class="quiz-title-cell">
+                            <span class="row-num-pill">{% if forloop.counter < 10 %}0{% endif %}{{ forloop.counter }}</span>
+                            <a href="{% url 'kahoot_public_preview' qs.pk %}{% if search_query %}?q={{ search_query|urlencode }}{% endif %}"
+                               class="quiz-title-link">
+                                <strong>{{ qs.title }}</strong>
+                            </a>
+                            {% if teacher and qs.teacher_id == teacher.pk %}
+                            <span class="status-chip chip-public-contrast" style="margin-left: 0.35rem;">{% trans "我的" %}</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="time-text-contrast">{{ qs.teacher.display_name|default:qs.teacher.username }}</span>
+                    </td>
+                    <td>
+                        <span class="badge-count-contrast">
+                            <span class="count-num">{{ qs.question_count }}</span>
+                            <span class="count-unit">{% trans "题" %}</span>
+                        </span>
+                    </td>
+                    <td style="text-align: right;">
+                        <div class="table-actions-inline">
+                            <a href="{% url 'kahoot_public_preview' qs.pk %}{% if search_query %}?q={{ search_query|urlencode }}{% endif %}"
+                               class="btn-action-preview">{% trans "预览" %}</a>
+                            {% if teacher and qs.teacher_id == teacher.pk %}
+                            <a href="{% url 'kahoot_editor' qs.pk %}" class="btn-action-edit-contrast">{% trans "去编辑" %}</a>
+                            {% else %}
+                            <form method="post" action="{% url 'kahoot_public_clone' qs.pk %}" class="inline-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="title" value="{{ qs.title }} ({% trans '副本' %})">
+                                <button type="submit" class="btn-action-edit-contrast">{% trans "复制到我的题库" %}</button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
     {% else %}
-    <p class="text-muted-block">{% trans "暂无其他老师公开的套题。" %}</p>
+    <div class="empty-state-wrap">
+        <div class="empty-state-icon">
+            <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="1.75" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="7"></circle>
+                <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+            </svg>
+        </div>
+        {% if search_query %}
+        <h4 class="empty-state-title">{% trans "没有找到匹配的套题" %}</h4>
+        <p class="empty-state-desc">{% blocktranslate with query=search_query %}没有与「{{ query }}」匹配的公开套题，试试其他关键词。{% endblocktranslate %}</p>
+        <a href="{% url 'kahoot_public_list' %}" class="btn-dual-primary" style="max-width: 240px; margin: 0 auto;">
+            {% trans "查看全部公共题库" %}
+        </a>
+        {% else %}
+        <h4 class="empty-state-title">{% trans "暂无公开套题" %}</h4>
+        <p class="empty-state-desc">{% trans "老师把套题设为公开后，就会出现在这里供所有人预览和选用。" %}</p>
+        {% endif %}
+    </div>
     {% endif %}
 </div>
 {% endblock %}

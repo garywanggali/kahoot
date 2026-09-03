@@ -158,10 +158,32 @@ def accessible_quiz_sets(teacher: Teacher):
     ).select_related('teacher').order_by('-created_at')
 
 
-def public_quiz_sets_excluding(teacher: Teacher):
-    return QuizSet.objects.filter(is_public=True).exclude(
+def _filter_quiz_sets_by_search(qs, search: str = ''):
+    term = (search or '').strip()
+    if not term:
+        return qs
+    return qs.filter(
+        Q(title__icontains=term)
+        | Q(teacher__username__icontains=term)
+        | Q(teacher__display_name__icontains=term)
+        | Q(quiz_set_questions__question__text__icontains=term)
+        | Q(quiz_set_questions__question__option_a__icontains=term)
+        | Q(quiz_set_questions__question__option_b__icontains=term)
+        | Q(quiz_set_questions__question__option_c__icontains=term)
+        | Q(quiz_set_questions__question__option_d__icontains=term)
+    ).distinct()
+
+
+def public_quiz_sets_excluding(teacher: Teacher, search: str = ''):
+    qs = QuizSet.objects.filter(is_public=True).exclude(
         teacher=teacher,
-    ).select_related('teacher').order_by('-created_at')
+    ).select_related('teacher')
+    return _filter_quiz_sets_by_search(qs, search).order_by('-created_at')
+
+
+def all_public_quiz_sets(search: str = ''):
+    qs = QuizSet.objects.filter(is_public=True).select_related('teacher')
+    return _filter_quiz_sets_by_search(qs, search).order_by('-created_at')
 
 
 def can_edit_quiz_set(teacher: Teacher, quiz_set: QuizSet) -> bool:

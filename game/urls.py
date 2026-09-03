@@ -17,6 +17,7 @@ urlpatterns = [
     path('teacher/kahoot/import/', views.kahoot_import, name='kahoot_import'),
     path('teacher/kahoot/import/template/', views.kahoot_import_template, name='kahoot_import_template'),
     path('teacher/kahoot/public/', views.kahoot_public_list, name='kahoot_public_list'),
+    path('teacher/kahoot/public/<int:pk>/preview/', views.kahoot_public_preview, name='kahoot_public_preview'),
     path('teacher/kahoot/public/<int:pk>/clone/', views.kahoot_public_clone, name='kahoot_public_clone'),
     path('teacher/kahoot/<int:pk>/edit/', views.kahoot_editor, name='kahoot_editor'),
     path('teacher/kahoot/<int:pk>/meta/', views.kahoot_editor_meta, name='kahoot_editor_meta'),

@@ -50,6 +50,7 @@ from .question_save import (
 )
 from .teacher_auth import (
     accessible_quiz_sets,
+    all_public_quiz_sets,
     apply_teacher_settings,
     can_edit_question,
     can_edit_quiz_set,
@@ -505,6 +506,8 @@ def kahoot_start(request):
 
     title = request.POST.get('title', '').strip()
     action = request.POST.get('action', 'manual')
+    if action == 'public':
+        return redirect('kahoot_public_list')
     if not title:
         messages.error(request, _('请填写题库名称'))
         request.session['kahoot_pending_title'] = title
@@ -516,8 +519,6 @@ def kahoot_start(request):
         return redirect('kahoot_ai')
     elif action == 'excel':
         return redirect('kahoot_import')
-    elif action == 'public':
-        return redirect('question_list')
 
     # manual action
     quiz_set = QuizSet.objects.create(title=title[:200], teacher=teacher)
@@ -728,9 +729,29 @@ def kahoot_public_list(request):
     teacher, redirect_resp = require_teacher_or_redirect(request)
     if redirect_resp:
         return redirect_resp
-    public_sets = public_quiz_sets_excluding(teacher)
+    search_query = (request.GET.get('q') or '').strip()
+    public_sets = all_public_quiz_sets(search=search_query)
     return render(request, 'game/kahoot_public.html', {
         'public_quiz_sets': public_sets,
+        'search_query': search_query,
+        'teacher': teacher,
+    })
+
+
+def kahoot_public_preview(request, pk):
+    teacher, redirect_resp = require_teacher_or_redirect(request)
+    if redirect_resp:
+        return redirect_resp
+    quiz_set = get_object_or_404(QuizSet, pk=pk)
+    if not can_use_quiz_set(teacher, quiz_set):
+        messages.error(request, _('无权预览该套题'))
+        return redirect('kahoot_public_list')
+    search_query = (request.GET.get('q') or '').strip()
+    return render(request, 'game/kahoot_public_preview.html', {
+        'quiz_set': quiz_set,
+        'questions': quiz_set.get_questions(),
+        'is_owner': can_edit_quiz_set(teacher, quiz_set),
+        'search_query': search_query,
     })
 
 

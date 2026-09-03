@@ -1159,8 +1159,124 @@ class ClickThroughSafetyTests(TestCase):
         html = render_to_string('base.html', request=request)
         self.assertIn('name="csrf-token"', html)
         self.assertIn('csrfmiddlewaretoken', html)
-        self.assertIn('style.css?v=468', html)
+        self.assertIn('style.css?v=469', html)
         self.assertIn('i18n.js?v=8', html)
         self.assertIn('data-action="toggle-lang"', html)
+
+
+class PublicQuizLibraryTests(TestCase):
+    def setUp(self):
+        from .models import Question, QuizSet, QuizSetQuestion, Teacher
+
+        self.owner = Teacher.objects.create(username='pub_owner', display_name='地理老师')
+        self.owner.set_password('password123')
+        self.owner.save()
+        self.viewer = Teacher.objects.create(username='pub_viewer')
+        self.viewer.set_password('password123')
+        self.viewer.save()
+
+        self.quiz = QuizSet.objects.create(
+            title='亚洲地理公开课',
+            teacher=self.owner,
+            is_public=True,
+        )
+        self.question = Question.objects.create(
+            text='中国的首都是？',
+            question_type=Question.TYPE_SINGLE,
+            option_a='北京',
+            option_b='上海',
+            option_c='广州',
+            option_d='深圳',
+            correct_option='A',
+            teacher=self.owner,
+        )
+        QuizSetQuestion.objects.create(quiz_set=self.quiz, question=self.question, order=0)
+
+        self.private = QuizSet.objects.create(
+            title='私有套题',
+            teacher=self.owner,
+            is_public=False,
+        )
+        session = self.client.session
+        session['teacher_id'] = self.viewer.pk
+        session.save()
+
+    def test_list_shows_search_and_preview(self):
+        from django.urls import reverse
+
+        resp = self.client.get(reverse('kahoot_public_list'))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'id="public-quiz-search"')
+        self.assertContains(resp, '亚洲地理公开课')
+        self.assertContains(resp, reverse('kahoot_public_preview', args=[self.quiz.pk]))
+        self.assertContains(resp, '预览')
+        self.assertNotContains(resp, '私有套题')
+
+    def test_search_matches_title_author_and_question_text(self):
+        from django.urls import reverse
+
+        url = reverse('kahoot_public_list')
+        by_title = self.client.get(url, {'q': '亚洲地理'})
+        self.assertContains(by_title, '亚洲地理公开课')
+
+        by_author = self.client.get(url, {'q': '地理老师'})
+        self.assertContains(by_author, '亚洲地理公开课')
+
+        by_stem = self.client.get(url, {'q': '首都'})
+        self.assertContains(by_stem, '亚洲地理公开课')
+
+        by_option = self.client.get(url, {'q': '北京'})
+        self.assertContains(by_option, '亚洲地理公开课')
+
+        miss = self.client.get(url, {'q': '不存在的关键词xyz'})
+        self.assertNotContains(miss, '亚洲地理公开课')
+        self.assertContains(miss, '没有找到匹配的套题')
+
+    def test_preview_shows_questions_and_blocks_private(self):
+        from django.urls import reverse
+
+        resp = self.client.get(reverse('kahoot_public_preview', args=[self.quiz.pk]))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, '中国的首都是？')
+        self.assertContains(resp, '北京')
+        self.assertContains(resp, '复制到我的题库')
+        self.assertContains(resp, 'is-correct')
+
+        blocked = self.client.get(reverse('kahoot_public_preview', args=[self.private.pk]))
+        self.assertEqual(blocked.status_code, 302)
+        self.assertEqual(blocked.url, reverse('kahoot_public_list'))
+
+    def test_wizard_public_action_opens_marketplace(self):
+        from django.urls import reverse
+
+        resp = self.client.post(reverse('kahoot_start'), {
+            'action': 'public',
+            'title': '随便起的名字',
+        })
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.url, reverse('kahoot_public_list'))
+
+    def test_seed_command_creates_marketplace_quizzes(self):
+        from io import StringIO
+
+        from django.core.management import call_command
+        from django.urls import reverse
+
+        from .models import QuizSet
+
+        out = StringIO()
+        call_command('seed_public_quizzes', stdout=out)
+        call_command('seed_public_quizzes', stdout=out)
+        self.assertGreaterEqual(
+            QuizSet.objects.filter(is_public=True, teacher__username='kahoot_market').count(),
+            5,
+        )
+        resp = self.client.get(reverse('kahoot_public_list'))
+        self.assertContains(resp, '世界地理入门')
+        self.assertContains(resp, '小学数学口算')
+        self.assertContains(resp, '中国历史常识')
+        self.assertContains(resp, '科学判断小测验')
+        self.assertContains(resp, '趣味英语词汇')
+        self.assertContains(resp, '题库精选')
 
 

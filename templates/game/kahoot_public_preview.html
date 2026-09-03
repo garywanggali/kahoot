@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% blocktranslate with title=quiz_set.title %}预览 {{ title }} - 公共题库{% endblocktranslate %}{% endblock %}
+
+{% block global_topbar %}{% endblock %}
+
+{% block content %}
+<div class="studio-header-bar">
+    <div class="studio-title-group">
+        <a href="{% url 'kahoot_public_list' %}{% if search_query %}?q={{ search_query|urlencode }}{% endif %}" class="btn-back">
+            <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>{% trans "返回公共题库" %}</span>
+        </a>
+        <h1 class="studio-main-title">{{ quiz_set.title }}</h1>
+        <p class="form-hint">
+            {% blocktranslate with author=quiz_set.teacher.display_name|default:quiz_set.teacher.username n=questions|length %}作者 {{ author }} · {{ n }} 道题{% endblocktranslate %}
+        </p>
+    </div>
+    <div class="studio-header-actions">
+        {% include "includes/lang_switcher.html" %}
+        {% if is_owner %}
+        <a href="{% url 'kahoot_editor' quiz_set.pk %}" class="btn-action-edit-contrast">{% trans "去编辑" %}</a>
+        {% else %}
+        <form method="post" action="{% url 'kahoot_public_clone' quiz_set.pk %}" class="inline-form">
+            {% csrf_token %}
+            <input type="hidden" name="title" value="{{ quiz_set.title }} ({% trans '副本' %})">
+            <button type="submit" class="btn-action-edit-contrast">{% trans "复制到我的题库" %}</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card card-glass public-preview-card">
+    {% if questions %}
+    <div class="kahoot-preview-list public-preview-list">
+        {% for q in questions %}
+        <article class="kahoot-preview-item public-preview-item">
+            <div class="kahoot-preview-meta">
+                <span class="kahoot-preview-type">
+                    {% if q.question_type == 'multiple' %}{% trans "多选" %}
+                    {% elif q.question_type == 'judgment' %}{% trans "判断" %}
+                    {% elif q.question_type == 'short_answer' %}{% trans "简答" %}
+                    {% elif q.question_type == 'word_cloud' %}{% trans "词云" %}
+                    {% elif q.question_type == 'explanation' %}{% trans "解释" %}
+                    {% else %}{% trans "单选" %}{% endif %}
+                </span>
+                {% if q.question_type != 'explanation' %}
+                <span class="kahoot-preview-time">{{ q.time_limit }}s</span>
+                {% endif %}
+                <span class="public-preview-index">{% blocktranslate with n=forloop.counter %}第 {{ n }} 题{% endblocktranslate %}</span>
+            </div>
+            {% if q.text %}
+            <p class="kahoot-preview-text">{{ q.text }}</p>
+            {% endif %}
+            {% if q.image %}
+            <div class="public-preview-image-wrap">
+                <img src="{{ q.image.url }}" alt="{% trans '题目图片' %}" class="public-preview-image">
+            </div>
+            {% endif %}
+            {% if q.question_type == 'short_answer' %}
+            <p class="kahoot-preview-answer">{% trans "参考答案：" %}{{ q.option_a }}</p>
+            {% elif q.question_type == 'word_cloud' %}
+            <p class="kahoot-preview-answer">{% trans "词云题：学生提交文字后实时汇总，无标准答案。" %}</p>
+            {% elif q.question_type == 'explanation' %}
+            <p class="kahoot-preview-answer">{% trans "解释页：上课铺满大屏，学生不看、不作答。" %}</p>
+            {% elif q.question_type == 'judgment' %}
+            <ul class="public-preview-options">
+                <li class="{% if q.correct_option == 'A' %}is-correct{% endif %}">A. {{ q.option_a }}</li>
+                <li class="{% if q.correct_option == 'B' %}is-correct{% endif %}">B. {{ q.option_b }}</li>
+            </ul>
+            {% else %}
+            <ul class="public-preview-options">
+                <li class="{% if 'A' in q.correct_option %}is-correct{% endif %}">A. {{ q.option_a }}</li>
+                <li class="{% if 'B' in q.correct_option %}is-correct{% endif %}">B. {{ q.option_b }}</li>
+                <li class="{% if 'C' in q.correct_option %}is-correct{% endif %}">C. {{ q.option_c }}</li>
+                <li class="{% if 'D' in q.correct_option %}is-correct{% endif %}">D. {{ q.option_d }}</li>
+            </ul>
+            {% endif %}
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted-block">{% trans "这套题还没有题目。" %}</p>
+    {% endif %}
+</div>
+{% endblock %}
