@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block body_attrs %}data-turbo="false"{% endblock %}
 
@@ -7,46 +8,76 @@
 {% block content %}
 <div id="app" class="play-app">
     <div id="waiting-screen" class="play-waiting">
-        <div class="logo logo-sm">Ka<span>hoo</span>t!</div>
-
-        <!-- Kahoot 大厅个性化形象定制器 -->
-        <div class="lobby-avatar-card">
-            <div class="lobby-avatar-preview-wrap">
-                <div id="lobby-avatar-preview" class="lobby-avatar-preview">
-                    <!-- SVG 头像在此渲染 -->
-                </div>
-                <button type="button" class="btn-avatar-random" onclick="randomizeAvatar()" title="随机换装">
-                    <span>🎲 随机换装</span>
-                </button>
+        <!-- 顶部房间状态条 -->
+        <div class="lobby-header-bar">
+            <div class="lobby-badge-item">
+                <span class="lobby-badge-label">房间号</span>
+                <span class="lobby-badge-value">{{ room.code }}</span>
             </div>
-
-            <div class="lobby-avatar-customizer">
-                <!-- 1. 脸部表情选择 -->
-                <div class="avatar-picker-row">
-                    <span class="picker-label">😀 脸部表情</span>
-                    <div class="picker-control">
-                        <button type="button" class="picker-btn" onclick="cycleFace(-1)" aria-label="上一个脸部表情">◀</button>
-                        <span id="picker-face-name" class="picker-val-name">元气微笑</span>
-                        <button type="button" class="picker-btn" onclick="cycleFace(1)" aria-label="下一个脸部表情">▶</button>
-                    </div>
-                </div>
-
-                <!-- 2. 发型样式选择 -->
-                <div class="avatar-picker-row">
-                    <span class="picker-label">💇 发型样式</span>
-                    <div class="picker-control">
-                        <button type="button" class="picker-btn" onclick="cycleHair(-1)" aria-label="上一个发型样式">◀</button>
-                        <span id="picker-hair-name" class="picker-val-name">动感短发</span>
-                        <button type="button" class="picker-btn" onclick="cycleHair(1)" aria-label="下一个发型样式">▶</button>
-                    </div>
-                </div>
+            <div class="lobby-badge-item">
+                <span class="lobby-badge-label">玩家</span>
+                <span class="lobby-badge-value">{{ nickname }}</span>
             </div>
-            <div class="lobby-customizer-hint">💡 自定义形象将实时在老师大屏及终场颁奖台上亮相！</div>
+            <div class="lobby-badge-item lobby-badge-status">
+                <span class="status-indicator-dot"></span>
+                <span>已连线 <strong id="player-count">0</strong> 人</span>
+            </div>
         </div>
 
-        <p class="player-count">你是 <strong>{{ nickname }}</strong> | 房间号: <strong>{{ room.code }}</strong></p>
-        <h2 class="page-title section-gap-sm">等待老师开始游戏...</h2>
-        <div class="player-count">已连线玩家: <span id="player-count">0</span> 人</div>
+        <!-- 核心等待卡片 (充满且简洁，无任何 emoji) -->
+        <div class="lobby-main-stage">
+            <div class="lobby-avatar-card">
+                <div class="lobby-avatar-preview-wrap">
+                    <div id="lobby-avatar-preview" class="lobby-avatar-preview">
+                        <!-- SVG 头像在此渲染 -->
+                    </div>
+                    <button type="button" class="btn-avatar-random" onclick="randomizeAvatar()" title="随机换装">
+                        <svg class="btn-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                        </svg>
+                        <span>随机换装</span>
+                    </button>
+                </div>
+
+                <div class="lobby-avatar-customizer">
+                    <!-- 1. 脸部表情选择 -->
+                    <div class="avatar-picker-row">
+                        <span class="picker-label">表情</span>
+                        <div class="picker-control">
+                            <button type="button" class="picker-btn" onclick="cycleFace(-1)" aria-label="上一个表情">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                            </button>
+                            <span id="picker-face-name" class="picker-val-name">元气微笑</span>
+                            <button type="button" class="picker-btn" onclick="cycleFace(1)" aria-label="下一个表情">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 2. 发型样式选择 -->
+                    <div class="avatar-picker-row">
+                        <span class="picker-label">发型</span>
+                        <div class="picker-control">
+                            <button type="button" class="picker-btn" onclick="cycleHair(-1)" aria-label="上一个发型">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                            </button>
+                            <span id="picker-hair-name" class="picker-val-name">动感短发</span>
+                            <button type="button" class="picker-btn" onclick="cycleHair(1)" aria-label="下一个发型">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 等待状态提示 -->
+            <div class="lobby-waiting-status">
+                <h2 class="lobby-waiting-title">等待老师开始游戏</h2>
+                <div class="waiting-dots-pulse">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div id="play-screen" class="play-screen hidden">
@@ -69,8 +100,22 @@
         <button type="button" id="submit-multi-btn" class="btn btn-primary submit-multi-btn hidden"
                 onclick="submitMultiAnswer()">提交答案</button>
 
-        <p id="answer-feedback" class="answer-feedback"></p>
-        <p id="inter-question-hint" class="inter-question-hint hidden">等待下一题...</p>
+        <!-- 核心答题反馈与转场舞台 (全屏居中卡片，简洁大气，无 emoji) -->
+        <div id="feedback-stage" class="play-feedback-stage hidden">
+            <div class="feedback-card" id="feedback-card">
+                <div class="feedback-icon" id="feedback-icon"></div>
+                <div class="feedback-body">
+                    <div id="answer-feedback" class="feedback-title"></div>
+                    <div id="answer-detail" class="feedback-detail hidden"></div>
+                </div>
+                <div id="inter-question-hint" class="inter-question-hint hidden">
+                    <div class="waiting-dots-pulse">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <span>等待下一题...</span>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div id="ended-screen" class="play-ended hidden">
@@ -141,7 +186,7 @@ function updateAvatarUi() {
     if (!window.AvatarSystem) return;
     const preview = document.getElementById('lobby-avatar-preview');
     if (preview) {
-        preview.innerHTML = window.AvatarSystem.renderSvg(myAvatar, 120, {
+        preview.innerHTML = window.AvatarSystem.renderSvg(myAvatar, 140, {
             nickname: NICKNAME,
             className: 'lobby-avatar-bounce-svg',
         });
@@ -322,7 +367,18 @@ function hideQuestionInputUi() {
 
 function showInterQuestionWaiting() {
     hideQuestionInputUi();
-    document.getElementById('inter-question-hint').classList.remove('hidden');
+    const stage = document.getElementById('feedback-stage');
+    const titleEl = document.getElementById('answer-feedback');
+    if (!stage || stage.classList.contains('hidden') || !titleEl.textContent.trim()) {
+        renderFeedbackCard({
+            type: 'waiting',
+            title: '请准备',
+            showWaitingHint: true,
+        });
+    } else {
+        const hint = document.getElementById('inter-question-hint');
+        if (hint) hint.classList.remove('hidden');
+    }
 }
 
 function applyState(state) {
@@ -344,9 +400,6 @@ function applyState(state) {
     if (state.status === 'ended') {
         document.getElementById('ended-screen').classList.remove('hidden');
         clearTimer();
-<<<<<<< HEAD
-        renderEndedPlayerInfo(state.leaderboard);
-=======
         if (typeof renderAwardsCeremony === 'function') {
             renderAwardsCeremony(
                 state.leaderboard,
@@ -355,7 +408,7 @@ function applyState(state) {
                 'player-final-rankings-title'
             );
         }
->>>>>>> de6a39f (feat: Unify choice-box hover accents, full-screen immersive player answer buttons, enhanced feedback animations, and student-side podium ceremony)
+        renderEndedPlayerInfo(state.leaderboard);
     } else if (state.status === 'playing' && state.question) {
         document.getElementById('play-screen').classList.remove('hidden');
         showQuestion(state);
@@ -384,8 +437,7 @@ function showQuestion(state) {
         lastAnswerResult = { answered: false, is_correct: false, points: 0 };
         questionStartTime = Date.now();
         clearResultRevealTimer();
-        document.getElementById('answer-feedback').textContent = '';
-        document.getElementById('inter-question-hint').classList.add('hidden');
+        hideFeedbackStage();
     }
 
     const isChoice = CHOICE_TYPES.has(q.question_type);
@@ -534,6 +586,92 @@ function lockAnswerUi() {
     if (textBtn) textBtn.disabled = true;
 }
 
+function renderFeedbackCard(opts) {
+    const stage = document.getElementById('feedback-stage');
+    const card = document.getElementById('feedback-card');
+    const iconEl = document.getElementById('feedback-icon');
+    const titleEl = document.getElementById('answer-feedback');
+    const detailEl = document.getElementById('answer-detail');
+    const hintEl = document.getElementById('inter-question-hint');
+
+    const type = opts.type || 'waiting';
+    card.className = 'feedback-card' + (type ? ` card-${type}` : '');
+
+    let iconSvg = '';
+    if (type === 'correct') {
+        iconSvg = `
+            <div class="feedback-icon-circle icon-correct">
+                <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 6L9 17l-5-5"/>
+                </svg>
+            </div>
+        `;
+    } else if (type === 'wrong') {
+        iconSvg = `
+            <div class="feedback-icon-circle icon-wrong">
+                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+            </div>
+        `;
+    } else if (type === 'timeup') {
+        iconSvg = `
+            <div class="feedback-icon-circle icon-timeup">
+                <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+            </div>
+        `;
+    } else if (type === 'submitted') {
+        iconSvg = `
+            <div class="feedback-icon-circle icon-submitted">
+                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 2L11 13"/>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+            </div>
+        `;
+    } else {
+        iconSvg = `
+            <div class="feedback-icon-circle icon-waiting">
+                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 14 14"/>
+                </svg>
+            </div>
+        `;
+    }
+    iconEl.innerHTML = iconSvg;
+
+    let titleHtml = `<span class="feedback-text-main">${escapeHtml(opts.title || '')}</span>`;
+    if (opts.points !== undefined && opts.points !== null && opts.points > 0) {
+        titleHtml += ` <span class="feedback-points-pill">+${opts.points}</span>`;
+    }
+    titleEl.innerHTML = titleHtml;
+
+    if (opts.detail) {
+        detailEl.textContent = opts.detail;
+        detailEl.classList.remove('hidden');
+    } else {
+        detailEl.textContent = '';
+        detailEl.classList.add('hidden');
+    }
+
+    if (opts.showWaitingHint) {
+        hintEl.classList.remove('hidden');
+    } else {
+        hintEl.classList.add('hidden');
+    }
+
+    stage.classList.remove('hidden');
+}
+
+function hideFeedbackStage() {
+    const stage = document.getElementById('feedback-stage');
+    if (stage) stage.classList.add('hidden');
+}
+
 function showAnswerFeedback(data) {
     lastAnswerResult = {
         answered: true,
@@ -541,11 +679,26 @@ function showAnswerFeedback(data) {
         points: data.points,
         no_score: data.no_score,
     };
-    const fb = document.getElementById('answer-feedback');
+    hideQuestionInputUi();
     if (data.no_score) {
-        fb.textContent = '已提交';
+        renderFeedbackCard({
+            type: 'submitted',
+            title: '答案已提交',
+            showWaitingHint: true,
+        });
+    } else if (data.is_correct) {
+        renderFeedbackCard({
+            type: 'correct',
+            title: '回答正确',
+            points: data.points,
+            showWaitingHint: true,
+        });
     } else {
-        fb.textContent = data.is_correct ? `正确 +${data.points}` : '错误';
+        renderFeedbackCard({
+            type: 'wrong',
+            title: '回答错误',
+            showWaitingHint: true,
+        });
     }
 }
 
@@ -562,26 +715,40 @@ function showQuestionResult(state) {
     hideQuestionInputUi();
     lockAnswerUi();
 
-    const correctKeys = getCorrectKeys(state);
-    if (correctKeys.length) {
-        highlightCorrectAnswers(correctKeys);
-    }
-
-    const fb = document.getElementById('answer-feedback');
     const q = state.question;
     const isWordCloud = q && q.question_type === 'word_cloud';
     const correctLabel = formatCorrectLabel(q);
 
     if (lastAnswerResult.answered) {
         if (isWordCloud || lastAnswerResult.no_score) {
-            fb.textContent = '已提交';
+            renderFeedbackCard({
+                type: 'submitted',
+                title: '答案已提交',
+                detail: correctLabel ? `正确答案：${correctLabel}` : '',
+                showWaitingHint: true,
+            });
         } else if (lastAnswerResult.is_correct) {
-            fb.textContent = `回答正确 +${lastAnswerResult.points}`;
+            renderFeedbackCard({
+                type: 'correct',
+                title: '回答正确',
+                points: lastAnswerResult.points,
+                showWaitingHint: true,
+            });
         } else {
-            fb.textContent = correctLabel ? `回答错误，正确答案：${correctLabel}` : '回答错误';
+            renderFeedbackCard({
+                type: 'wrong',
+                title: '回答错误',
+                detail: correctLabel ? `正确答案：${correctLabel}` : '',
+                showWaitingHint: true,
+            });
         }
     } else {
-        fb.textContent = correctLabel ? `时间到，正确答案：${correctLabel}` : '时间到';
+        renderFeedbackCard({
+            type: 'timeup',
+            title: '时间到',
+            detail: correctLabel ? `正确答案：${correctLabel}` : '',
+            showWaitingHint: true,
+        });
     }
 
     resultRevealTimer = setTimeout(() => {
@@ -689,7 +856,7 @@ function renderEndedPlayerInfo(leaderboard) {
         });
     }
     if (info && me) {
-        const medalLabels = ['🥇 冠军', '🥈 亚军', '🥉 季军'];
+        const medalLabels = ['冠军', '亚军', '季军'];
         const rankStr = me.rank <= 3 ? medalLabels[me.rank - 1] : `第 ${me.rank} 名`;
         info.innerHTML = `
             <div class="ended-player-stat">
