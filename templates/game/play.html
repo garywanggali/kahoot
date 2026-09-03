@@ -140,10 +140,29 @@
 <div class="danmaku-rail">
     <div id="danmaku-layer" class="danmaku-layer"></div>
 </div>
-<div id="danmaku-bar" class="danmaku-bar hidden">
-    <input type="text" id="danmaku-input" class="danmaku-input" maxlength="40"
-           placeholder="发弹幕..." autocomplete="off">
-    <button type="button" class="btn btn-outline danmaku-send" onclick="sendDanmaku()">发送</button>
+
+<!-- 浮动收起式弹幕控制器 (不占据主屏幕高度空间) -->
+<div id="danmaku-container" class="danmaku-container hidden">
+    <!-- 展开后的输入气泡 -->
+    <div id="danmaku-drawer" class="danmaku-drawer hidden">
+        <input type="text" id="danmaku-input" class="danmaku-input" maxlength="40"
+               placeholder="输入弹幕..." autocomplete="off">
+        <button type="button" class="btn danmaku-send-btn" onclick="sendDanmaku()">发送</button>
+        <button type="button" class="danmaku-close-btn" onclick="toggleDanmakuDrawer(false)" title="收起">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+    </div>
+
+    <!-- 默认浮动触发胶囊 -->
+    <button type="button" id="danmaku-toggle-btn" class="danmaku-toggle-btn" onclick="toggleDanmakuDrawer(true)" title="发弹幕">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span>发弹幕</span>
+    </button>
 </div>
 {% endblock %}
 
@@ -780,13 +799,33 @@ function highlightCorrectAnswers(correctKeys) {
     });
 }
 
-function updateDanmakuBar(status) {
-    const bar = document.getElementById('danmaku-bar');
-    if (!joinedReady || status === 'ended') {
-        bar.classList.add('hidden');
-        danmakuEnabled = false;
+function toggleDanmakuDrawer(forceOpen) {
+    const drawer = document.getElementById('danmaku-drawer');
+    const toggleBtn = document.getElementById('danmaku-toggle-btn');
+    const input = document.getElementById('danmaku-input');
+    if (!drawer) return;
+
+    const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : drawer.classList.contains('hidden');
+    if (shouldOpen) {
+        drawer.classList.remove('hidden');
+        if (toggleBtn) toggleBtn.classList.add('hidden');
+        if (input) {
+            setTimeout(() => input.focus(), 60);
+        }
     } else {
-        bar.classList.remove('hidden');
+        drawer.classList.add('hidden');
+        if (toggleBtn) toggleBtn.classList.remove('hidden');
+    }
+}
+
+function updateDanmakuBar(status) {
+    const container = document.getElementById('danmaku-container');
+    if (!joinedReady || status === 'ended') {
+        if (container) container.classList.add('hidden');
+        danmakuEnabled = false;
+        toggleDanmakuDrawer(false);
+    } else {
+        if (container) container.classList.remove('hidden');
         danmakuEnabled = true;
     }
 }
@@ -803,6 +842,7 @@ function showDanmaku(data) {
 
 function showDanmakuHint(message) {
     const input = document.getElementById('danmaku-input');
+    if (!input) return;
     const old = input.placeholder;
     input.placeholder = message;
     setTimeout(() => { input.placeholder = old; }, 2000);
@@ -811,16 +851,21 @@ function showDanmakuHint(message) {
 function sendDanmaku() {
     if (!danmakuEnabled) return;
     const input = document.getElementById('danmaku-input');
+    if (!input) return;
     const text = input.value.trim();
     if (!text) return;
     sendWs({ action: 'send_danmaku', text });
     input.value = '';
+    toggleDanmakuDrawer(false);
 }
 
 document.getElementById('danmaku-input').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
         e.preventDefault();
         sendDanmaku();
+    } else if (e.key === 'Escape') {
+        e.preventDefault();
+        toggleDanmakuDrawer(false);
     }
 });
 

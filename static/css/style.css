@@ -1693,14 +1693,21 @@ button.kahoot-choice-button:focus-visible {
     display: none !important;
 }
 
-/* ==========================================================================
-   Player Play Screen — 全屏沉浸式答题布局 (Kahoot-Style Immersive)
-   ========================================================================== */
+body:has(.play-app) {
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+}
+
 body:has(.play-app) .container {
     max-width: 100% !important;
-    padding: 0.5rem 1.25rem 2rem !important;
-    min-height: 100vh;
+    padding: 0.65rem 1rem !important;
+    height: 100vh;
+    max-height: 100vh;
     box-sizing: border-box;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .play-app {
@@ -1708,16 +1715,23 @@ body:has(.play-app) .container {
     max-width: 100%;
     margin: 0;
     padding: 0;
-    min-height: calc(100vh - 1rem);
-    overflow-x: hidden;
+    height: 100%;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .play-screen {
     display: flex;
     flex-direction: column;
-    min-height: calc(100vh - 4rem);
-    padding: 1rem 1.25rem 0;
+    height: 100%;
+    max-height: 100%;
+    padding: 0.25rem 0.25rem 0.5rem;
     box-sizing: border-box;
+    overflow: hidden;
+    flex: 1;
+    min-height: 0;
 }
 
 .play-options.hidden {
@@ -1727,18 +1741,18 @@ body:has(.play-app) .container {
 /* 题号标签 */
 .play-screen .question-number {
     font-family: var(--font-mono);
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 800;
     color: var(--orange);
     text-align: center;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.35rem;
     letter-spacing: 0.1em;
     flex-shrink: 0;
 }
 
 /* 进度条 */
 .play-screen .timer-bar {
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
     flex-shrink: 0;
 }
 
@@ -1753,20 +1767,21 @@ body:has(.play-app) .container {
     display: none;
 }
 
-/* 选项容器 — 核心全屏 2×2 格栅 */
+/* 选项容器 — 核心全屏 2×2 格栅 (撑满剩余高度，无滚动) */
 .play-screen #options-container {
     flex: 1;
     display: grid !important;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
-    gap: 0.85rem;
+    gap: 0.75rem;
     min-height: 0;
-    margin-top: 0;
+    height: 100%;
+    margin: 0;
 }
 
 @media (max-width: 480px) {
     .play-screen #options-container {
-        gap: 0.65rem;
+        gap: 0.5rem;
     }
 }
 
@@ -2108,28 +2123,126 @@ body:has(.play-app) .container {
     to { transform: translateX(-120vw); opacity: 0.85; }
 }
 
-.danmaku-bar {
+/* ==========================================================================
+   Floating Collapsible Danmaku System (浮动收起式弹幕控制器)
+   ========================================================================== */
+.danmaku-container {
     position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 60;
+    right: 1.25rem;
+    bottom: 1.25rem;
+    z-index: 90;
     display: flex;
+    flex-direction: column;
+    align-items: flex-end;
     gap: 0.5rem;
-    align-items: center;
-    padding: 0.65rem 1rem;
-    background: #fff;
-    border-top: 1.5px solid var(--border-light);
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+    pointer-events: auto;
 }
 
-.danmaku-input {
+.danmaku-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1.5px solid rgba(0, 0, 0, 0.12);
+    border-radius: var(--radius-pill, 9999px);
+    color: #18181b;
+    font-family: var(--font-hero);
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+    user-select: none;
+}
+
+.danmaku-toggle-btn:hover {
+    background: #ffffff;
+    border-color: #18181b;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+.danmaku-drawer {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1.5px solid rgba(0, 0, 0, 0.12);
+    border-radius: var(--radius-pill, 9999px);
+    padding: 0.35rem 0.45rem 0.35rem 0.9rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.06);
+    animation: danmakuSlideIn 0.2s cubic-bezier(0.2, 0, 0, 1) forwards;
+    max-width: calc(100vw - 2.5rem);
+    width: 340px;
+}
+
+@keyframes danmakuSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.danmaku-drawer .danmaku-input {
     flex: 1;
     min-width: 0;
-    padding: 0.65rem 1rem;
-    border: 1.5px solid var(--border-light);
-    border-radius: var(--radius-pill);
-    font-size: 1rem;
+    border: none;
+    background: transparent;
+    padding: 0.4rem 0.25rem;
+    font-size: 0.92rem;
+    color: #18181b;
+    outline: none;
+}
+
+.danmaku-drawer .danmaku-input::placeholder {
+    color: #a1a1aa;
+}
+
+.danmaku-send-btn {
+    padding: 0.45rem 1rem !important;
+    border-radius: var(--radius-pill, 9999px) !important;
+    font-size: 0.85rem !important;
+    font-weight: 700 !important;
+    white-space: nowrap;
+    border: none !important;
+    background: var(--text-black, #18181b) !important;
+    color: #ffffff !important;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.danmaku-send-btn:hover {
+    background: #000000 !important;
+    transform: scale(1.03);
+}
+
+.danmaku-close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: #f4f4f5;
+    color: #71717a;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+
+.danmaku-close-btn:hover {
+    background: #e4e4e7;
+    color: #18181b;
 }
 
 .excel-import-rules {
