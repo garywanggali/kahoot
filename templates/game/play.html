@@ -170,10 +170,13 @@
 
 <div id="question-countdown" class="q-countdown hidden" aria-live="assertive" aria-atomic="true" aria-hidden="true">
     <div class="q-countdown-bg"></div>
-    <div class="q-countdown-ring" aria-hidden="true"></div>
-    <p class="q-countdown-meta"></p>
-    <div class="q-countdown-num">3</div>
-    <p class="q-countdown-hint"></p>
+    <div class="q-countdown-card">
+        <span class="q-countdown-meta"></span>
+        <div class="q-countdown-num-box">
+            <span class="q-countdown-num">3</span>
+        </div>
+        <span class="q-countdown-hint"></span>
+    </div>
 </div>
 
 <div class="danmaku-rail">
@@ -208,7 +211,7 @@
 {% block extra_js %}
 <script src="{% static 'js/awards.js' %}?v=6"></script>
 <script src="{% static 'js/analytics.js' %}?v=4"></script>
-<script src="{% static 'js/question_countdown.js' %}?v=1"></script>
+<script src="{% static 'js/question_countdown.js' %}?v=2"></script>
 <script>
 function _t(key, ...args) {
     if (typeof window !== 'undefined' && window.t) {

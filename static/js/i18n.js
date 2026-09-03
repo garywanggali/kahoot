@@ -121,9 +121,9 @@
         'play.your_rank_score': '第 %s 名 · 总分 %s',
         'play.danmaku_send': '发送',
         'play.danmaku_btn': '发弹幕',
-        'play.danmaku_placeholder': '输入弹幕...',
-        'countdown.get_ready': '准备',
-        'countdown.go': '开始!',
+        'countdown.get_ready': '准备答题',
+        'countdown.go': 'GO!',
+        'countdown.go_hint': '开始抢答！',
 
         // 反馈卡片状态
         'fb.correct': '对',
@@ -410,9 +410,9 @@
         'play.your_rank_score': 'Rank #%s · %s pts',
         'play.danmaku_send': 'Send',
         'play.danmaku_btn': 'Danmaku',
-        'play.danmaku_placeholder': 'Send a message...',
         'countdown.get_ready': 'Get Ready',
         'countdown.go': 'GO!',
+        'countdown.go_hint': 'Go!',
 
         // 反馈卡片状态
         'fb.correct': 'Correct!',

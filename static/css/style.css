@@ -7075,19 +7075,16 @@ html[lang="en"] .room-quiz-filter-tabs .tab-pill {
 }
 
 /* ==========================================================================
-   Question start countdown (3-2-1)
+   Question start countdown (3-2-1) - Minimalist High-Impact Neo-Brutalist
    ========================================================================== */
 .q-countdown {
     position: fixed;
     inset: 0;
-    z-index: 200;
+    z-index: 9999;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.35rem;
     overflow: hidden;
-    color: #fff;
     pointer-events: auto;
     isolation: isolate;
 }
@@ -7096,145 +7093,167 @@ html[lang="en"] .room-quiz-filter-tabs .tab-pill {
     display: none !important;
 }
 
+/* Semi-transparent frosted backdrop with subtle dark blur */
 .q-countdown-bg {
     position: absolute;
-    inset: -18%;
+    inset: 0;
     z-index: 0;
-    background:
-        radial-gradient(circle at 50% 42%, var(--cd-accent, #FF4F00) 0%, rgba(17, 17, 17, 0.2) 42%, #111111 72%);
-    transform: scale(1.04);
-    transition: background 0.28s ease;
+    background: rgba(17, 17, 17, 0.45);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    transition: background 0.2s ease;
 }
 
-.q-countdown.is-n3 { --cd-accent: #FF4F00; }
-.q-countdown.is-n2 { --cd-accent: #2563EB; }
-.q-countdown.is-n1 { --cd-accent: #F59E0B; }
-.q-countdown.is-go { --cd-accent: #10B981; }
-
-.q-countdown-ring {
-    position: absolute;
-    z-index: 1;
-    width: min(62vw, 440px);
-    height: min(62vw, 440px);
-    border-radius: 50%;
-    border: 10px solid rgba(255, 255, 255, 0.14);
-    box-shadow:
-        0 0 0 10px rgba(17, 17, 17, 0.18),
-        inset 0 0 0 6px rgba(255, 255, 255, 0.08);
-}
-
-.q-countdown-ring.q-countdown-pulse {
-    animation: qCountdownPulse 0.92s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.q-countdown-meta,
-.q-countdown-hint,
-.q-countdown-num {
+/* Centered High-Impact Solid Neo-Brutalist Card */
+.q-countdown-card {
     position: relative;
     z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    border: 3.5px solid #18181b;
+    border-radius: 32px;
+    box-shadow: 0 12px 0 #18181b;
+    padding: 2.25rem 3.5rem 2rem;
+    min-width: 280px;
+    max-width: 90vw;
+    box-sizing: border-box;
+    text-align: center;
 }
 
-.q-countdown-meta {
-    margin: 0 0 0.4rem;
-    font-family: var(--token-font-hero);
-    font-size: clamp(0.95rem, 2.4vw, 1.35rem);
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.86);
-    text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+.q-countdown-card.q-countdown-pop {
+    animation: cdCardPop 0.35s cubic-bezier(0.18, 1.35, 0.32, 1);
 }
 
-.q-countdown-num {
-    margin: 0;
-    font-family: var(--token-font-hero);
-    font-weight: 900;
-    font-size: clamp(6.4rem, 26vw, 13.5rem);
-    line-height: 0.86;
-    letter-spacing: -0.07em;
-    color: #fff;
-    -webkit-text-stroke: 8px #111;
-    paint-order: stroke fill;
-    text-shadow: 0 16px 0 #111, 0 22px 28px rgba(0, 0, 0, 0.28);
-    user-select: none;
-}
-
-.q-countdown.is-go .q-countdown-num {
-    font-size: clamp(4.6rem, 18vw, 9.5rem);
-    letter-spacing: -0.04em;
-    -webkit-text-stroke: 6px #111;
-}
-
-.q-countdown-num.q-countdown-pop {
-    animation: qCountdownPop 0.52s cubic-bezier(0.18, 1.45, 0.28, 1);
-}
-
-.q-countdown-hint {
-    margin: 0.85rem 0 0;
-    font-family: var(--token-font-hero);
-    font-size: clamp(1.05rem, 3vw, 1.7rem);
-    font-weight: 800;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.92);
-    text-shadow: 0 3px 0 rgba(0, 0, 0, 0.35);
-}
-
-@keyframes qCountdownPop {
+@keyframes cdCardPop {
     0% {
-        transform: scale(0.18) rotate(-12deg);
-        opacity: 0;
-        filter: blur(8px);
-    }
-    58% {
-        transform: scale(1.14) rotate(2deg);
-        opacity: 1;
-        filter: blur(0);
-    }
-    100% {
-        transform: scale(1) rotate(0deg);
-        opacity: 1;
-        filter: blur(0);
-    }
-}
-
-@keyframes qCountdownPulse {
-    0% {
-        transform: scale(0.62);
-        opacity: 0.35;
-        box-shadow:
-            0 0 0 0 rgba(255, 255, 255, 0.45),
-            0 0 0 10px rgba(17, 17, 17, 0.18),
-            inset 0 0 0 6px rgba(255, 255, 255, 0.08);
+        transform: scale(0.72);
+        opacity: 0.6;
     }
     100% {
         transform: scale(1);
         opacity: 1;
-        box-shadow:
-            0 0 0 42px rgba(255, 255, 255, 0),
-            0 0 0 10px rgba(17, 17, 17, 0.18),
-            inset 0 0 0 6px rgba(255, 255, 255, 0.08);
     }
 }
 
+.q-countdown-meta {
+    margin: 0 0 1.25rem;
+    font-family: var(--font-mono, monospace);
+    font-size: 0.95rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    color: #ffffff;
+    background: #18181b;
+    border-radius: 999px;
+    padding: 0.3rem 1.15rem;
+    display: inline-block;
+}
+
+.q-countdown-num-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 140px;
+    height: 140px;
+    border-radius: 24px;
+    border: 3px solid #18181b;
+    box-shadow: 0 6px 0 #18181b;
+    margin: 0 auto 1.25rem;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.q-countdown-num-box.q-countdown-pop {
+    animation: cdNumPop 0.32s cubic-bezier(0.18, 1.45, 0.28, 1);
+}
+
+@keyframes cdNumPop {
+    0% {
+        transform: scale(0.5);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.q-countdown-num {
+    margin: 0;
+    font-family: var(--font-hero, -apple-system, sans-serif);
+    font-size: 5.5rem;
+    font-weight: 900;
+    line-height: 1;
+    color: #ffffff;
+    user-select: none;
+    text-shadow: 0 3px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* 3: Vital Orange */
+.q-countdown.is-n3 .q-countdown-num-box {
+    background: #FF4F00;
+}
+
+/* 2: Electric Blue */
+.q-countdown.is-n2 .q-countdown-num-box {
+    background: #2563EB;
+}
+
+/* 1: Warm Amber */
+.q-countdown.is-n1 .q-countdown-num-box {
+    background: #F59E0B;
+}
+
+/* GO!: Emerald Green */
+.q-countdown.is-go .q-countdown-num-box {
+    background: #10B981;
+    width: 180px;
+}
+
+.q-countdown.is-go .q-countdown-num {
+    font-size: 3.8rem;
+    letter-spacing: 0.02em;
+}
+
+.q-countdown-hint {
+    margin: 0;
+    font-family: var(--font-hero, sans-serif);
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: #52525b;
+}
+
+.q-countdown.is-go .q-countdown-hint {
+    color: #047857;
+    font-weight: 900;
+}
+
 @media (max-width: 640px) {
-    .q-countdown-ring {
-        width: min(78vw, 320px);
-        height: min(78vw, 320px);
-        border-width: 8px;
+    .q-countdown-card {
+        padding: 1.75rem 2rem 1.5rem;
+        min-width: 240px;
+        border-radius: 24px;
+        box-shadow: 0 8px 0 #18181b;
+    }
+    .q-countdown-num-box {
+        width: 110px;
+        height: 110px;
+        border-radius: 20px;
     }
     .q-countdown-num {
-        -webkit-text-stroke-width: 5px;
-        text-shadow: 0 10px 0 #111, 0 16px 20px rgba(0, 0, 0, 0.28);
+        font-size: 4.2rem;
+    }
+    .q-countdown.is-go .q-countdown-num-box {
+        width: 150px;
     }
     .q-countdown.is-go .q-countdown-num {
-        -webkit-text-stroke-width: 4px;
+        font-size: 3rem;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .q-countdown-num.q-countdown-pop,
-    .q-countdown-ring.q-countdown-pulse {
+    .q-countdown-card.q-countdown-pop,
+    .q-countdown-num-box.q-countdown-pop {
         animation: none;
     }
 }

@@ -65,19 +65,20 @@
         function paint(el, value, isGo) {
             var numEl = el.querySelector('.q-countdown-num');
             var hintEl = el.querySelector('.q-countdown-hint');
-            var ringEl = el.querySelector('.q-countdown-ring');
+            var cardEl = el.querySelector('.q-countdown-card');
+            var numBox = el.querySelector('.q-countdown-num-box');
             el.classList.remove('is-n3', 'is-n2', 'is-n1', 'is-go');
             if (isGo) {
                 el.classList.add('is-go');
-                if (numEl) numEl.textContent = t('countdown.go', 'GO!');
-                if (hintEl) hintEl.textContent = '';
+                if (numEl) numEl.textContent = 'GO!';
+                if (hintEl) hintEl.textContent = t('countdown.go_hint', '🔥 开始答题！');
             } else {
                 el.classList.add('is-n' + value);
                 if (numEl) numEl.textContent = String(value);
-                if (hintEl) hintEl.textContent = t('countdown.get_ready', '准备');
+                if (hintEl) hintEl.textContent = t('countdown.get_ready', '⚡ 准备答题');
             }
-            restartAnim(numEl, 'q-countdown-pop');
-            restartAnim(ringEl, 'q-countdown-pulse');
+            restartAnim(numBox || numEl, 'q-countdown-pop');
+            restartAnim(cardEl, 'q-countdown-pop');
         }
 
         function run(state, onDone) {
