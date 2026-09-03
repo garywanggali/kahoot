@@ -6082,3 +6082,64 @@ body:has(.host-app-viewport):has(#host-analytics:not(.hidden)) .host-app-viewpor
     }
 }
 
+/* Header & Topbar padding safety for floating language switcher */
+.studio-header-bar {
+    padding-right: 5.8rem;
+}
+.lobby-header-bar {
+    padding-right: 5.8rem;
+}
+
+@media (max-width: 768px) {
+    .studio-header-bar {
+        padding-right: 4.8rem;
+    }
+    .lobby-header-bar {
+        padding-right: 4.8rem;
+    }
+}
+
+/* Internationalization (i18n) Layout Safeguards */
+html[lang="en"] .hero-headline {
+    letter-spacing: -0.02em;
+}
+
+html[lang="en"] .dual-card-title,
+html[lang="en"] .choice-box-title {
+    font-size: 1.15rem;
+    line-height: 1.35;
+}
+
+html[lang="en"] .choice-box-action {
+    font-size: 0.76rem;
+    letter-spacing: 0.02em;
+}
+
+html[lang="en"] .btn-dual-primary,
+html[lang="en"] .btn-dual-secondary,
+html[lang="en"] .btn-dual-outline {
+    font-size: 0.88rem;
+    padding: 0.75rem 1rem;
+}
+
+html[lang="en"] .host-meta-pill {
+    font-size: 0.82rem;
+}
+
+html[lang="en"] .analytics-kpi-card .kpi-label {
+    font-size: 0.75rem;
+}
+
+html[lang="en"] .p-stat-badges .p-pill {
+    font-size: 0.76rem;
+}
+
+html[lang="en"] .step-pill {
+    font-size: 0.84rem;
+}
+
+html[lang="en"] .room-quiz-filter-tabs .tab-pill {
+    font-size: 0.82rem;
+}
+
+

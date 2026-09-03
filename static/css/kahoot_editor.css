@@ -17,7 +17,7 @@ body:has(.kahoot-editor-app) .container {
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding: 0.75rem 1.25rem;
+    padding: 0.75rem 5.8rem 0.75rem 1.25rem;
     background: var(--bg-surface);
     border-bottom: 1px solid var(--border-light);
     flex-wrap: wrap;
