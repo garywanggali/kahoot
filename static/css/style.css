@@ -6051,27 +6051,33 @@ body:has(.host-app-viewport):has(#host-analytics:not(.hidden)) .host-app-viewpor
 }
 
 /* ==========================================================================
-   Global Language Switcher (Industrial Glass Capsule)
+   Global Language Switcher (In-Flow Page Header)
    ========================================================================== */
-.global-lang-switcher {
-    position: fixed;
-    top: 1.1rem;
-    right: 1.25rem;
-    z-index: 9999;
+.global-page-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 100%;
+    padding: 0 0 0.35rem;
+    position: relative;
+    z-index: 20;
     pointer-events: auto;
+}
+
+.global-lang-switcher {
+    position: static !important;
+    display: inline-flex;
 }
 
 .btn-lang-toggle {
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    padding: 0.35rem 0.75rem;
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    padding: 0.32rem 0.75rem;
+    background: #ffffff;
     border: 1.5px solid var(--border-dark, #111111);
     border-radius: 9999px;
-    box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.9), 0 4px 12px rgba(0, 0, 0, 0.06);
+    box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.9);
     color: var(--text-black, #111111);
     font-family: var(--font-mono, monospace);
     font-size: 0.78rem;
@@ -6086,7 +6092,7 @@ body:has(.host-app-viewport):has(#host-analytics:not(.hidden)) .host-app-viewpor
     color: #ffffff;
     border-color: #111111;
     transform: translateY(-1px);
-    box-shadow: 2px 4px 0px var(--orange, #ff4f00), 0 6px 16px rgba(255, 79, 0, 0.25);
+    box-shadow: 2px 3px 0px var(--orange, #ff4f00);
 }
 
 .btn-lang-toggle:hover .lang-icon-globe {
@@ -6119,22 +6125,10 @@ body:has(.host-app-viewport):has(#host-analytics:not(.hidden)) .host-app-viewpor
 }
 
 @media (max-width: 640px) {
-    .global-lang-switcher {
-        top: 0.6rem;
-        right: 0.6rem;
-    }
     .btn-lang-toggle {
         padding: 0.28rem 0.6rem;
         font-size: 0.72rem;
     }
-}
-
-/* Header & Topbar padding safety for floating language switcher */
-.studio-header-bar {
-    padding-right: 5.8rem;
-}
-.lobby-header-bar {
-    padding-right: 5.8rem;
 }
 
 @media (max-width: 768px) {

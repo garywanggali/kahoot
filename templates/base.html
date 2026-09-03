@@ -8,30 +8,32 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/design_tokens.css' %}?v=3">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=456">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=457">
     <meta name="turbo-cache-control" content="no-cache">
     <script src="{% static 'js/i18n.js' %}?v=2"></script>
     <script src="{% static 'js/turbo.min.js' %}" defer></script>
     {% block extra_css %}{% endblock %}
 </head>
 <body {% block body_attrs %}{% endblock %}>
-    <!-- 全局多语言快捷切换悬浮胶囊 -->
-    <div class="global-lang-switcher" data-turbo-permanent id="global-lang-switcher">
-        <button type="button" class="btn-lang-toggle" data-action="toggle-lang" aria-label="Switch Language" title="{% if CURRENT_LANG == 'en' %}切换至中文{% else %}Switch to English{% endif %}">
-            <svg class="lang-icon-globe" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="2" y1="12" x2="22" y2="12"></line>
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-            </svg>
-            <span class="lang-pill-curr">{% if CURRENT_LANG == 'en' %}EN{% else %}中文{% endif %}</span>
-            <span class="lang-pill-divider">/</span>
-            <span class="lang-pill-target">{% if CURRENT_LANG == 'en' %}中文{% else %}EN{% endif %}</span>
-        </button>
-    </div>
-
     <audio id="global-bgm" data-turbo-permanent preload="auto" loop
            src="{% static 'audio/Ticket_Booth_Waltz.mp3' %}"></audio>
     <div class="container">
+        <!-- 页面顶部内置语言切换栏（不再固定漂浮，跟随页面内容流排版） -->
+        <div class="global-page-topbar" data-turbo-permanent id="global-page-topbar">
+            <div class="global-lang-switcher" id="global-lang-switcher">
+                <button type="button" class="btn-lang-toggle" data-action="toggle-lang" aria-label="Switch Language" title="{% if CURRENT_LANG == 'en' %}切换至中文{% else %}Switch to English{% endif %}">
+                    <svg class="lang-icon-globe" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                    </svg>
+                    <span class="lang-pill-curr">{% if CURRENT_LANG == 'en' %}EN{% else %}中文{% endif %}</span>
+                    <span class="lang-pill-divider">/</span>
+                    <span class="lang-pill-target">{% if CURRENT_LANG == 'en' %}中文{% else %}EN{% endif %}</span>
+                </button>
+            </div>
+        </div>
+
         {% block content %}{% endblock %}
     </div>
     <script src="{% static 'js/avatar.js' %}?v=2"></script>

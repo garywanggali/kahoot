@@ -656,6 +656,9 @@ msgstr "No public quiz sets available yet."
 msgid "创建互动房间 - 互动测验工作台"
 msgstr "Create Game Room - Teacher Studio"
 
+msgid "房间名称"
+msgstr "Room Name"
+
 msgid "（选填，留空将默认使用套题名称）"
 msgstr "(Optional, defaults to quiz title if blank)"
 
