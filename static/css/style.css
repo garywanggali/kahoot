@@ -1409,6 +1409,37 @@ td {
 .alert-success { background: #e8f5e9; color: var(--correct); border: 1px solid #c8e6c9; }
 .alert-warning { background: #fff8e1; color: #f57f17; border: 1px solid #ffecb3; }
 
+/* 加入页面内联错误提示 */
+.join-inline-error {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1.5px solid rgba(239, 68, 68, 0.3);
+    border-radius: 12px;
+    padding: 0.65rem 1rem;
+    margin-bottom: 1rem;
+    animation: feedbackPop 0.3s ease-out;
+}
+
+.join-inline-error p {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #DC2626;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.join-inline-error p::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #DC2626;
+    flex-shrink: 0;
+}
+
 .word-cloud-tag sub {
     font-size: 0.65em;
     margin-left: 0.15rem;

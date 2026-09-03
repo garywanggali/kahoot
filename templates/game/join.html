@@ -41,6 +41,13 @@
             
             <form method="post">
                 {% csrf_token %}
+                {% if messages %}
+                <div class="join-inline-error">
+                    {% for message in messages %}
+                    <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
                 <div class="form-group-industrial">
                     <label for="code">房间号 (GAME PIN)</label>
                     <input type="text" id="code" name="code" class="input-industrial input-pin"
