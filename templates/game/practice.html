@@ -132,9 +132,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/awards.js' %}?v=6"></script>
-<script src="{% static 'js/question_countdown.js' %}?v=3"></script>
-<script src="{% static 'js/practice.js' %}?v=1"></script>
 <script>
 window.PRACTICE_BOOT = {
     code: '{{ practice_code }}',
@@ -147,4 +144,7 @@ window.PRACTICE_BOOT = {
     },
 };
 </script>
+<script src="{% static 'js/awards.js' %}?v=6"></script>
+<script src="{% static 'js/question_countdown.js' %}?v=3"></script>
+<script src="{% static 'js/practice.js' %}?v=2"></script>
 {% endblock %}

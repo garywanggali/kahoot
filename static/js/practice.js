@@ -21,9 +21,17 @@
         return input ? input.value : '';
     }
 
-    var boot = window.PRACTICE_BOOT || {};
-    var quiz = boot.quiz || { questions: [] };
-    var nickname = boot.nickname || '';
+    var boot = {};
+    var quiz = { questions: [] };
+    var nickname = '';
+
+    function getBoot() {
+        var next = window.PRACTICE_BOOT || {};
+        boot = next;
+        if (next.quiz) quiz = next.quiz;
+        if (next.nickname) nickname = next.nickname;
+        return next;
+    }
     var token = '';
     var index = 0;
     var score = 0;
@@ -99,6 +107,9 @@
     }
 
     function postJson(url, body) {
+        if (!url) {
+            return Promise.reject(new Error(t('status.error', '操作失败')));
+        }
         return fetch(url, {
             method: 'POST',
             headers: {
@@ -315,7 +326,8 @@
         lockAnswerUi();
         clearTimer();
         var elapsed = Date.now() - (questionStartTime || Date.now());
-        postJson(boot.urls.answer, {
+        var urls = (getBoot().urls || {});
+        postJson(urls.answer, {
             token: token,
             question_id: q.id,
             selected: selected || '',
@@ -342,7 +354,8 @@
     function finishPractice() {
         clearTimer();
         if (countdown) countdown.hide();
-        postJson(boot.urls.finish, { token: token }).then(function (data) {
+        var urls = (getBoot().urls || {});
+        postJson(urls.finish, { token: token }).then(function (data) {
             showScreen('ended-screen');
             var scoreEl = document.getElementById('practice-final-score');
             if (scoreEl) {
@@ -362,8 +375,12 @@
 
     function startPractice() {
         var btn = document.getElementById('btn-start-practice');
+        var urls = (getBoot().urls || {});
+        if (!urls.start) {
+            return;
+        }
         if (btn) btn.disabled = true;
-        postJson(boot.urls.start, { avatar: myAvatar }).then(function (data) {
+        postJson(urls.start, { avatar: myAvatar }).then(function (data) {
             token = data.token;
             quiz = data.quiz || quiz;
             index = 0;
@@ -374,22 +391,27 @@
         });
     }
 
-    document.getElementById('btn-start-practice').addEventListener('click', startPractice);
-    document.getElementById('submit-text-btn').addEventListener('click', function () {
-        submitCurrent('');
-    });
-    document.getElementById('submit-multi-btn').addEventListener('click', function () {
-        submitCurrent('');
-    });
-    document.getElementById('btn-skip-explanation').addEventListener('click', function () {
-        submitCurrent('');
-    });
-    document.getElementById('text-answer-input').addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            submitCurrent('');
-        }
-    });
+    window.startPractice = startPractice;
+
+    function bindClick(id, handler) {
+        var el = document.getElementById(id);
+        if (el) el.addEventListener('click', handler);
+    }
+
+    getBoot();
+    bindClick('btn-start-practice', startPractice);
+    bindClick('submit-text-btn', function () { submitCurrent(''); });
+    bindClick('submit-multi-btn', function () { submitCurrent(''); });
+    bindClick('btn-skip-explanation', function () { submitCurrent(''); });
+    var textInput = document.getElementById('text-answer-input');
+    if (textInput) {
+        textInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                submitCurrent('');
+            }
+        });
+    }
 
     updateAvatarUi();
 })();

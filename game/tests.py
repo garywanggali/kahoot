@@ -1355,6 +1355,13 @@ class PracticeModeTests(TestCase):
         self.assertContains(follow, '开始练习')
         self.assertContains(follow, '练习地理')
         self.assertNotContains(follow, '等待老师开始游戏')
+        html = follow.content.decode()
+        self.assertIn('window.PRACTICE_BOOT', html)
+        self.assertLess(
+            html.find('window.PRACTICE_BOOT'),
+            html.find('js/practice.js'),
+        )
+        self.assertIn(reverse('practice_start', args=[self.code]), html)
 
     def test_digit_pin_still_joins_live_room(self):
         from django.urls import reverse
