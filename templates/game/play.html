@@ -119,19 +119,8 @@
     </div>
 
     <div id="ended-screen" class="play-ended hidden">
-        <div class="host-stage-title-wrap" style="margin-bottom: 1rem;">
-            <div class="host-ceremony-tag">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
-                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
-                    <path d="M4 22h16"></path>
-                    <path d="M10 14.66V17c0 .55-.45 1-1 1H7v4h10v-4h-2c-.55 0-1-.45-1-1v-2.34"></path>
-                    <path d="M6 4h12a2 2 0 0 1 2 2v3a6 6 0 0 1-6 6h-4a6 6 0 0 1-6-6V6a2 2 0 0 1 2-2z"></path>
-                </svg>
-                <span>HONOR PODIUM</span>
-            </div>
-            <h2 class="host-stage-title" style="font-size: 2rem;">颁奖典礼</h2>
-            <p class="host-stage-subtitle">全场最终积分榜前三甲荣誉领奖台</p>
+        <div class="host-stage-title-wrap" style="margin-bottom: 1.5rem;">
+            <h2 class="host-stage-title" style="font-size: 2.2rem;">颁奖典礼</h2>
         </div>
 
         <div id="player-podium-container" class="host-podium-outer" style="width: 100%;"></div>
@@ -696,7 +685,8 @@ function showAnswerFeedback(data) {
     } else {
         renderFeedbackCard({
             type: 'wrong',
-            title: '回答错误',
+            title: '做错了',
+            detail: '再接再厉！',
             showWaitingHint: true,
         });
     }
@@ -717,14 +707,12 @@ function showQuestionResult(state) {
 
     const q = state.question;
     const isWordCloud = q && q.question_type === 'word_cloud';
-    const correctLabel = formatCorrectLabel(q);
 
     if (lastAnswerResult.answered) {
         if (isWordCloud || lastAnswerResult.no_score) {
             renderFeedbackCard({
                 type: 'submitted',
                 title: '答案已提交',
-                detail: correctLabel ? `正确答案：${correctLabel}` : '',
                 showWaitingHint: true,
             });
         } else if (lastAnswerResult.is_correct) {
@@ -737,8 +725,8 @@ function showQuestionResult(state) {
         } else {
             renderFeedbackCard({
                 type: 'wrong',
-                title: '回答错误',
-                detail: correctLabel ? `正确答案：${correctLabel}` : '',
+                title: '做错了',
+                detail: '再接再厉！',
                 showWaitingHint: true,
             });
         }
@@ -746,7 +734,7 @@ function showQuestionResult(state) {
         renderFeedbackCard({
             type: 'timeup',
             title: '时间到',
-            detail: correctLabel ? `正确答案：${correctLabel}` : '',
+            detail: '再接再厉！',
             showWaitingHint: true,
         });
     }

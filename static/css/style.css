@@ -4265,14 +4265,20 @@ body:has(.play-app) .container {
 }
 
 .analytics-kpi-card {
-    background: var(--token-color-surface-pure, #ffffff);
-    border: 1.5px solid var(--token-border-solid, #18181b);
-    border-radius: var(--token-radius-card, 16px);
-    box-shadow: 0 4px 0 var(--token-border-solid, #18181b);
-    padding: 1.15rem 1.25rem;
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 18px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+    padding: 1.25rem 1.35rem;
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.analytics-kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
 }
 
 .kpi-label {
@@ -4310,31 +4316,30 @@ body:has(.play-app) .container {
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px dashed rgba(0, 0, 0, 0.08);
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .analytics-tabs {
     display: inline-flex;
-    background: #f4f4f5;
-    padding: 0.35rem;
+    background: #f1f2f4;
+    padding: 4px;
     border-radius: 12px;
-    border: 1.5px solid var(--token-border-solid, #18181b);
-    box-shadow: 0 3px 0 var(--token-border-solid, #18181b);
-    gap: 0.35rem;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    gap: 0.25rem;
 }
 
 .analytics-tab-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.45rem;
-    padding: 0.5rem 1.25rem;
+    padding: 0.55rem 1.25rem;
     border: none;
-    border-radius: 8px;
+    border-radius: 9px;
     background: transparent;
     font-family: var(--token-font-hero);
     font-size: 0.92rem;
-    font-weight: 800;
+    font-weight: 700;
     color: var(--token-text-secondary, #52525b);
     cursor: pointer;
     transition: all 0.15s ease;
@@ -4343,7 +4348,7 @@ body:has(.play-app) .container {
 .analytics-tab-btn.active {
     background: #ffffff;
     color: var(--token-text-primary, #18181b);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .analytics-tab-btn:hover:not(.active) {
@@ -4355,12 +4360,11 @@ body:has(.play-app) .container {
     align-items: center;
     padding: 0.4rem 1rem;
     background: #fffbeb;
-    border: 1.5px solid #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.35);
     border-radius: var(--token-radius-pill, 9999px);
     font-size: 0.85rem;
-    font-weight: 800;
+    font-weight: 700;
     color: #92400e;
-    box-shadow: 0 2px 0 rgba(245, 158, 11, 0.3);
 }
 
 /* 列表与折叠卡片 */
@@ -4373,16 +4377,17 @@ body:has(.play-app) .container {
 }
 
 .analytics-card {
-    background: var(--token-color-surface-pure, #ffffff);
-    border: 1.5px solid var(--token-border-solid, #18181b);
-    border-radius: 16px;
-    box-shadow: 0 4px 0 var(--token-border-solid, #18181b);
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 18px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
     overflow: hidden;
-    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
 }
 
 .analytics-card:hover {
-    box-shadow: 0 6px 0 var(--token-border-solid, #18181b);
+    border-color: rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
 }
 
 .analytics-card-header,

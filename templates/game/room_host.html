@@ -120,7 +120,6 @@
     <div id="host-leaderboard" class="host-stage-card token-card hidden">
         <div class="host-stage-title-wrap">
             <h2 class="host-stage-title">本题得分排行</h2>
-            <p class="host-stage-subtitle">实时积分汇总与极速冲榜</p>
         </div>
 
         <div id="host-leaderboard-word-cloud-wrap" class="word-cloud-wrap hidden">
@@ -142,31 +141,20 @@
     <!-- 4. 颁奖典礼 (Podium & Finals) -->
     <div id="host-ended" class="host-stage-card token-card hidden">
         <div class="host-stage-title-wrap">
-            <div class="host-ceremony-tag">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
-                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
-                    <path d="M4 22h16"></path>
-                    <path d="M10 14.66V17c0 .55-.45 1-1 1H7v4h10v-4h-2c-.55 0-1-.45-1-1v-2.34"></path>
-                    <path d="M6 4h12a2 2 0 0 1 2 2v3a6 6 0 0 1-6 6h-4a6 6 0 0 1-6-6V6a2 2 0 0 1 2-2z"></path>
-                </svg>
-                <span>HONOR PODIUM</span>
-            </div>
             <h2 class="host-stage-title">颁奖典礼</h2>
-            <p class="host-stage-subtitle">全场最终积分榜前三甲荣誉领奖台</p>
         </div>
 
         <!-- 3D 领奖台容器 -->
         <div id="host-podium-container" class="host-podium-outer"></div>
 
         <!-- 其余排名 -->
-        <h3 class="final-rankings-title hidden" id="host-final-rankings-title">完整排名 (4名及以后)</h3>
+        <h3 class="final-rankings-title hidden" id="host-final-rankings-title">完整排名</h3>
         <div id="host-final-leaderboard" class="host-leaderboard-scroll-list" style="max-height: 180px;"></div>
 
         <div class="host-stage-foot" style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
             <button type="button" class="token-btn-primary btn-host-analytics" onclick="showAnalyticsScreen()">
                 <span>查看数据分析</span>
-                <span>📊 →</span>
+                <span>→</span>
             </button>
             <a href="{% url 'teacher_dashboard' %}" class="token-btn-secondary btn-host-finish">
                 <span>返回控制台</span>
@@ -177,16 +165,7 @@
     <!-- 5. 数据分析复盘 (Analytics & Review) -->
     <div id="host-analytics" class="host-stage-card token-card hidden">
         <div class="host-stage-title-wrap">
-            <div class="host-ceremony-tag" style="color: var(--token-color-orange); border-color: rgba(255, 94, 0, 0.35); background: rgba(255, 94, 0, 0.08);">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="18" y1="20" x2="18" y2="10"></line>
-                    <line x1="12" y1="20" x2="12" y2="4"></line>
-                    <line x1="6" y1="20" x2="6" y2="14"></line>
-                </svg>
-                <span>MATCH ANALYTICS</span>
-            </div>
-            <h2 class="host-stage-title">对战数据复盘与深度分析</h2>
-            <p class="host-stage-subtitle">支持按每道题查看正误名单，或按学生个体查看错题与对题清单</p>
+            <h2 class="host-stage-title">对战数据分析</h2>
         </div>
 
         <div id="host-analytics-container" style="min-height: 300px; margin: 1rem 0;"></div>
@@ -213,7 +192,7 @@
 {% block extra_js %}
 <script src="{% static 'js/awards.js' %}?v=3"></script>
 <script src="{% static 'js/wordcloud.js' %}?v=2"></script>
-<script src="{% static 'js/analytics.js' %}?v=2"></script>
+<script src="{% static 'js/analytics.js' %}?v=3"></script>
 <script>
 const ROOM_CODE = '{{ room.code }}';
 const INITIAL_STATE = {{ initial_state_json|safe }};
