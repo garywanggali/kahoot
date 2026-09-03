@@ -6,7 +6,19 @@
 {% block content %}
 <div class="teacher-dashboard-viewport">
     
-    <!-- 顶部简洁头部 -->
+    <!-- 4色几何悬浮氛围微动装饰 (Kahoot Signature Ambient Geometry) -->
+    <div class="dashboard-ambient-layer" aria-hidden="true">
+        <div class="ambient-shape ambient-triangle" title="▲">▲</div>
+        <div class="ambient-shape ambient-diamond" title="◆">◆</div>
+        <div class="ambient-shape ambient-circle" title="●">●</div>
+        <div class="ambient-shape ambient-square" title="■">■</div>
+        <div class="ambient-cross cross-tl">+</div>
+        <div class="ambient-cross cross-tr">+</div>
+        <div class="ambient-cross cross-bl">+</div>
+        <div class="ambient-cross cross-br">+</div>
+    </div>
+
+    <!-- 顶部控制台头部 -->
     <div class="studio-header-bar">
         <div class="studio-title-group">
             <h1 class="studio-main-title">{% trans "老师控制台" %}</h1>
@@ -22,7 +34,31 @@
         </a>
     </div>
 
-    <!-- 仅保留核心双模块：大屏房间 + 题库中心 (完全零滑动单屏) -->
+    <!-- 快捷数据指标概览条 (Dashboard Quick Metric Strip) -->
+    <div class="teacher-metrics-bar">
+        <div class="metric-chip">
+            <span class="metric-icon">📚</span>
+            <span class="metric-label">{% trans "我的套题" %}:</span>
+            <strong class="metric-value">{{ quiz_set_count|default:0 }}</strong>
+        </div>
+        <div class="metric-chip">
+            <span class="metric-icon">📝</span>
+            <span class="metric-label">{% trans "题库题量" %}:</span>
+            <strong class="metric-value">{{ question_count|default:0 }}</strong>
+        </div>
+        <div class="metric-chip">
+            <span class="metric-icon">🎮</span>
+            <span class="metric-label">{% trans "历史场次" %}:</span>
+            <strong class="metric-value">{{ rooms|length|default:0 }}</strong>
+        </div>
+        <div class="metric-chip metric-chip-active">
+            <span class="metric-icon">⚡</span>
+            <span class="metric-label">{% trans "AI 批量出题" %}:</span>
+            <span class="metric-tag">{% trans "已就绪" %}</span>
+        </div>
+    </div>
+
+    <!-- 核心双模块：大屏房间 + 题库中心 -->
     <div class="teacher-dual-flow">
         <div class="teacher-dual-grid">
 
@@ -36,6 +72,7 @@
                             <line x1="12" y1="17" x2="12" y2="21"></line>
                         </svg>
                     </div>
+                    <span class="dual-card-badge badge-live">🔴 {% trans "即时大屏互动" %}</span>
                 </div>
                 
                 <div class="dual-card-body">
@@ -62,6 +99,7 @@
                             <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
                         </svg>
                     </div>
+                    <span class="dual-card-badge badge-ai">✨ {% trans "AI 智能支持" %}</span>
                 </div>
                 
                 <div class="dual-card-body">
@@ -85,6 +123,18 @@
 
         </div>
     </div>
+
+    <!-- 底部最近房间快速复盘通道 (若有历史房间) -->
+    {% if rooms %}
+    <div class="teacher-recent-strip">
+        <div class="recent-strip-content">
+            <span class="recent-strip-label">🕒 {% trans "最近房间" %}:</span>
+            <span class="recent-strip-code">PIN #{{ rooms.0.code }}</span>
+            <span class="recent-strip-title">{{ rooms.0.quiz_set.title|default:_("互动测验") }}</span>
+            <a href="{% url 'room_host' rooms.0.pk %}" class="recent-strip-link">{% trans "进入大屏控制 / 复盘" %} →</a>
+        </div>
+    </div>
+    {% endif %}
 
 </div>
 {% endblock %}

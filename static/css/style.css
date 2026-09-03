@@ -848,6 +848,219 @@ a:hover {
     position: relative;
 }
 
+/* 4-Color Floating Ambient Geometry Layer */
+.dashboard-ambient-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+}
+
+.ambient-shape {
+    position: absolute;
+    font-weight: 900;
+    line-height: 1;
+    user-select: none;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.04));
+    opacity: 0.75;
+    transition: transform 0.3s ease;
+}
+
+.ambient-triangle {
+    top: 14%;
+    left: 4%;
+    font-size: 2.5rem;
+    color: #FF4F00;
+    animation: ambientFloat1 8s ease-in-out infinite;
+}
+
+.ambient-diamond {
+    top: 18%;
+    right: 4%;
+    font-size: 2.3rem;
+    color: #2563EB;
+    animation: ambientFloat2 9s ease-in-out infinite;
+}
+
+.ambient-circle {
+    bottom: 15%;
+    left: 5%;
+    font-size: 2.6rem;
+    color: #F59E0B;
+    animation: ambientFloat2 10s ease-in-out infinite reverse;
+}
+
+.ambient-square {
+    bottom: 16%;
+    right: 5%;
+    font-size: 2.2rem;
+    color: #10B981;
+    animation: ambientFloat1 11s ease-in-out infinite;
+}
+
+.ambient-cross {
+    position: absolute;
+    font-family: var(--font-mono, monospace);
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: #cbd5e1;
+    user-select: none;
+}
+
+.cross-tl { top: 7%; left: 16%; }
+.cross-tr { top: 7%; right: 16%; }
+.cross-bl { bottom: 9%; left: 18%; }
+.cross-br { bottom: 9%; right: 18%; }
+
+@keyframes ambientFloat1 {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-14px) rotate(6deg); }
+}
+
+@keyframes ambientFloat2 {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-16px) rotate(-8deg); }
+}
+
+/* Quick Metrics Strip */
+.teacher-metrics-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.85rem;
+    flex-wrap: wrap;
+    margin: 0.25rem 0 0.85rem;
+    z-index: 1;
+    position: relative;
+}
+
+.metric-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    background: #ffffff;
+    border: 2px solid #18181b;
+    box-shadow: 0 3px 0 #18181b;
+    border-radius: 999px;
+    padding: 0.32rem 0.95rem;
+    font-size: 0.86rem;
+    color: #18181b;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.metric-chip:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 0 #18181b;
+}
+
+.metric-chip .metric-icon {
+    font-size: 0.95rem;
+}
+
+.metric-chip .metric-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #71717a;
+}
+
+.metric-chip .metric-value {
+    font-family: var(--font-mono, monospace);
+    font-size: 0.92rem;
+    font-weight: 900;
+    color: #18181b;
+}
+
+.metric-chip .metric-tag {
+    font-family: var(--font-mono, monospace);
+    font-size: 0.74rem;
+    font-weight: 900;
+    background: #ecfdf5;
+    color: #047857;
+    border: 1.5px solid #10b981;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+}
+
+.dual-card-badge {
+    font-family: var(--font-mono, monospace);
+    font-size: 0.78rem;
+    font-weight: 900;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    border: 2px solid #18181b;
+    box-shadow: 0 2px 0 #18181b;
+}
+
+.badge-live {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.badge-ai {
+    background: #eff6ff;
+    color: #1e40af;
+}
+
+/* Recent Session Quick Bar */
+.teacher-recent-strip {
+    width: 100%;
+    max-width: 980px;
+    margin: 0 auto 0.4rem;
+    z-index: 1;
+    position: relative;
+}
+
+.recent-strip-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    background: #ffffff;
+    border: 2px solid #18181b;
+    box-shadow: 0 3px 0 #18181b;
+    border-radius: 14px;
+    padding: 0.5rem 1.25rem;
+    font-size: 0.86rem;
+    flex-wrap: wrap;
+}
+
+.recent-strip-label {
+    font-weight: 800;
+    color: #71717a;
+}
+
+.recent-strip-code {
+    font-family: var(--font-mono, monospace);
+    font-weight: 900;
+    background: #18181b;
+    color: #ffffff;
+    padding: 0.15rem 0.55rem;
+    border-radius: 6px;
+}
+
+.recent-strip-title {
+    font-weight: 800;
+    color: #18181b;
+    max-width: 320px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.recent-strip-link {
+    font-weight: 800;
+    color: #ff4f00;
+    text-decoration: none;
+    margin-left: auto;
+    transition: transform 0.2s ease;
+}
+
+.recent-strip-link:hover {
+    text-decoration: underline;
+    transform: translateX(2px);
+}
+
 .teacher-dual-flow {
     flex: 1;
     display: flex;
