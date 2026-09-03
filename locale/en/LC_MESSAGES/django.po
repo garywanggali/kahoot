@@ -1012,31 +1012,3 @@ msgstr "Room does not exist."
 
 msgid "无权查看该房间分析数据"
 msgstr "You do not have permission to view analytics for this room."
-
-msgid "我的套题"
-msgstr "My Kahoots"
-
-msgid "题库题量"
-msgstr "Total Questions"
-
-msgid "历史场次"
-msgstr "Hosted Sessions"
-
-msgid "AI 批量出题"
-msgstr "AI Batch Creator"
-
-msgid "已就绪"
-msgstr "Ready"
-
-msgid "即时大屏互动"
-msgstr "Live Host"
-
-msgid "AI 智能支持"
-msgstr "AI Powered"
-
-msgid "最近房间"
-msgstr "Recent Session"
-
-msgid "进入大屏控制 / 复盘"
-msgstr "Open Host / Review"
-
