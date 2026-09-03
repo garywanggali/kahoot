@@ -74,11 +74,32 @@
     </div>
 
     <div id="ended-screen" class="play-ended hidden">
-        <div id="ended-avatar-wrap" class="ended-avatar-wrap section-gap-sm"></div>
-        <h2 class="page-title">游戏已结束</h2>
-        <div id="ended-rank-info" class="ended-rank-info hidden"></div>
-        <p class="text-muted-block">感谢参与本次测验</p>
-        <a href="{% url 'index' %}" class="btn btn-primary section-gap-lg">返回首页</a>
+        <div class="host-stage-title-wrap" style="margin-bottom: 1rem;">
+            <div class="host-ceremony-tag">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                    <path d="M4 22h16"></path>
+                    <path d="M10 14.66V17c0 .55-.45 1-1 1H7v4h10v-4h-2c-.55 0-1-.45-1-1v-2.34"></path>
+                    <path d="M6 4h12a2 2 0 0 1 2 2v3a6 6 0 0 1-6 6h-4a6 6 0 0 1-6-6V6a2 2 0 0 1 2-2z"></path>
+                </svg>
+                <span>HONOR PODIUM</span>
+            </div>
+            <h2 class="host-stage-title" style="font-size: 2rem;">颁奖典礼</h2>
+            <p class="host-stage-subtitle">全场最终积分榜前三甲荣誉领奖台</p>
+        </div>
+
+        <div id="player-podium-container" class="host-podium-outer" style="width: 100%;"></div>
+
+        <h3 class="final-rankings-title hidden" id="player-final-rankings-title">完整排名</h3>
+        <div id="player-final-leaderboard" class="host-leaderboard-scroll-list" style="max-height: 200px; width: 100%; max-width: 600px;"></div>
+
+        <div style="margin-top: 1.5rem;">
+            <a href="{% url 'index' %}" class="token-btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none;">
+                <span>返回首页</span>
+                <span>→</span>
+            </a>
+        </div>
     </div>
 </div>
 
@@ -93,6 +114,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'js/awards.js' %}?v=3"></script>
 <script>
 const ROOM_CODE = '{{ room.code }}';
 const NICKNAME = '{{ nickname }}';
@@ -322,7 +344,18 @@ function applyState(state) {
     if (state.status === 'ended') {
         document.getElementById('ended-screen').classList.remove('hidden');
         clearTimer();
+<<<<<<< HEAD
         renderEndedPlayerInfo(state.leaderboard);
+=======
+        if (typeof renderAwardsCeremony === 'function') {
+            renderAwardsCeremony(
+                state.leaderboard,
+                'player-podium-container',
+                'player-final-leaderboard',
+                'player-final-rankings-title'
+            );
+        }
+>>>>>>> de6a39f (feat: Unify choice-box hover accents, full-screen immersive player answer buttons, enhanced feedback animations, and student-side podium ceremony)
     } else if (state.status === 'playing' && state.question) {
         document.getElementById('play-screen').classList.remove('hidden');
         showQuestion(state);
