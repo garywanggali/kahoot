@@ -211,3 +211,33 @@ class AnalyticsFeatureTests(TestCase):
         self.assertContains(resp_page, '对战数据分析报告')
 
 
+class JoinRoomViewTests(TestCase):
+    def test_invalid_room_code_preserves_landing_ui(self):
+        from django.urls import reverse
+        resp = self.client.post(reverse('join_room'), {
+            'code': '999999',
+            'nickname': 'TestUser',
+        })
+        self.assertEqual(resp.status_code, 422)
+        content = resp.content.decode('utf-8')
+        # Check that signature headline is preserved
+        self.assertIn('every question.', content)
+        self.assertIn('every answer.', content)
+        # Check that 3D floating keycaps stage is preserved
+        self.assertIn('keycaps-stage', content)
+        # Check that unwanted text badges are absent
+        self.assertNotIn('PLAYER_LOGIN // v2.0', content)
+        self.assertNotIn('join game.', content)
+        # Check that error message is displayed
+        self.assertIn('房间号不存在', content)
+        self.assertIn('join-inline-error', content)
+
+    def test_turbo_script_served_locally(self):
+        resp = self.client.get('/')
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode('utf-8')
+        self.assertIn('turbo.min.js', content)
+        self.assertNotIn('https://cdn.jsdelivr.net/npm/@hotwired/turbo@8.0.12/dist/turbo.min.js', content)
+
+
+

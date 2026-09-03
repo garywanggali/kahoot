@@ -83,23 +83,23 @@ def join_room(request):
 
         if not code or not nickname:
             messages.error(request, '请输入房间号和昵称')
-            return render(request, 'game/join.html')
+            return render(request, 'game/index.html', {'code': code, 'nickname': nickname}, status=422)
 
         try:
             room = Room.objects.get(code=code)
         except Room.DoesNotExist:
             messages.error(request, '房间号不存在')
-            return render(request, 'game/join.html', {'code': code, 'nickname': nickname})
+            return render(request, 'game/index.html', {'code': code, 'nickname': nickname}, status=422)
 
         if room.status == Room.STATUS_ENDED:
             messages.error(request, '该房间游戏已结束')
-            return render(request, 'game/join.html', {'code': code, 'nickname': nickname})
+            return render(request, 'game/index.html', {'code': code, 'nickname': nickname}, status=422)
 
         request.session['nickname'] = nickname
         request.session['room_code'] = code
         return redirect('play', room_code=code)
 
-    return render(request, 'game/join.html')
+    return render(request, 'game/index.html')
 
 
 def play(request, room_code):
