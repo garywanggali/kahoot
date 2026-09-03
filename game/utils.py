@@ -17,12 +17,15 @@ def question_uses_countdown(question) -> bool:
     return True
 
 
-def question_countdown_remaining_ms(room, now=None) -> int:
-    """Milliseconds left in the 3-2-1 intro before answering starts."""
+def question_countdown_remaining_ms(room, now=None, question=None) -> int:
+    """Milliseconds left in the 3-2-1 intro before answering starts.
+
+    Do not query related questions here: this runs from the async websocket
+    consumer on every submit, so extra ORM would crash the handler.
+    """
     if getattr(room, 'status', None) != Room.STATUS_PLAYING:
         return 0
-    current_q = room.current_question() if hasattr(room, 'current_question') else None
-    if not question_uses_countdown(current_q):
+    if question is not None and not question_uses_countdown(question):
         return 0
     started = getattr(room, 'question_started_at', None)
     if not started:
@@ -32,10 +35,10 @@ def question_countdown_remaining_ms(room, now=None) -> int:
     return max(0, QUESTION_COUNTDOWN_SECONDS * 1000 - elapsed_ms)
 
 
-def can_accept_answer(room) -> bool:
+def can_accept_answer(room, question=None) -> bool:
     return (
         getattr(room, 'status', None) == Room.STATUS_PLAYING
-        and question_countdown_remaining_ms(room) <= 0
+        and question_countdown_remaining_ms(room, question=question) <= 0
     )
 
 
@@ -146,7 +149,7 @@ def get_room_state(room, runtime=None):
         'leaderboard': get_leaderboard(room),
         'show_question_stem': bool(getattr(room, 'show_question_stem', True)),
         'countdown_seconds': QUESTION_COUNTDOWN_SECONDS,
-        'countdown_remaining_ms': question_countdown_remaining_ms(room),
+        'countdown_remaining_ms': question_countdown_remaining_ms(room, question=current_q),
         'answered_count': 0,
     }
     if current_q and room.status in (Room.STATUS_PLAYING, *Room.SETTLEMENT_STATUSES):

@@ -298,6 +298,8 @@ let questionStartTime = null;
 let questionPhase = null;
 let timerInterval = null;
 let hasAnswered = false;
+let submitInFlight = false;
+let playQuestionType = '';
 let selectedOptions = new Set();
 let lastAnswerResult = { answered: false, is_correct: false, points: 0 };
 let resultRevealTimer = null;
@@ -414,7 +416,12 @@ function handleEvent(event, data) {
             applyState(data);
             break;
         case 'answer_received':
+            hasAnswered = true;
+            submitInFlight = false;
             showAnswerFeedback(data);
+            break;
+        case 'answer_rejected':
+            unlockAnswerUi();
             break;
         case 'danmaku':
             showDanmaku(data);
@@ -423,12 +430,9 @@ function handleEvent(event, data) {
             showDanmakuHint(data.message);
             break;
         case 'error':
-            if (hasAnswered) {
-                const fb = document.getElementById('answer-feedback');
-                if (fb && !fb.textContent) {
-                    fb.textContent = _t('fb.submitted_short');
-                }
-            } else {
+            if (submitInFlight) {
+                unlockAnswerUi();
+            } else if (!hasAnswered) {
                 alert(data.message);
             }
             break;
@@ -524,12 +528,22 @@ function applyStemMode(state) {
 
 function showQuestion(state) {
     const q = state.question;
-    if (currentQuestionId === q.id && questionPhase) {
+    if (currentQuestionId === q.id && questionPhase === 'live') {
+        const container = document.getElementById('options-container');
+        const needsOptions = CHOICE_TYPES.has(q.question_type)
+            && container
+            && !hasAnswered
+            && container.children.length === 0;
+        if (needsOptions) renderPlayQuestion(state);
+        return;
+    }
+    if (currentQuestionId === q.id && questionPhase === 'countdown') {
         return;
     }
     currentQuestionId = q.id;
     questionPhase = 'countdown';
     hasAnswered = false;
+    submitInFlight = false;
     selectedOptions = new Set();
     lastAnswerResult = { answered: false, is_correct: false, points: 0 };
     questionStartTime = null;
@@ -555,6 +569,7 @@ function showQuestion(state) {
 
 function renderPlayQuestion(state) {
     const q = state.question;
+    playQuestionType = q.question_type || '';
     const isChoice = CHOICE_TYPES.has(q.question_type);
     const isText = TEXT_TYPES.has(q.question_type);
     const isMultiple = q.question_type === 'multiple';
@@ -618,14 +633,23 @@ function renderPlayQuestion(state) {
         const colors = ['option-a', 'option-b', 'option-c', 'option-d'];
         q.options.forEach((opt, i) => {
             const btn = document.createElement('button');
+            btn.type = 'button';
             btn.className = `option-btn ${colors[i]}`;
             btn.textContent = opt.text;
             btn.dataset.key = opt.key;
             btn.disabled = hasAnswered;
             if (isMultiple) {
-                btn.onclick = () => toggleMultiOption(opt.key, btn);
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleMultiOption(opt.key, btn);
+                });
             } else {
-                btn.onclick = () => submitAnswer(opt.key, btn);
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    submitAnswer(opt.key, btn);
+                });
             }
             container.appendChild(btn);
         });
@@ -669,7 +693,7 @@ function clearTimer() {
 }
 
 function toggleMultiOption(key, btn) {
-    if (hasAnswered || questionPhase !== 'live') return;
+    if (hasAnswered || submitInFlight || questionPhase !== 'live') return;
     if (selectedOptions.has(key)) {
         selectedOptions.delete(key);
         btn.classList.remove('selected');
@@ -680,9 +704,11 @@ function toggleMultiOption(key, btn) {
 }
 
 function submitTextAnswer() {
-    if (hasAnswered || questionPhase !== 'live' || !questionStartTime) return;
+    if (hasAnswered || submitInFlight || questionPhase !== 'live') return;
     const text = document.getElementById('text-answer-input').value.trim();
     if (!text) return;
+    if (!questionStartTime) questionStartTime = Date.now();
+    submitInFlight = true;
     hasAnswered = true;
     lockAnswerUi();
     sendWs({
@@ -693,7 +719,9 @@ function submitTextAnswer() {
 }
 
 function submitMultiAnswer() {
-    if (hasAnswered || questionPhase !== 'live' || !questionStartTime || selectedOptions.size === 0) return;
+    if (hasAnswered || submitInFlight || questionPhase !== 'live' || selectedOptions.size === 0) return;
+    if (!questionStartTime) questionStartTime = Date.now();
+    submitInFlight = true;
     hasAnswered = true;
     lockAnswerUi();
     sendWs({
@@ -704,9 +732,11 @@ function submitMultiAnswer() {
 }
 
 function submitAnswer(key, btn) {
-    if (hasAnswered || questionPhase !== 'live' || !questionStartTime) return;
+    if (hasAnswered || submitInFlight || questionPhase !== 'live') return;
+    if (!questionStartTime) questionStartTime = Date.now();
+    submitInFlight = true;
     hasAnswered = true;
-    btn.classList.add('selected');
+    if (btn) btn.classList.add('selected');
     lockAnswerUi();
     sendWs({
         action: 'submit_answer',
@@ -722,6 +752,23 @@ function lockAnswerUi() {
     const textBtn = document.getElementById('submit-text-btn');
     if (textInput) textInput.disabled = true;
     if (textBtn) textBtn.disabled = true;
+}
+
+function unlockAnswerUi() {
+    submitInFlight = false;
+    if (hasAnswered) {
+        hasAnswered = false;
+    }
+    document.querySelectorAll('.option-btn').forEach(b => {
+        b.disabled = false;
+        b.classList.remove('selected');
+    });
+    const textInput = document.getElementById('text-answer-input');
+    const textBtn = document.getElementById('submit-text-btn');
+    if (textInput) textInput.disabled = false;
+    if (textBtn) textBtn.disabled = false;
+    const submitMulti = document.getElementById('submit-multi-btn');
+    if (submitMulti && playQuestionType === 'multiple') submitMulti.classList.remove('hidden');
 }
 
 function renderFeedbackCard(opts) {

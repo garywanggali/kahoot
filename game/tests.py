@@ -542,11 +542,14 @@ class QuestionRevealTests(TestCase):
         self.assertNotIn('回答错误', html)
         self.assertIn('applyStemMode', html)
         self.assertIn('play-hide-stem', html)
+        self.assertIn('play-show-stem', html)
         self.assertIn('question-countdown', html)
         self.assertIn('QuestionCountdown', html)
         self.assertIn('showPoints: true', html)
         self.assertIn('feedback-rank-board', html)
         self.assertIn("state.status === 'leaderboard'", html)
+        self.assertIn('answer_rejected', html)
+        self.assertIn('unlockAnswerUi', html)
 
 
 class StudentStemVisibilityTests(TestCase):
@@ -555,6 +558,15 @@ class StudentStemVisibilityTests(TestCase):
         self.assertTrue(parse_show_question_stem({}))
         self.assertTrue(parse_show_question_stem({'show_question_stem': '1'}))
         self.assertFalse(parse_show_question_stem({'show_question_stem': '0'}))
+
+    def test_show_stem_css_keeps_options_tappable(self):
+        from pathlib import Path
+        from django.conf import settings
+
+        css = (Path(settings.BASE_DIR) / 'static' / 'css' / 'style.css').read_text()
+        self.assertIn('.play-screen.play-show-stem #options-container:not(.hidden)', css)
+        self.assertIn('min-height: min(46vh, 22rem)', css)
+        self.assertIn('min-height: 5.5rem', css)
 
     def test_create_room_can_hide_student_stem(self):
         from .models import QuizSet, QuizSetQuestion, Teacher
@@ -848,6 +860,26 @@ class QuestionCountdownTests(TestCase):
         room.save(update_fields=['status'])
         self.assertEqual(question_countdown_remaining_ms(room, now=started), 0)
         self.assertFalse(can_accept_answer(room))
+
+    def test_explanation_question_skips_countdown_without_orm(self):
+        from django.utils import timezone
+
+        from .models import Question, Room
+        from .utils import can_accept_answer, question_countdown_remaining_ms
+
+        started = timezone.now()
+        room = Room.objects.create(
+            code='445577',
+            name='Explain CD',
+            status=Room.STATUS_PLAYING,
+            question_started_at=started,
+        )
+        slide = Question(
+            question_type=Question.TYPE_EXPLANATION,
+            time_limit=0,
+        )
+        self.assertEqual(question_countdown_remaining_ms(room, now=started, question=slide), 0)
+        self.assertTrue(can_accept_answer(room, slide))
 
     def test_room_state_includes_countdown(self):
         from django.utils import timezone

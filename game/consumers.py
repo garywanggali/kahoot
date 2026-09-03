@@ -243,13 +243,15 @@ class RoomConsumer(AsyncWebsocketConsumer):
             return
 
         room = await self.get_room()
-        if not can_accept_answer(room):
-            return
-
         question = await self.get_current_question()
-        if not question:
+        if not question or question.question_type == Question.TYPE_EXPLANATION:
             return
-        if question.question_type == Question.TYPE_EXPLANATION:
+        accepting = await database_sync_to_async(can_accept_answer)(room, question)
+        if not accepting:
+            await self.send(text_data=json.dumps({
+                'event': 'answer_rejected',
+                'data': {'reason': 'countdown'},
+            }))
             return
 
         selected = self.normalize_answer_selection(question, data)
