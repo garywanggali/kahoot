@@ -3,6 +3,8 @@
 
 {% block title %}{% trans "创建互动房间 - 互动测验工作台" %}{% endblock %}
 
+{% block global_topbar %}{% endblock %}
+
 {% block content %}
 <div class="room-create-viewport">
     
@@ -17,6 +19,9 @@
                 <span>{% trans "返回控制台" %}</span>
             </a>
             <h1 class="studio-main-title">{% trans "创建互动房间" %}</h1>
+        </div>
+        <div class="studio-header-actions">
+            {% include "includes/lang_switcher.html" %}
         </div>
     </div>
 

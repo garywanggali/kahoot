@@ -3,23 +3,28 @@
 
 {% block title %}{% trans "老师控制台 - 互动测验工作台" %}{% endblock %}
 
+{% block global_topbar %}{% endblock %}
+
 {% block content %}
 <div class="teacher-dashboard-viewport">
     
-    <!-- 顶部简洁头部 -->
+    <!-- 顶部简洁头部 (中英切换与退出登录并列展示在右上角) -->
     <div class="studio-header-bar">
         <div class="studio-title-group">
             <h1 class="studio-main-title">{% trans "老师控制台" %}</h1>
             <p class="form-hint" style="margin-top: 0.2rem;">{% blocktranslate with user=teacher.display_name|default:teacher.username %}当前账号：{{ user }}{% endblocktranslate %}</p>
         </div>
-        <a href="{% url 'teacher_logout' %}" class="btn-exit" title="{% trans '安全退出' %}">
-            <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                <polyline points="16 17 21 12 16 7"></polyline>
-                <line x1="21" y1="12" x2="9" y2="12"></line>
-            </svg>
-            <span>{% trans "退出登录" %}</span>
-        </a>
+        <div class="studio-header-actions">
+            {% include "includes/lang_switcher.html" %}
+            <a href="{% url 'teacher_logout' %}" class="btn-exit" title="{% trans '安全退出' %}">
+                <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                <span>{% trans "退出登录" %}</span>
+            </a>
+        </div>
     </div>
 
     <!-- 仅保留核心双模块：大屏房间 + 题库中心 (完全零滑动单屏) -->

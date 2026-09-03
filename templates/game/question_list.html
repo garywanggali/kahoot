@@ -3,6 +3,8 @@
 
 {% block title %}{% trans "我的题库 - 测验套题管理" %}{% endblock %}
 
+{% block global_topbar %}{% endblock %}
+
 {% block content %}
 <div class="question-list-viewport">
 
@@ -17,6 +19,9 @@
                 <span>{% trans "返回控制台" %}</span>
             </a>
             <h1 class="studio-main-title" style="margin-top: 0.15rem;">{% trans "我的题库" %}</h1>
+        </div>
+        <div class="studio-header-actions">
+            {% include "includes/lang_switcher.html" %}
         </div>
     </div>
 

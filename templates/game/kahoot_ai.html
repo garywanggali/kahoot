@@ -5,6 +5,8 @@
 
 {% block title %}{% trans "AI 生成 Kahoot - Kahoot" %}{% endblock %}
 
+{% block global_topbar %}{% endblock %}
+
 {% block content %}
 <div class="studio-header-bar">
     <div class="studio-title-group">
@@ -16,6 +18,9 @@
             <span>{% trans "返回新建 Kahoot" %}</span>
         </a>
         <h1 class="studio-main-title">{% trans "AI 智能生成 Kahoot" %}</h1>
+    </div>
+    <div class="studio-header-actions">
+        {% include "includes/lang_switcher.html" %}
     </div>
 </div>
 

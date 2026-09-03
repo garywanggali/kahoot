@@ -791,6 +791,13 @@ a:hover {
     line-height: 1.15;
 }
 
+.studio-header-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
 .btn-exit {
     display: inline-flex;
     align-items: center;

@@ -3,6 +3,8 @@
 
 {% block title %}{% trans "公共题库 - Kahoot" %}{% endblock %}
 
+{% block global_topbar %}{% endblock %}
+
 {% block content %}
 <div class="studio-header-bar">
     <div class="studio-title-group">
@@ -15,6 +17,9 @@
         </a>
         <h1 class="studio-main-title">{% trans "公共题库" %}</h1>
         <p class="form-hint">{% trans "复制其他老师公开的套题到我的题库，可在编辑器中修改" %}</p>
+    </div>
+    <div class="studio-header-actions">
+        {% include "includes/lang_switcher.html" %}
     </div>
 </div>
 

@@ -3,6 +3,8 @@
 
 {% block title %}{% trans "数据分析报告" %} - {{ room.name|default:room.code }} - Kahoot Studio{% endblock %}
 
+{% block global_topbar %}{% endblock %}
+
 {% block content %}
 <div class="studio-header-bar host-header-bar" style="margin-bottom: 1.5rem;">
     <div class="studio-title-group">
@@ -19,7 +21,8 @@
         <p class="form-hint" style="margin-top: 0.25rem;">{% blocktranslate with code=room.code %}房间号：<code>{{ code }}</code>{% endblocktranslate %}</p>
     </div>
 
-    <div class="host-header-status">
+    <div class="studio-header-actions">
+        {% include "includes/lang_switcher.html" %}
         <a href="{% url 'room_host' room.pk %}" class="btn btn-outline btn-sm">{% trans "返回大厅主持" %}</a>
     </div>
 </div>

@@ -5,6 +5,8 @@
 
 {% block title %}{% trans "主持游戏" %} - {{ room.code }} - Kahoot Studio{% endblock %}
 
+{% block global_topbar %}{% endblock %}
+
 {% block content %}
 <div class="host-app-viewport" id="host-app">
 
@@ -21,7 +23,10 @@
             <h1 class="studio-main-title" style="font-size: 1.6rem; margin-bottom: 0;">{{ room.name|default:_("互动测验房间") }}</h1>
         </div>
 
-        <span id="conn-status" class="hidden"></span>
+        <div class="studio-header-actions">
+            {% include "includes/lang_switcher.html" %}
+            <span id="conn-status" class="hidden"></span>
+        </div>
     </div>
 
     <!-- 1. 等待学生加入大厅 (Waiting Lobby) -->
