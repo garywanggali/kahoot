@@ -328,11 +328,22 @@ a:hover {
 .flip-card-front {
     z-index: 2;
     transform: rotateY(0deg);
+    pointer-events: auto;
 }
 
 .flip-card-back {
     transform: rotateY(180deg);
     z-index: 1;
+    pointer-events: none;
+}
+
+.flip-card.is-flipped .flip-card-front {
+    pointer-events: none;
+}
+
+.flip-card.is-flipped .flip-card-back {
+    pointer-events: auto;
+    z-index: 3;
 }
 
 .card-industrial {
