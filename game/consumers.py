@@ -22,6 +22,7 @@ from .room_cache import (
     join_player,
     maybe_flush,
     record_answer,
+    update_player_avatar,
 )
 from .text_utils import (
     SHORT_ANSWER_MAX_LENGTH,
@@ -82,6 +83,8 @@ class RoomConsumer(AsyncWebsocketConsumer):
                 await self.send_state()
             elif action == 'send_danmaku':
                 await self.handle_send_danmaku(data)
+            elif action == 'update_avatar':
+                await self.handle_update_avatar(data)
         except json.JSONDecodeError:
             await self._send_error('无效的消息格式')
         except Exception:
@@ -103,6 +106,7 @@ class RoomConsumer(AsyncWebsocketConsumer):
     async def handle_join(self, data):
         nickname = data.get('nickname', '').strip()
         session_id = data.get('session_id', '')
+        avatar = data.get('avatar')
 
         if not nickname or len(nickname) > 50:
             await self.send(text_data=json.dumps({
@@ -117,7 +121,7 @@ class RoomConsumer(AsyncWebsocketConsumer):
         room = await self.get_room()
         runtime = await database_sync_to_async(get_runtime_for_code)(self.room_code)
         player, _created, error = await database_sync_to_async(join_player)(
-            runtime, nickname, session_id,
+            runtime, nickname, session_id, avatar=avatar,
         )
         if error == 'nickname_taken':
             await self.send(text_data=json.dumps({
@@ -152,9 +156,41 @@ class RoomConsumer(AsyncWebsocketConsumer):
                 'session_id': session_id,
                 'player_id': player.db_id,
                 'nickname': player.nickname,
+                'avatar': player.avatar,
                 'state': state,
             },
         }))
+
+    async def handle_update_avatar(self, data):
+        if not hasattr(self, 'session_id'):
+            return
+        avatar = data.get('avatar')
+        if not isinstance(avatar, dict):
+            return
+
+        runtime = await database_sync_to_async(get_runtime_for_code)(self.room_code)
+        player, ok = await database_sync_to_async(update_player_avatar)(
+            runtime, self.session_id, avatar,
+        )
+        if not ok or not player:
+            return
+
+        state = await self.get_room_state_async()
+        asyncio.create_task(self._flush_runtime_async(runtime))
+
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'room_message',
+                'event': 'avatar_updated',
+                'data': {
+                    'session_id': self.session_id,
+                    'nickname': player.nickname,
+                    'avatar': player.avatar,
+                    'leaderboard': state['leaderboard'],
+                },
+            },
+        )
 
     async def handle_start_game(self):
         state, error = await database_sync_to_async(start_game_for_room)(self.room_code)

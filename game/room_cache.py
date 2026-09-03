@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+import logging
 import threading
 import time
 from dataclasses import dataclass, field
@@ -24,6 +26,8 @@ class CachedPlayer:
     db_id: int | None = None
     joined_at: float = field(default_factory=time.time)
     score_dirty: bool = False
+    avatar: dict = field(default_factory=lambda: {'face': 0, 'hair': 0})
+    avatar_dirty: bool = False
 
 
 @dataclass
@@ -60,7 +64,12 @@ class RoomRuntime:
             key=lambda p: (-p.score, p.joined_at),
         )
         return [
-            {'nickname': p.nickname, 'score': p.score, 'rank': i + 1}
+            {
+                'nickname': p.nickname,
+                'score': p.score,
+                'rank': i + 1,
+                'avatar': p.avatar,
+            }
             for i, p in enumerate(ordered)
         ]
 
@@ -106,6 +115,18 @@ def drop_runtime(room_code: str) -> None:
         _runtimes.pop(room_code, None)
 
 
+def _clean_avatar(avatar) -> dict:
+    if isinstance(avatar, dict):
+        try:
+            return {
+                'face': max(0, int(avatar.get('face', 0))),
+                'hair': max(0, int(avatar.get('hair', 0))),
+            }
+        except (ValueError, TypeError):
+            pass
+    return {'face': 0, 'hair': 0}
+
+
 def _hydrate_from_db(runtime: RoomRuntime) -> None:
     if runtime.hydrated:
         return
@@ -116,6 +137,7 @@ def _hydrate_from_db(runtime: RoomRuntime) -> None:
             score=player.score,
             db_id=player.id,
             joined_at=player.joined_at.timestamp() if player.joined_at else time.time(),
+            avatar=player.get_avatar_dict(),
         )
         runtime.players[player.session_id] = cached
         runtime.nicknames[player.nickname] = player.session_id
@@ -132,21 +154,49 @@ def _hydrate_from_db(runtime: RoomRuntime) -> None:
     runtime.hydrated = True
 
 
-def join_player(runtime: RoomRuntime, nickname: str, session_id: str) -> tuple[CachedPlayer | None, bool, str | None]:
+def join_player(
+    runtime: RoomRuntime,
+    nickname: str,
+    session_id: str,
+    avatar: dict | None = None,
+) -> tuple[CachedPlayer | None, bool, str | None]:
     with runtime.lock:
         _hydrate_from_db(runtime)
+        clean_av = _clean_avatar(avatar)
         if nickname in runtime.nicknames:
             existing_sid = runtime.nicknames[nickname]
             existing = runtime.players[existing_sid]
             if existing.session_id != session_id:
                 return None, False, 'nickname_taken'
+            if avatar:
+                existing.avatar = clean_av
+                existing.avatar_dirty = True
             return existing, False, None
 
-        player = CachedPlayer(session_id=session_id, nickname=nickname)
+        player = CachedPlayer(
+            session_id=session_id,
+            nickname=nickname,
+            avatar=clean_av,
+        )
         runtime.players[session_id] = player
         runtime.nicknames[nickname] = session_id
         runtime.pending_players.append(player)
         return player, True, None
+
+
+def update_player_avatar(
+    runtime: RoomRuntime,
+    session_id: str,
+    avatar: dict,
+) -> tuple[CachedPlayer | None, bool]:
+    with runtime.lock:
+        _hydrate_from_db(runtime)
+        player = runtime.players.get(session_id)
+        if not player:
+            return None, False
+        player.avatar = _clean_avatar(avatar)
+        player.avatar_dirty = True
+        return player, True
 
 
 def record_answer(
@@ -221,6 +271,7 @@ def _flush_locked(runtime: RoomRuntime) -> None:
                 nickname=p.nickname,
                 session_id=p.session_id,
                 score=p.score,
+                avatar=json.dumps(p.avatar),
             )
             for p in new_players
         ])
@@ -260,13 +311,24 @@ def _flush_locked(runtime: RoomRuntime) -> None:
         if p.db_id and p.score_dirty:
             p.score_dirty = False
 
+    dirty_avatars = {
+        p.db_id: json.dumps(p.avatar)
+        for p in runtime.players.values()
+        if p.db_id and p.avatar_dirty
+    }
+    for db_id, av_json in dirty_avatars.items():
+        Player.objects.filter(id=db_id).update(avatar=av_json)
+    for p in runtime.players.values():
+        if p.db_id and p.avatar_dirty:
+            p.avatar_dirty = False
+
     runtime.last_flush_at = time.monotonic()
 
 
 def flush_runtime(runtime: RoomRuntime, force: bool = False) -> None:
     with runtime.lock:
         pending = len(runtime.pending_players) + len(runtime.pending_answers)
-        dirty = any(p.score_dirty for p in runtime.players.values())
+        dirty = any(p.score_dirty or p.avatar_dirty for p in runtime.players.values())
         if not force and not pending and not dirty:
             return
         if not force and not runtime.should_flush() and not dirty:

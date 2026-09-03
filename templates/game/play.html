@@ -8,10 +8,45 @@
 <div id="app" class="play-app">
     <div id="waiting-screen" class="play-waiting">
         <div class="logo logo-sm">Ka<span>hoo</span>t!</div>
-        <p class="player-count">你是 <strong>{{ nickname }}</strong></p>
-        <p class="player-count">房间号: <strong>{{ room.code }}</strong></p>
-        <h2 class="page-title section-gap-lg">等待老师开始游戏...</h2>
-        <div class="player-count">已加入: <span id="player-count">0</span> 人</div>
+
+        <!-- Kahoot 大厅个性化形象定制器 -->
+        <div class="lobby-avatar-card">
+            <div class="lobby-avatar-preview-wrap">
+                <div id="lobby-avatar-preview" class="lobby-avatar-preview">
+                    <!-- SVG 头像在此渲染 -->
+                </div>
+                <button type="button" class="btn-avatar-random" onclick="randomizeAvatar()" title="随机换装">
+                    <span>🎲 随机换装</span>
+                </button>
+            </div>
+
+            <div class="lobby-avatar-customizer">
+                <!-- 1. 脸部表情选择 -->
+                <div class="avatar-picker-row">
+                    <span class="picker-label">😀 脸部表情</span>
+                    <div class="picker-control">
+                        <button type="button" class="picker-btn" onclick="cycleFace(-1)" aria-label="上一个脸部表情">◀</button>
+                        <span id="picker-face-name" class="picker-val-name">元气微笑</span>
+                        <button type="button" class="picker-btn" onclick="cycleFace(1)" aria-label="下一个脸部表情">▶</button>
+                    </div>
+                </div>
+
+                <!-- 2. 发型样式选择 -->
+                <div class="avatar-picker-row">
+                    <span class="picker-label">💇 发型样式</span>
+                    <div class="picker-control">
+                        <button type="button" class="picker-btn" onclick="cycleHair(-1)" aria-label="上一个发型样式">◀</button>
+                        <span id="picker-hair-name" class="picker-val-name">动感短发</span>
+                        <button type="button" class="picker-btn" onclick="cycleHair(1)" aria-label="下一个发型样式">▶</button>
+                    </div>
+                </div>
+            </div>
+            <div class="lobby-customizer-hint">💡 自定义形象将实时在老师大屏及终场颁奖台上亮相！</div>
+        </div>
+
+        <p class="player-count">你是 <strong>{{ nickname }}</strong> | 房间号: <strong>{{ room.code }}</strong></p>
+        <h2 class="page-title section-gap-sm">等待老师开始游戏...</h2>
+        <div class="player-count">已连线玩家: <span id="player-count">0</span> 人</div>
     </div>
 
     <div id="play-screen" class="play-screen hidden">
@@ -39,7 +74,9 @@
     </div>
 
     <div id="ended-screen" class="play-ended hidden">
+        <div id="ended-avatar-wrap" class="ended-avatar-wrap section-gap-sm"></div>
         <h2 class="page-title">游戏已结束</h2>
+        <div id="ended-rank-info" class="ended-rank-info hidden"></div>
         <p class="text-muted-block">感谢参与本次测验</p>
         <a href="{% url 'index' %}" class="btn btn-primary section-gap-lg">返回首页</a>
     </div>
@@ -60,6 +97,73 @@
 const ROOM_CODE = '{{ room.code }}';
 const NICKNAME = '{{ nickname }}';
 const INITIAL_STATE = {{ initial_state_json|safe }};
+
+const STORAGE_AVATAR_KEY = 'kahoot_player_avatar';
+let myAvatar = (function() {
+    try {
+        const saved = localStorage.getItem(STORAGE_AVATAR_KEY);
+        if (saved && window.AvatarSystem) {
+            return window.AvatarSystem.normalize(JSON.parse(saved));
+        }
+    } catch (e) {}
+    return window.AvatarSystem ? window.AvatarSystem.random() : { face: 0, hair: 0 };
+})();
+
+function saveMyAvatar() {
+    try {
+        localStorage.setItem(STORAGE_AVATAR_KEY, JSON.stringify(myAvatar));
+    } catch (e) {}
+}
+
+function updateAvatarUi() {
+    if (!window.AvatarSystem) return;
+    const preview = document.getElementById('lobby-avatar-preview');
+    if (preview) {
+        preview.innerHTML = window.AvatarSystem.renderSvg(myAvatar, 120, {
+            nickname: NICKNAME,
+            className: 'lobby-avatar-bounce-svg',
+        });
+    }
+    const faceObj = window.AvatarSystem.FACES[myAvatar.face];
+    const hairObj = window.AvatarSystem.HAIRS[myAvatar.hair];
+    const faceEl = document.getElementById('picker-face-name');
+    const hairEl = document.getElementById('picker-hair-name');
+    if (faceEl && faceObj) {
+        faceEl.textContent = `${faceObj.name} (${myAvatar.face + 1}/${window.AvatarSystem.FACES.length})`;
+    }
+    if (hairEl && hairObj) {
+        hairEl.textContent = `${hairObj.name} (${myAvatar.hair + 1}/${window.AvatarSystem.HAIRS.length})`;
+    }
+}
+
+function syncAvatarToServer() {
+    saveMyAvatar();
+    updateAvatarUi();
+    sendWs({
+        action: 'update_avatar',
+        avatar: myAvatar,
+    });
+}
+
+function cycleFace(delta) {
+    if (!window.AvatarSystem) return;
+    const total = window.AvatarSystem.FACES.length;
+    myAvatar.face = (myAvatar.face + delta + total) % total;
+    syncAvatarToServer();
+}
+
+function cycleHair(delta) {
+    if (!window.AvatarSystem) return;
+    const total = window.AvatarSystem.HAIRS.length;
+    myAvatar.hair = (myAvatar.hair + delta + total) % total;
+    syncAvatarToServer();
+}
+
+function randomizeAvatar() {
+    if (!window.AvatarSystem) return;
+    myAvatar = window.AvatarSystem.random();
+    syncAvatarToServer();
+}
 
 let ws = null;
 let sessionId = localStorage.getItem('kahoot_session_' + ROOM_CODE) || '';
@@ -113,6 +217,7 @@ function connect() {
             action: 'join',
             nickname: NICKNAME,
             session_id: sessionId,
+            avatar: myAvatar,
         }));
     };
 
@@ -130,8 +235,19 @@ function handleEvent(event, data) {
             sessionId = data.session_id;
             joinedReady = true;
             localStorage.setItem('kahoot_session_' + ROOM_CODE, sessionId);
+            if (data.avatar) {
+                myAvatar = window.AvatarSystem.normalize(data.avatar);
+                saveMyAvatar();
+                updateAvatarUi();
+            }
             applyState(data.state);
             updateDanmakuBar(data.state.status);
+            break;
+        case 'avatar_updated':
+            if (data.session_id === sessionId && data.avatar) {
+                myAvatar = window.AvatarSystem.normalize(data.avatar);
+                updateAvatarUi();
+            }
             break;
         case 'player_joined':
             document.getElementById('player-count').textContent = data.player_count;
@@ -206,6 +322,7 @@ function applyState(state) {
     if (state.status === 'ended') {
         document.getElementById('ended-screen').classList.remove('hidden');
         clearTimer();
+        renderEndedPlayerInfo(state.leaderboard);
     } else if (state.status === 'playing' && state.question) {
         document.getElementById('play-screen').classList.remove('hidden');
         showQuestion(state);
@@ -526,6 +643,32 @@ document.getElementById('text-answer-input').addEventListener('keydown', (e) => 
     }
 });
 
+function renderEndedPlayerInfo(leaderboard) {
+    if (!leaderboard) return;
+    const me = leaderboard.find(p => p.nickname === NICKNAME);
+    const wrap = document.getElementById('ended-avatar-wrap');
+    const info = document.getElementById('ended-rank-info');
+    if (wrap && window.AvatarSystem) {
+        wrap.innerHTML = window.AvatarSystem.renderSvg(me && me.avatar ? me.avatar : myAvatar, 96, {
+            nickname: NICKNAME,
+            podium: me && me.rank <= 3,
+            rank: me ? me.rank : 0,
+        });
+    }
+    if (info && me) {
+        const medalLabels = ['🥇 冠军', '🥈 亚军', '🥉 季军'];
+        const rankStr = me.rank <= 3 ? medalLabels[me.rank - 1] : `第 ${me.rank} 名`;
+        info.innerHTML = `
+            <div class="ended-player-stat">
+                <span class="ended-badge">${rankStr}</span>
+                <span class="ended-score">最终积分: <strong>${me.score}</strong> 分</span>
+            </div>
+        `;
+        info.classList.remove('hidden');
+    }
+}
+
+updateAvatarUi();
 applyState(INITIAL_STATE);
 connect();
 </script>

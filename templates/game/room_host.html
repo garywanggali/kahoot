@@ -165,7 +165,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/awards.js' %}?v=2"></script>
+<script src="{% static 'js/awards.js' %}?v=3"></script>
 <script src="{% static 'js/wordcloud.js' %}?v=2"></script>
 <script>
 const ROOM_CODE = '{{ room.code }}';
@@ -221,8 +221,14 @@ function connect() {
 function handleHostEvent(event, data) {
     switch (event) {
         case 'player_joined':
-            document.getElementById('host-player-count').textContent = data.player_count;
-            document.getElementById('total-players').textContent = data.player_count;
+        case 'avatar_updated':
+            if (data.player_count !== undefined) {
+                document.getElementById('host-player-count').textContent = data.player_count;
+                document.getElementById('total-players').textContent = data.player_count;
+            } else if (data.leaderboard) {
+                document.getElementById('host-player-count').textContent = data.leaderboard.length;
+                document.getElementById('total-players').textContent = data.leaderboard.length;
+            }
             if (!document.getElementById('host-waiting').classList.contains('hidden')) {
                 renderWaitingLobbyPlayers(data.leaderboard);
             }
@@ -397,12 +403,18 @@ function renderWaitingLobbyPlayers(leaderboard) {
         `;
         return;
     }
-    container.innerHTML = leaderboard.map(p => `
-        <div class="host-player-chip">
-            <span class="player-chip-avatar">${p.nickname.slice(0, 1).toUpperCase()}</span>
-            <span class="player-chip-name">${escapeHtml(p.nickname)}</span>
-        </div>
-    `).join('');
+    container.innerHTML = leaderboard.map(p => {
+        const avatarSvg = window.AvatarSystem
+            ? window.AvatarSystem.renderSvg(p.avatar, 38, { nickname: p.nickname })
+            : `<span class="player-chip-avatar-fallback">${escapeHtml(p.nickname.slice(0, 1).toUpperCase())}</span>`;
+
+        return `
+            <div class="host-player-chip">
+                <span class="player-chip-avatar">${avatarSvg}</span>
+                <span class="player-chip-name">${escapeHtml(p.nickname)}</span>
+            </div>
+        `;
+    }).join('');
 }
 
 function renderLeaderboard(leaderboard, containerId) {
@@ -417,11 +429,14 @@ function renderLeaderboard(leaderboard, containerId) {
         const isTop3 = p.rank === 3;
         const rankClass = isTop1 ? 'rank-1' : isTop2 ? 'rank-2' : isTop3 ? 'rank-3' : '';
         const rankIcon = isTop1 ? '🥇' : isTop2 ? '🥈' : isTop3 ? '🥉' : `#${p.rank}`;
+        const avatarSvg = window.AvatarSystem
+            ? window.AvatarSystem.renderSvg(p.avatar, 36, { nickname: p.nickname })
+            : escapeHtml(p.nickname.slice(0, 1).toUpperCase());
 
         return `
             <div class="host-lb-row ${rankClass}">
                 <div class="host-lb-rank">${rankIcon}</div>
-                <div class="host-lb-avatar">${p.nickname.slice(0, 1).toUpperCase()}</div>
+                <div class="host-lb-avatar">${avatarSvg}</div>
                 <div class="host-lb-name">${escapeHtml(p.nickname)}</div>
                 <div class="host-lb-score">${p.score} <span class="score-unit">分</span></div>
             </div>

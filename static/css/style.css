@@ -2962,16 +2962,35 @@ button.kahoot-choice-button:focus-visible {
 }
 
 .player-chip-avatar {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    background: var(--token-color-orange);
-    color: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.75rem;
-    font-weight: 900;
+    flex-shrink: 0;
+}
+
+.player-chip-avatar svg {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+}
+
+.host-lb-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.host-lb-avatar svg {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
 }
 
 .host-waiting-foot {
@@ -3311,3 +3330,238 @@ button.kahoot-choice-button:focus-visible {
     margin: 1rem 0 0.5rem;
     text-align: center;
 }
+
+/* ==========================================================================
+   5. Kahoot-style Lobby Avatar Customizer & Podium Badges
+   ========================================================================== */
+
+@keyframes avatarFloat {
+    0%, 100% {
+        transform: translateY(0px) scale(1);
+    }
+    50% {
+        transform: translateY(-6px) scale(1.02);
+    }
+}
+
+.lobby-avatar-card {
+    background: var(--token-color-surface-pure, #ffffff);
+    border: 2px solid var(--token-border-solid, #18181b);
+    border-radius: var(--token-radius-card, 16px);
+    box-shadow: 0 6px 0 var(--token-border-solid, #18181b);
+    padding: 1.5rem 1.25rem 1.25rem;
+    max-width: 360px;
+    margin: 1.25rem auto 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.lobby-avatar-preview-wrap {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.lobby-avatar-preview {
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+}
+
+.lobby-avatar-bounce-svg {
+    width: 100%;
+    height: 100%;
+    animation: avatarFloat 3s ease-in-out infinite;
+    filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.15));
+}
+
+.btn-avatar-random {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.85rem;
+    font-family: var(--token-font-hero);
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--token-text-primary, #18181b);
+    background: #f4f4f5;
+    border: 1.5px solid var(--token-border-solid, #18181b);
+    border-radius: var(--token-radius-pill, 9999px);
+    box-shadow: 0 2px 0 var(--token-border-solid, #18181b);
+    cursor: pointer;
+    transition: transform 0.1s ease, background 0.15s ease;
+}
+
+.btn-avatar-random:hover {
+    background: #e4e4e7;
+    transform: translateY(-1px);
+}
+
+.btn-avatar-random:active {
+    transform: translateY(2px);
+    box-shadow: none;
+}
+
+.lobby-avatar-customizer {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.avatar-picker-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 0.5rem;
+}
+
+.picker-label {
+    font-family: var(--token-font-hero);
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--token-text-secondary, #52525b);
+    white-space: nowrap;
+}
+
+.picker-control {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: #f4f4f5;
+    border: 1.5px solid var(--token-border-solid, #18181b);
+    border-radius: 10px;
+    box-shadow: 0 2px 0 var(--token-border-solid, #18181b);
+    padding: 0.2rem 0.3rem;
+    flex: 1;
+    max-width: 200px;
+    justify-content: space-between;
+}
+
+.picker-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: 1px solid var(--token-border-solid, #18181b);
+    background: #ffffff;
+    color: #18181b;
+    font-size: 0.75rem;
+    font-weight: 900;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 0 var(--token-border-solid, #18181b);
+    transition: transform 0.05s ease, background 0.1s ease;
+}
+
+.picker-btn:hover {
+    background: #e4e4e7;
+}
+
+.picker-btn:active {
+    transform: translateY(1px);
+    box-shadow: none;
+}
+
+.picker-val-name {
+    font-family: var(--token-font-hero);
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: var(--token-text-primary, #18181b);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
+    padding: 0 0.25rem;
+    flex: 1;
+}
+
+.lobby-customizer-hint {
+    margin-top: 0.85rem;
+    font-size: 0.75rem;
+    color: var(--token-text-muted, #71717a);
+    line-height: 1.4;
+}
+
+/* 领奖台 (Podium) 头像 */
+.podium-avatar-wrap {
+    margin-bottom: 0.5rem;
+    animation: avatarFloat 3.5s ease-in-out infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.podium-avatar-rank-1 {
+    filter: drop-shadow(0 6px 12px rgba(255, 215, 0, 0.45));
+}
+
+.podium-avatar-rank-2 {
+    filter: drop-shadow(0 5px 10px rgba(192, 192, 192, 0.35));
+}
+
+.podium-avatar-rank-3 {
+    filter: drop-shadow(0 5px 10px rgba(205, 127, 50, 0.35));
+}
+
+.leaderboard-avatar-mini {
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-right: 0.5rem;
+}
+
+.leaderboard-avatar-mini svg {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+}
+
+.ended-avatar-wrap {
+    display: flex;
+    justify-content: center;
+    margin: 1rem 0 0.5rem;
+}
+
+.ended-avatar-wrap svg {
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.18));
+}
+
+.ended-player-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.75rem 0 1.25rem;
+    font-family: var(--token-font-hero);
+}
+
+.ended-badge {
+    background: #ffecb3;
+    color: #b78103;
+    border: 1.5px solid #d4af37;
+    border-radius: var(--token-radius-pill, 9999px);
+    padding: 0.35rem 1.25rem;
+    font-size: 1.15rem;
+    font-weight: 900;
+}
+
+.ended-score {
+    font-size: 1rem;
+    color: var(--token-text-secondary, #52525b);
+}
+

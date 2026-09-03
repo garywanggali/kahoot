@@ -313,6 +313,7 @@ class Player(models.Model):
     nickname = models.CharField('昵称', max_length=50)
     score = models.IntegerField(default=0)
     session_id = models.CharField(max_length=64, db_index=True)
+    avatar = models.CharField('个性化头像', max_length=120, default='{"face":0,"hair":0}')
     joined_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -320,6 +321,23 @@ class Player(models.Model):
 
     def __str__(self):
         return f'{self.nickname} ({self.score})'
+
+    def get_avatar_dict(self) -> dict:
+        if not self.avatar:
+            return {'face': 0, 'hair': 0}
+        if isinstance(self.avatar, dict):
+            return self.avatar
+        try:
+            import json
+            data = json.loads(self.avatar)
+            if isinstance(data, dict):
+                return {
+                    'face': max(0, int(data.get('face', 0))),
+                    'hair': max(0, int(data.get('hair', 0))),
+                }
+        except Exception:
+            pass
+        return {'face': 0, 'hair': 0}
 
 
 class Answer(models.Model):

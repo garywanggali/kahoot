@@ -18,7 +18,12 @@ def calculate_points(time_limit_seconds, response_time_ms, is_correct):
 def get_leaderboard(room):
     players = Player.objects.filter(room=room).order_by('-score', 'joined_at')
     return [
-        {'nickname': p.nickname, 'score': p.score, 'rank': i + 1}
+        {
+            'nickname': p.nickname,
+            'score': p.score,
+            'rank': i + 1,
+            'avatar': p.get_avatar_dict(),
+        }
         for i, p in enumerate(players)
     ]
 

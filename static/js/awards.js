@@ -10,10 +10,21 @@ function renderPodiumSlot(rank, player) {
     const score = player ? player.score : '';
     const emptyClass = player ? '' : ' podium-slot-empty';
 
+    const avatarHtml = (player && window.AvatarSystem)
+        ? `<div class="podium-avatar-wrap podium-avatar-rank-${rank}">
+            ${window.AvatarSystem.renderSvg(player.avatar, rank === 1 ? 84 : 68, {
+                nickname: player.nickname,
+                podium: true,
+                rank: rank,
+            })}
+           </div>`
+        : '';
+
     return `
         <div class="podium-slot podium-rank-${rank}${emptyClass}">
+            ${avatarHtml}
             <div class="podium-medal" aria-hidden="true">${medals[rank]}</div>
-            <div class="podium-name">${name}</div>
+            <div class="podium-name" title="${name}">${name}</div>
             ${player ? `<div class="podium-score">${score} 分</div>` : ''}
             <div class="podium-stand podium-stand-${rank}">
                 <span class="podium-place-label">${rank}</span>
@@ -50,13 +61,20 @@ function renderLeaderboardList(leaderboard, containerId, startRank = 1) {
         return;
     }
 
-    container.innerHTML = rows.map(p => `
-        <div class="leaderboard-item">
-            <span class="leaderboard-rank">#${p.rank}</span>
-            <span class="leaderboard-name">${escapeHtml(p.nickname)}</span>
-            <span class="leaderboard-score">${p.score}</span>
-        </div>
-    `).join('');
+    container.innerHTML = rows.map(p => {
+        const avatarSvg = window.AvatarSystem
+            ? window.AvatarSystem.renderSvg(p.avatar, 30, { nickname: p.nickname })
+            : `<span class="leaderboard-avatar-initial">${escapeHtml(p.nickname.slice(0, 1))}</span>`;
+
+        return `
+            <div class="leaderboard-item">
+                <span class="leaderboard-rank">#${p.rank}</span>
+                <span class="leaderboard-avatar-mini">${avatarSvg}</span>
+                <span class="leaderboard-name">${escapeHtml(p.nickname)}</span>
+                <span class="leaderboard-score">${p.score}</span>
+            </div>
+        `;
+    }).join('');
 }
 
 function renderAwardsCeremony(leaderboard, podiumId, listId, titleId) {
