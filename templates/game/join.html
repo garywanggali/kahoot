@@ -3,6 +3,26 @@
 {% block title %}加入游戏 - Kahoot Studio{% endblock %}
 
 {% block content %}
+<div class="mk-topbar">
+    <div class="mk-brand">
+        <span class="mk-dot"></span>
+        <span class="mk-label">KAHOOT · STUDIO</span>
+    </div>
+    <div class="mk-terminal-hint">
+        $ quiz --ready · 6-digit pin ok
+    </div>
+    <div class="mk-actions">
+        <button type="button" class="btn-mk-pill" onclick="toggleCardFlip(true)">
+            <span>老师控制台</span>
+            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+        </button>
+    </div>
+</div>
+
 <div class="hero-section" style="margin-top: 3rem; margin-bottom: 2rem;">
     <h1 class="hero-headline" style="font-size: 3.5rem;">
         <span class="headline-black">join game.</span>
