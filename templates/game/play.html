@@ -129,8 +129,8 @@
     </div>
 
     <div id="ended-screen" class="play-ended hidden">
-        <div class="host-stage-title-wrap" style="margin-bottom: 1.5rem;">
-            <h2 class="host-stage-title" style="font-size: 2.2rem;">{% trans "颁奖典礼" %}</h2>
+        <div class="host-stage-title-wrap play-ended-title-wrap">
+            <h2 class="host-stage-title">{% trans "颁奖典礼" %}</h2>
         </div>
 
         <div id="player-podium-container" class="host-podium-outer" style="width: 100%;"></div>
@@ -138,11 +138,7 @@
         <h3 class="final-rankings-title hidden" id="player-final-rankings-title">{% trans "完整排名" %}</h3>
         <div id="player-final-leaderboard" class="host-leaderboard-scroll-list" style="max-height: 200px; width: 100%; max-width: 600px;"></div>
 
-        <div class="host-stage-foot" style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-            <button type="button" class="token-btn-primary btn-host-analytics" onclick="showPlayerAnalyticsScreen()">
-                <span>{% trans "查看数据分析" %}</span>
-                <span>→</span>
-            </button>
+        <div class="host-stage-foot play-ended-foot">
             <a href="{% url 'index' %}" class="token-btn-secondary" style="display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none;">
                 <span>{% trans "返回首页" %}</span>
             </a>
@@ -559,6 +555,8 @@ function showQuestion(state) {
         return;
     }
 
+    renderCountdownPreview(state);
+
     runPlayCountdown(state, function () {
         if (currentQuestionId !== q.id) return;
         questionPhase = 'live';
@@ -925,6 +923,42 @@ function hideQuestionStemUi() {
     document.getElementById('question-number').classList.add('hidden');
     document.getElementById('question-text').classList.add('hidden');
     document.getElementById('question-image-wrap').classList.add('hidden');
+}
+
+function renderCountdownPreview(state) {
+    const q = state.question;
+    const container = document.getElementById('options-container');
+    if (!container) return;
+
+    container.innerHTML = '';
+    container.classList.remove('judgment-options');
+
+    const isChoice = CHOICE_TYPES.has(q.question_type);
+    const colors = ['option-a', 'option-b', 'option-c', 'option-d'];
+
+    if (isChoice) {
+        container.classList.toggle('judgment-options', q.question_type === 'judgment');
+        q.options.forEach((opt, i) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = `option-btn ${colors[i]}`;
+            btn.textContent = opt.text;
+            btn.disabled = true;
+            btn.tabIndex = -1;
+            container.appendChild(btn);
+        });
+    } else {
+        colors.forEach((color) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = `option-btn ${color}`;
+            btn.disabled = true;
+            btn.tabIndex = -1;
+            container.appendChild(btn);
+        });
+    }
+
+    container.classList.remove('hidden');
 }
 
 function showAnswerFeedback(data) {
