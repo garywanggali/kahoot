@@ -1,6 +1,7 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}创建互动房间 - 互动测验工作台{% endblock %}
+{% block title %}{% trans "创建互动房间 - 互动测验工作台" %}{% endblock %}
 
 {% block content %}
 <div class="room-create-viewport">
@@ -13,9 +14,9 @@
                     <line x1="19" y1="12" x2="5" y2="12"></line>
                     <polyline points="12 19 5 12 12 5"></polyline>
                 </svg>
-                <span>返回控制台</span>
+                <span>{% trans "返回控制台" %}</span>
             </a>
-            <h1 class="studio-main-title">创建互动房间</h1>
+            <h1 class="studio-main-title">{% trans "创建互动房间" %}</h1>
         </div>
     </div>
 
@@ -29,31 +30,31 @@
                 <!-- 房间名称输入区 -->
                 <div class="room-form-section" style="margin-bottom: 1.75rem;">
                     <label for="room-name-input" class="room-section-label">
-                        <span>房间名称</span>
-                        <span class="room-label-hint">（选填，留空将默认使用套题名称）</span>
+                        <span>{% trans "房间名称" %}</span>
+                        <span class="room-label-hint">{% trans "（选填，留空将默认使用套题名称）" %}</span>
                     </label>
                     <input type="text" id="room-name-input" name="name" class="input-industrial input-wizard-contrast"
-                           placeholder="例如：初一地理期中竞赛 / 课前 5 分钟随堂测验"
+                           placeholder="{% trans '例如：初一地理期中竞赛 / 课前 5 分钟随堂测验' %}"
                            maxlength="200" autocomplete="off" autofocus>
                 </div>
 
                 <div class="room-form-section" style="margin-bottom: 1.75rem;">
                     <label class="room-section-label">
-                        <span>学生端是否显示题干</span>
-                        <span class="room-label-hint">（公共屏幕始终显示完整题目）</span>
+                        <span>{% trans "学生端是否显示题干" %}</span>
+                        <span class="room-label-hint">{% trans "（公共屏幕始终显示完整题目）" %}</span>
                     </label>
                     <div class="room-stem-choice">
                         <label class="room-stem-card {% if show_question_stem != False %}is-selected{% endif %}">
                             <input type="radio" name="show_question_stem" value="1" class="room-stem-radio"
                                    {% if show_question_stem != False %}checked{% endif %}>
-                            <span class="room-stem-card-title">显示题干和图片</span>
-                            <span class="room-stem-card-desc">学生手机上能看到题目文字和配图，再作答</span>
+                            <span class="room-stem-card-title">{% trans "显示题干和图片" %}</span>
+                            <span class="room-stem-card-desc">{% trans "学生手机上能看到题目文字和配图，再作答" %}</span>
                         </label>
                         <label class="room-stem-card {% if show_question_stem == False %}is-selected{% endif %}">
                             <input type="radio" name="show_question_stem" value="0" class="room-stem-radio"
                                    {% if show_question_stem == False %}checked{% endif %}>
-                            <span class="room-stem-card-title">不显示，只出选项</span>
-                            <span class="room-stem-card-desc">学生端铺满选项或输入框，题干看教室大屏</span>
+                            <span class="room-stem-card-title">{% trans "不显示，只出选项" %}</span>
+                            <span class="room-stem-card-desc">{% trans "学生端铺满选项或输入框，题干看教室大屏" %}</span>
                         </label>
                     </div>
                 </div>
@@ -62,18 +63,18 @@
                 <div class="room-form-section">
                     <div class="room-quiz-section-header">
                         <label class="room-section-label" style="margin-bottom: 0;">
-                            <span>选择互动测验套题</span>
-                            <span class="room-label-hint">（点击卡片即可直接选中）</span>
+                            <span>{% trans "选择互动测验套题" %}</span>
+                            <span class="room-label-hint">{% trans "（点击卡片即可直接选中）" %}</span>
                         </label>
 
                         <!-- 分类切换标签 -->
                         <div class="room-quiz-filter-tabs">
                             <button type="button" class="tab-pill active" id="tab-my-quiz" onclick="switchQuizTab('my')">
-                                我的题库 ({{ my_quiz_sets|length }})
+                                {% blocktranslate with count=my_quiz_sets|length %}我的题库 ({{ count }}){% endblocktranslate %}
                             </button>
                             {% if public_quiz_sets %}
                             <button type="button" class="tab-pill" id="tab-public-quiz" onclick="switchQuizTab('public')">
-                                公共题库 ({{ public_quiz_sets|length }})
+                                {% blocktranslate with count=public_quiz_sets|length %}公共题库 ({{ count }}){% endblocktranslate %}
                             </button>
                             {% endif %}
                         </div>
@@ -94,7 +95,7 @@
                                     <div class="room-quiz-card-head">
                                         <div class="room-card-meta-left">
                                             <span class="room-card-index">{{ forloop.counter|stringformat:"02d" }}</span>
-                                            <span class="room-count-badge">{{ qs.question_count }} 题</span>
+                                            <span class="room-count-badge">{% blocktranslate with count=qs.question_count %}{{ count }} 题{% endblocktranslate %}</span>
                                         </div>
                                         <div class="room-card-check-icon">
                                             <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -111,8 +112,8 @@
                             </div>
                             {% else %}
                             <div class="room-empty-tip">
-                                <p>您还没有创建自己的测验套题</p>
-                                <a href="{% url 'kahoot_new' %}" class="btn btn-outline btn-sm">+ 去新建套题</a>
+                                <p>{% trans "您还没有创建自己的测验套题" %}</p>
+                                <a href="{% url 'kahoot_new' %}" class="btn btn-outline btn-sm">{% trans "+ 去新建套题" %}</a>
                             </div>
                             {% endif %}
                         </div>
@@ -129,7 +130,7 @@
                                     <div class="room-quiz-card-head">
                                         <div class="room-card-meta-left">
                                             <span class="room-card-index">{{ forloop.counter|stringformat:"02d" }}</span>
-                                            <span class="room-count-badge">{{ qs.question_count }} 题</span>
+                                            <span class="room-count-badge">{% blocktranslate with count=qs.question_count %}{{ count }} 题{% endblocktranslate %}</span>
                                             <span class="room-author-chip">{{ qs.teacher.display_name|default:qs.teacher.username }}</span>
                                         </div>
                                         <div class="room-card-check-icon">
@@ -151,15 +152,15 @@
                         <!-- 底部提交操作栏 -->
                         <div class="room-card-footer">
                             <button type="submit" class="btn-create-room-submit" id="btn-submit-room">
-                                <span>创建并启动房间</span>
+                                <span>{% trans "创建并启动房间" %}</span>
                                 <span>→</span>
                             </button>
                         </div>
 
                     {% else %}
                         <div class="room-empty-tip">
-                            <p>当前暂无任何可用测验套题</p>
-                            <a href="{% url 'kahoot_new' %}" class="btn btn-primary" style="margin-top: 0.5rem;">+ 立即新建第一套 Kahoot</a>
+                            <p>{% trans "当前暂无任何可用测验套题" %}</p>
+                            <a href="{% url 'kahoot_new' %}" class="btn btn-primary" style="margin-top: 0.5rem;">{% trans "+ 立即新建第一套 Kahoot" %}</a>
                         </div>
                     {% endif %}
 
@@ -193,7 +194,6 @@ function switchQuizTab(tab) {
     }
 }
 
-// 选中卡片联动高亮样式
 document.querySelectorAll('.room-quiz-radio').forEach(radio => {
     radio.addEventListener('change', () => {
         document.querySelectorAll('.room-quiz-card').forEach(card => card.classList.remove('is-selected'));

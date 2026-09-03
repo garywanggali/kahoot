@@ -1,8 +1,9 @@
 {% extends "base.html" %}
+{% load i18n %}
 
 {% block body_attrs %}data-turbo="false"{% endblock %}
 
-{% block title %}AI 生成 Kahoot - Kahoot{% endblock %}
+{% block title %}{% trans "AI 生成 Kahoot - Kahoot" %}{% endblock %}
 
 {% block content %}
 <div class="studio-header-bar">
@@ -12,84 +13,84 @@
                 <line x1="19" y1="12" x2="5" y2="12"></line>
                 <polyline points="12 19 5 12 12 5"></polyline>
             </svg>
-            <span>返回新建 Kahoot</span>
+            <span>{% trans "返回新建 Kahoot" %}</span>
         </a>
-        <h1 class="studio-main-title">AI 智能生成 Kahoot</h1>
+        <h1 class="studio-main-title">{% trans "AI 智能生成 Kahoot" %}</h1>
     </div>
 </div>
 
 {% if not ai_configured %}
 <div class="alert alert-warning section-gap">
-    未检测到 <code>STEPFUN_API_KEY</code>。请在阶跃星辰开放平台创建 API Key 后设置环境变量并重启服务。
-    本地示例：<code>export STEPFUN_API_KEY=你的密钥</code>
-    · <a href="https://platform.stepfun.com/docs/zh/quickstart/overview" target="_blank" rel="noopener">接入文档</a>
+    {% blocktranslate %}未检测到 <code>STEPFUN_API_KEY</code>。请在阶跃星辰开放平台创建 API Key 后设置环境变量并重启服务。{% endblocktranslate %}
+    {% trans "本地示例：" %}<code>export STEPFUN_API_KEY=your_key</code>
+    · <a href="https://platform.stepfun.com/docs/zh/quickstart/overview" target="_blank" rel="noopener">{% trans "接入文档" %}</a>
 </div>
 {% endif %}
 
 <div class="card">
-    <h3 class="page-title">生成设置</h3>
+    <h3 class="page-title">{% trans "生成设置" %}</h3>
     <form method="post" id="kahoot-ai-form" data-turbo="false">
         {% csrf_token %}
         <input type="hidden" name="kahoot_title" value="{{ kahoot_title|default:'' }}">
         {% if kahoot_title %}
         <div class="form-group">
-            <label>套题名称</label>
-            <p class="form-hint"><strong>{{ kahoot_title }}</strong>（在新建页已设定，保存后将使用此名称）</p>
+            <label>{% trans "套题名称" %}</label>
+            <p class="form-hint"><strong>{{ kahoot_title }}</strong>（{% trans "在新建页已设定，保存后将使用此名称" %}）</p>
         </div>
         {% else %}
         <div class="alert alert-warning">
-            未检测到套题名称，请 <a href="{% url 'kahoot_new' %}">返回新建页</a> 先命名题库再选择 AI 生成。
+            {% blocktranslate %}未检测到套题名称，请 <a href="{% url 'kahoot_new' %}">返回新建页</a> 先命名题库再选择 AI 生成。{% endblocktranslate %}
         </div>
         {% endif %}
         <div class="form-group">
-            <label for="topic">主题 / 方向</label>
+            <label for="topic">{% trans "主题 / 方向" %}</label>
             <input type="text" id="topic" name="topic" class="form-control" required
-                   value="{{ topic }}" placeholder="例如：地理、中国古代史、英语词汇">
-            <p class="form-hint">仅用于指导 AI 出题内容，与套题名称无关。</p>
+                   value="{{ topic }}" placeholder="{% trans '例如：地理、中国古代史、英语词汇' %}">
+            <p class="form-hint">{% trans "仅用于指导 AI 出题内容，与套题名称无关。" %}</p>
         </div>
         <div class="form-group">
-            <label for="description">详细要求（可选）</label>
+            <label for="description">{% trans "详细要求（可选）" %}</label>
             <textarea id="description" name="description" class="form-control kahoot-ai-description" rows="5"
-                      placeholder="可写任意长度的限制说明，例如：着重中国地理，考查学生如何把中国地理特点跟政权更迭联系起来的能力；题目难度中等，避免过于偏门的知识点。">{{ description }}</textarea>
+                      placeholder="{% trans '可写任意长度的限制说明，例如：着重中国地理，考查学生如何把中国地理特点跟政权更迭联系起来的能力；题目难度中等，避免过于偏门的知识点。' %}">{{ description }}</textarea>
         </div>
         <div class="form-group">
-            <label>各题型数量（总计不超过 {{ max_total }} 道）</label>
+            <label>{% blocktranslate with max=max_total %}各题型数量（总计不超过 {{ max }} 道）{% endblocktranslate %}</label>
             <div class="kahoot-count-grid">
                 <div class="kahoot-count-item">
-                    <span class="kahoot-count-label">单选题</span>
+                    <span class="kahoot-count-label">{% trans "单选题" %}</span>
                     <input type="number" name="count_single" class="form-control kahoot-count-input"
                            min="0" max="{{ max_per_type }}" value="{{ counts.single }}">
                 </div>
                 <div class="kahoot-count-item">
-                    <span class="kahoot-count-label">多选题</span>
+                    <span class="kahoot-count-label">{% trans "多选题" %}</span>
                     <input type="number" name="count_multiple" class="form-control kahoot-count-input"
                            min="0" max="{{ max_per_type }}" value="{{ counts.multiple }}">
                 </div>
                 <div class="kahoot-count-item">
-                    <span class="kahoot-count-label">判断题</span>
+                    <span class="kahoot-count-label">{% trans "判断题" %}</span>
                     <input type="number" name="count_judgment" class="form-control kahoot-count-input"
                            min="0" max="{{ max_per_type }}" value="{{ counts.judgment }}">
                 </div>
                 <div class="kahoot-count-item">
-                    <span class="kahoot-count-label">简答题</span>
+                    <span class="kahoot-count-label">{% trans "简答题" %}</span>
                     <input type="number" name="count_short_answer" class="form-control kahoot-count-input"
                            min="0" max="{{ max_per_type }}" value="{{ counts.short_answer }}">
                 </div>
             </div>
-            <p class="form-hint">AI 仅生成以上四种题型，不含词云题。</p>
+            <p class="form-hint">{% trans "AI 仅生成以上四种题型，不含词云题。" %}</p>
         </div>
         <button type="submit" class="btn btn-primary" id="btn-ai-generate"
                 {% if not ai_configured or not kahoot_title %}disabled{% endif %}
                 {% if not ai_configured %}data-ai-missing{% endif %}>
-            生成题目
+            {% trans "生成题目" %}
         </button>
     </form>
 </div>
 
 {% if preview %}
 <div class="card section-gap">
-    <h3 class="page-title">预览（{{ preview|length }} 道）</h3>
-    <p class="form-hint">套题名称：<strong>{{ kahoot_title }}</strong>。确认内容后进入可视化编辑器审核修改。</p>
+    <h3 class="page-title">{% blocktranslate with count=preview|length %}预览（{{ count }} 道）{% endblocktranslate %}</h3>
+    <p class="form-hint">{% blocktranslate with title=kahoot_title %}套题名称：<strong>{{ title }}</strong>。确认内容后进入可视化编辑器审核修改。{% endblocktranslate %}</p>
     <div class="kahoot-preview-list">
         {% for q in preview %}
         <div class="kahoot-preview-item">
@@ -99,18 +100,18 @@
             </div>
             <p class="kahoot-preview-text">{{ q.text }}</p>
             {% if q.question_type == 'short_answer' %}
-            <p class="kahoot-preview-answer">参考答案：{{ q.option_a }}</p>
+            <p class="kahoot-preview-answer">{% trans "参考答案：" %}{{ q.option_a }}</p>
             {% elif q.question_type == 'judgment' %}
-            <p class="kahoot-preview-options">正确 / 错误 · 答案：{% if q.correct_option == 'A' %}{{ q.option_a }}{% else %}{{ q.option_b }}{% endif %}</p>
+            <p class="kahoot-preview-options">{% trans "正确 / 错误 · 答案：" %}{% if q.correct_option == 'A' %}{{ q.option_a }}{% else %}{{ q.option_b }}{% endif %}</p>
             {% elif q.question_type == 'multiple' %}
             <p class="kahoot-preview-options">
                 A. {{ q.option_a }} · B. {{ q.option_b }} · C. {{ q.option_c }} · D. {{ q.option_d }}
-                <br>正确答案：{{ q.correct_option }}
+                <br>{% trans "正确答案：" %}{{ q.correct_option }}
             </p>
             {% else %}
             <p class="kahoot-preview-options">
                 A. {{ q.option_a }} · B. {{ q.option_b }} · C. {{ q.option_c }} · D. {{ q.option_d }}
-                <br>正确答案：{{ q.correct_option }}
+                <br>{% trans "正确答案：" %}{{ q.correct_option }}
             </p>
             {% endif %}
         </div>
@@ -121,11 +122,11 @@
             {% csrf_token %}
             <input type="hidden" name="action" value="save">
             <input type="hidden" name="kahoot_title" value="{{ kahoot_title }}">
-            <button type="submit" class="btn btn-primary">保存并进入编辑 →</button>
+            <button type="submit" class="btn btn-primary">{% trans "保存并进入编辑 →" %}</button>
         </form>
         <form method="post" action="{% url 'kahoot_ai_discard' %}" class="inline-form">
             {% csrf_token %}
-            <button type="submit" class="btn btn-outline">放弃并重新生成</button>
+            <button type="submit" class="btn btn-outline">{% trans "放弃并重新生成" %}</button>
         </form>
     </div>
 </div>
@@ -134,8 +135,8 @@
 <div id="ai-loading-overlay" class="ai-loading-overlay hidden" aria-live="polite" aria-busy="true">
     <div class="ai-loading-panel card-glass">
         <div class="ai-loading-spinner" aria-hidden="true"></div>
-        <p class="ai-loading-title">AI 正在出题</p>
-        <p class="ai-loading-hint">通常需要 30 秒～2 分钟，请勿关闭或刷新页面</p>
+        <p class="ai-loading-title">{% trans "AI 正在出题" %}</p>
+        <p class="ai-loading-hint">{% trans "通常需要 30 秒～2 分钟，请勿关闭或刷新页面" %}</p>
     </div>
 </div>
 {% endblock %}
@@ -167,7 +168,7 @@
             overlay.setAttribute('aria-busy', 'true');
             if (btn) {
                 btn.disabled = true;
-                btn.textContent = '生成中…';
+                btn.textContent = window.KahootI18n && window.KahootI18n.isEn() ? 'Generating…' : '生成中…';
             }
         });
         window.addEventListener('pageshow', function () {

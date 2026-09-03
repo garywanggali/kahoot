@@ -1,6 +1,7 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Excel 导入题库 - Kahoot{% endblock %}
+{% block title %}{% trans "Excel 导入题库 - Kahoot" %}{% endblock %}
 
 {% block content %}
 <div class="studio-header-bar">
@@ -10,50 +11,50 @@
                 <line x1="19" y1="12" x2="5" y2="12"></line>
                 <polyline points="12 19 5 12 12 5"></polyline>
             </svg>
-            <span>返回新建 Kahoot</span>
+            <span>{% trans "返回新建 Kahoot" %}</span>
         </a>
-        <h1 class="studio-main-title">Excel 导入题库</h1>
-        <p class="form-hint">按严格表头格式上传，一键生成整套 Kahoot</p>
+        <h1 class="studio-main-title">{% trans "Excel 导入题库" %}</h1>
+        <p class="form-hint">{% trans "按严格表头格式上传，一键生成整套 Kahoot" %}</p>
     </div>
-    <a href="{% url 'kahoot_import_template' %}" class="btn btn-outline">下载模板 .xlsx</a>
+    <a href="{% url 'kahoot_import_template' %}" class="btn btn-outline">{% trans "下载模板 .xlsx" %}</a>
 </div>
 
 <div class="card">
-    <h3 class="page-title">格式要求（必须严格遵守）</h3>
+    <h3 class="page-title">{% trans "格式要求（必须严格遵守）" %}</h3>
     <ul class="excel-import-rules">
-        <li>文件格式：<strong>.xlsx</strong>（不支持 .xls / .csv）</li>
-        <li>第一行表头必须<strong>完全一致</strong>（共 {{ required_headers|length }} 列）：</li>
+        <li>{% blocktranslate %}文件格式：<strong>.xlsx</strong>（不支持 .xls / .csv）{% endblocktranslate %}</li>
+        <li>{% blocktranslate with count=required_headers|length %}第一行表头必须<strong>完全一致</strong>（共 {{ count }} 列）：{% endblocktranslate %}</li>
     </ul>
     <p class="excel-import-header-line">
         {% for h in required_headers %}<code>{{ h }}</code>{% if not forloop.last %} · {% endif %}{% endfor %}
     </p>
     <ul class="excel-import-rules section-gap">
-        <li>从第 2 行起为题目，最多 <strong>{{ max_rows }}</strong> 道</li>
-        <li><strong>题型</strong>：推荐在 Excel 模板下拉框中直接选择 <strong>单选题</strong>、<strong>多选题</strong>、<strong>判断题</strong>、<strong>简答题</strong>（亦兼容填写 <code>single</code> / <code>multiple</code> / <code>judgment</code> / <code>short_answer</code>）</li>
-        <li><strong>单选</strong>：四选项必填，正确答案单个字母 A/B/C/D</li>
-        <li><strong>多选</strong>：四选项必填，正确答案逗号分隔且至少 2 项，如 <code>A,C</code>（须全部选对才得分）</li>
-        <li><strong>判断</strong>：选项 A/B 为正确/错误文字，正确答案 <code>A</code> 或 <code>B</code></li>
-        <li><strong>简答</strong>：参考答案写在「选项A」列，多个可接受答案用 <code>|</code> 分隔</li>
-        <li><strong>词云</strong>：选项列可留空，无标准答案</li>
-        <li><strong>时限秒</strong>：5–120 的整数</li>
+        <li>{% blocktranslate with count=max_rows %}从第 2 行起为题目，最多 <strong>{{ count }}</strong> 道{% endblocktranslate %}</li>
+        <li><strong>{% trans "题型" %}</strong>：{% blocktranslate %}推荐在 Excel 模板下拉框中直接选择 <strong>单选题</strong>、<strong>多选题</strong>、<strong>判断题</strong>、<strong>简答题</strong>（亦兼容填写 <code>single</code> / <code>multiple</code> / <code>judgment</code> / <code>short_answer</code>）{% endblocktranslate %}</li>
+        <li><strong>{% trans "单选" %}</strong>：{% trans "四选项必填，正确答案单个字母 A/B/C/D" %}</li>
+        <li><strong>{% trans "多选" %}</strong>：{% blocktranslate %}四选项必填，正确答案逗号分隔且至少 2 项，如 <code>A,C</code>（须全部选对才得分）{% endblocktranslate %}</li>
+        <li><strong>{% trans "判断" %}</strong>：{% blocktranslate %}选项 A/B 为正确/错误文字，正确答案 <code>A</code> 或 <code>B</code>{% endblocktranslate %}</li>
+        <li><strong>{% trans "简答" %}</strong>：{% blocktranslate %}参考答案写在「选项A」列，多个可接受答案用 <code>|</code> 分隔{% endblocktranslate %}</li>
+        <li><strong>{% trans "词云" %}</strong>：{% trans "选项列可留空，无标准答案" %}</li>
+        <li><strong>{% trans "时限秒" %}</strong>：{% trans "5–120 的整数" %}</li>
     </ul>
 </div>
 
 <div class="card section-gap">
-    <h3 class="page-title">上传文件</h3>
+    <h3 class="page-title">{% trans "上传文件" %}</h3>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="form-group">
-            <label for="title">Kahoot 名称</label>
+            <label for="title">{% trans "Kahoot 名称" %}</label>
             <input type="text" id="title" name="title" class="form-control" required
-                   value="{{ title }}" placeholder="导入后的套题名称">
+                   value="{{ title }}" placeholder="{% trans '导入后的套题名称' %}">
         </div>
         <div class="form-group">
-            <label for="excel_file">Excel 文件 (.xlsx)</label>
+            <label for="excel_file">{% trans "Excel 文件 (.xlsx)" %}</label>
             <input type="file" id="excel_file" name="excel_file" class="form-control"
                    accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required>
         </div>
-        <button type="submit" class="btn btn-primary btn-lg">导入并创建套题 →</button>
+        <button type="submit" class="btn btn-primary btn-lg">{% trans "导入并创建套题 →" %}</button>
     </form>
 </div>
 {% endblock %}
