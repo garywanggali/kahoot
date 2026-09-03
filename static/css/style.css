@@ -3833,78 +3833,77 @@ body:has(.play-app) .container {
 .host-lb-row {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    background: var(--token-color-surface-pure);
-    border: 2px solid var(--token-border-solid);
-    border-radius: 18px;
-    box-shadow: 0 4px 0 var(--token-border-solid);
-    padding: 0.9rem 1.4rem;
-    transition: transform 0.15s ease;
-}
-
-.host-lb-row:hover {
-    transform: translateX(4px);
+    gap: 1.25rem;
+    background: #ffffff;
+    border: 1.5px solid rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    padding: 1rem 1.6rem;
+    box-sizing: border-box;
 }
 
 .host-lb-row.rank-1 {
-    border-color: #FFD700;
-    background: linear-gradient(90deg, #FFFDF0 0%, #FFFFFF 100%);
-    box-shadow: 0 4px 0 #D4AF37;
+    border: 1.5px solid #18181b;
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-.host-lb-row.rank-2 {
-    border-color: #C0C0C0;
-    background: linear-gradient(90deg, #F8F9FA 0%, #FFFFFF 100%);
-    box-shadow: 0 4px 0 #9E9E9E;
-}
-
+.host-lb-row.rank-2,
 .host-lb-row.rank-3 {
-    border-color: #CD7F32;
-    background: linear-gradient(90deg, #FDF7F2 0%, #FFFFFF 100%);
-    box-shadow: 0 4px 0 #A0522D;
+    border: 1.5px solid rgba(0, 0, 0, 0.12);
+    background: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
 .host-lb-rank {
     font-family: var(--token-font-mono);
     font-size: 1.25rem;
     font-weight: 900;
+    color: #71717a;
     min-width: 44px;
     text-align: center;
 }
 
+.host-lb-row.rank-1 .host-lb-rank {
+    color: #18181b;
+    font-weight: 900;
+}
+
 .host-lb-avatar {
-    width: 34px;
-    height: 34px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
-    background: var(--token-color-pitch-black);
+    background: #18181b;
     color: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: var(--token-font-hero);
     font-weight: 900;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    flex-shrink: 0;
 }
 
 .host-lb-name {
     flex: 1;
     font-family: var(--token-font-hero);
-    font-size: 1.15rem;
+    font-size: 1.2rem;
     font-weight: 800;
-    color: var(--token-text-primary);
+    color: #18181b;
 }
 
 .host-lb-score {
     font-family: var(--token-font-mono);
-    font-size: 1.25rem;
+    font-size: 1.35rem;
     font-weight: 900;
-    color: var(--token-color-orange);
+    color: #18181b;
 }
 
 .score-unit {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--token-text-muted);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #71717a;
+    margin-left: 2px;
 }
 
 .host-stage-foot {
