@@ -1812,54 +1812,72 @@ body:has(.play-app) .container {
     background: linear-gradient(145deg, #FF6B4A 0%, #E63F20 100%);
     border: 2px solid #C13018;
     box-shadow: 0 6px 0 #A52612, 0 12px 28px rgba(230, 63, 32, 0.25);
+    color: #ffffff !important;
 }
 
 .play-screen .option-b {
     background: linear-gradient(145deg, #4A9BFF 0%, #2070E0 100%);
     border: 2px solid #185CC0;
     box-shadow: 0 6px 0 #134AA0, 0 12px 28px rgba(32, 112, 224, 0.25);
+    color: #ffffff !important;
 }
 
 .play-screen .option-c {
     background: linear-gradient(145deg, #FFD04A 0%, #E8B300 100%);
     border: 2px solid #C59800;
     box-shadow: 0 6px 0 #A58000, 0 12px 28px rgba(232, 179, 0, 0.25);
-    color: #3D2E00;
+    color: #ffffff !important;
 }
 
 .play-screen .option-d {
     background: linear-gradient(145deg, #2A2A2E 0%, #111114 100%);
     border: 2px solid #000000;
     box-shadow: 0 6px 0 #000000, 0 12px 28px rgba(0, 0, 0, 0.3);
+    color: #ffffff !important;
 }
 
-/* 选项符号 — 增大几何图标体积 */
-.play-screen .option-a::before { content: '▲'; font-size: 3.8rem; }
-.play-screen .option-b::before { content: '◆'; font-size: 4.2rem; }
-.play-screen .option-c::before { content: '●'; font-size: 4.2rem; }
-.play-screen .option-d::before { content: '■'; font-size: 4.2rem; }
-
-/* 隐藏选项文字，只显示符号（学生端不需要看题干/选项文字，只需选色块） */
+/* 选项符号 — 与 Kahoot 一致的超大几何矢量符号 (响应式填满按钮核心区域) */
 .play-screen .option-btn {
     font-size: 0;
+    color: #ffffff !important;
 }
+
 .play-screen .option-btn::before {
-    font-size: 4.2rem;
     margin-right: 0;
     line-height: 1;
     display: flex;
     align-items: center;
     justify-content: center;
+    color: #ffffff !important;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    transform: translateZ(0);
+}
+
+.play-screen .option-a::before {
+    content: '▲';
+    font-size: clamp(6rem, 16vmin, 10.5rem);
+}
+
+.play-screen .option-b::before {
+    content: '◆';
+    font-size: clamp(6.5rem, 18vmin, 11.5rem);
+}
+
+.play-screen .option-c::before {
+    content: '●';
+    font-size: clamp(6.5rem, 18vmin, 11.5rem);
+}
+
+.play-screen .option-d::before {
+    content: '■';
+    font-size: clamp(6.5rem, 18vmin, 11.5rem);
 }
 
 @media (max-width: 480px) {
-    .play-screen .option-a::before { font-size: 3.2rem; }
-    .play-screen .option-b::before { font-size: 3.5rem; }
-    .play-screen .option-c::before { font-size: 3.5rem; }
-    .play-screen .option-d::before { font-size: 3.5rem; }
-    .play-screen .option-btn::before {
-        font-size: 3.5rem;
-    }
+    .play-screen .option-a::before { font-size: clamp(4.2rem, 18vw, 6rem); }
+    .play-screen .option-b::before { font-size: clamp(4.6rem, 20vw, 6.8rem); }
+    .play-screen .option-c::before { font-size: clamp(4.6rem, 20vw, 6.8rem); }
+    .play-screen .option-d::before { font-size: clamp(4.6rem, 20vw, 6.8rem); }
 }
 
 /* hover/active */
@@ -3733,28 +3751,30 @@ body:has(.play-app) .container {
 .host-option-card {
     display: flex;
     align-items: center;
-    gap: 1.25rem;
-    padding: 1.5rem 2rem;
-    border-radius: 20px;
+    gap: 1.5rem;
+    padding: 1.6rem 2.25rem;
+    border-radius: 22px;
     border: 2px solid #18181b;
-    box-shadow: 0 5px 0 #18181b;
+    box-shadow: 0 6px 0 #18181b;
     color: #ffffff;
     font-family: var(--token-font-hero);
-    min-height: 84px;
+    min-height: 96px;
     box-sizing: border-box;
 }
 
 .host-opt-icon {
-    font-size: 2.2rem;
+    font-size: clamp(2.8rem, 4.5vw, 3.8rem);
     font-weight: 900;
     line-height: 1;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    min-width: 3.5rem;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 .host-opt-text {
-    font-size: 1.35rem;
+    font-size: clamp(1.4rem, 2.2vw, 1.9rem);
     font-weight: 800;
     line-height: 1.3;
 }

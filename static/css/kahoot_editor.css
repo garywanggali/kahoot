@@ -339,10 +339,11 @@ body:has(.kahoot-editor-app) .container {
 .kahoot-editor-option.option-d { background: var(--kh-option-d); }
 
 .kahoot-editor-option-icon {
-    font-size: 1.35rem;
+    font-size: 1.8rem;
     flex-shrink: 0;
-    width: 1.85rem;
+    width: 2.4rem;
     text-align: center;
+    font-weight: 900;
 }
 
 .kahoot-editor-option-input {
