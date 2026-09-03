@@ -117,34 +117,42 @@
     </div>
 
     <!-- 3. 本题揭晓 (答案统计) -->
-    <div id="host-leaderboard" class="host-stage-card token-card hidden">
-        <div class="host-stage-title-wrap">
-            <p class="host-reveal-kicker" id="host-reveal-kicker">{% trans "答题揭晓" %}</p>
-            <h2 class="host-stage-title host-reveal-stem" id="host-reveal-title">{% trans "本题统计" %}</h2>
-            <p class="host-stage-subtitle" id="host-reveal-subtitle">{% trans "各选项作答人数与正确答案" %}</p>
-        </div>
-
-        <div id="host-reveal-chart" class="host-reveal-chart hidden"></div>
-
-        <div id="host-reveal-short" class="host-reveal-short hidden">
-            <div class="host-reveal-short-count">
-                <span class="host-reveal-short-num" id="host-reveal-correct-count">0</span>
-                <span class="host-reveal-short-label">{% trans "人答对" %}</span>
+    <div id="host-leaderboard" class="host-stage-card host-reveal-stage token-card hidden">
+        <div class="host-reveal-top-wrap">
+            <div class="host-reveal-kicker-row">
+                <span class="host-reveal-pill-tag" id="host-reveal-kicker">第 1 / 1 题 · 单选题</span>
+                <span class="host-reveal-stat-pill" id="host-reveal-subtitle">0 人已作答 · 0 人在场</span>
             </div>
-            <p class="host-reveal-short-meta" id="host-reveal-short-meta"></p>
+            <h2 class="host-reveal-stem-heading" id="host-reveal-title">{% trans "本题统计" %}</h2>
         </div>
 
-        <div id="host-leaderboard-word-cloud-wrap" class="word-cloud-wrap hidden">
-            <p class="word-cloud-title">{% trans "本题词云" %}</p>
-            <div id="host-leaderboard-word-cloud" class="word-cloud-display"></div>
+        <div class="host-reveal-main-stage">
+            <!-- 四色柱状图 (单选/多选/判断) -->
+            <div id="host-reveal-chart" class="host-reveal-chart hidden"></div>
+
+            <!-- 简答题结果 -->
+            <div id="host-reveal-short" class="host-reveal-short hidden">
+                <div class="host-reveal-short-hero-box">
+                    <span class="host-reveal-short-num" id="host-reveal-correct-count">0</span>
+                    <span class="host-reveal-short-label">{% trans "人答对" %}</span>
+                </div>
+                <p class="host-reveal-short-meta" id="host-reveal-short-meta"></p>
+            </div>
+
+            <!-- 词云展示区 -->
+            <div id="host-leaderboard-word-cloud-wrap" class="word-cloud-wrap hidden">
+                <p class="word-cloud-title">{% trans "实时词云汇总" %}</p>
+                <div id="host-leaderboard-word-cloud" class="word-cloud-display"></div>
+            </div>
+
+            <!-- 仅在简答题时展示的参考答案卡片 -->
+            <div id="host-reveal-answer" class="host-reveal-answer-block hidden">
+                <span class="host-reveal-answer-badge">{% trans "参考答案" %}</span>
+                <span class="host-reveal-answer-text" id="host-reveal-answer-text"></span>
+            </div>
         </div>
 
-        <div id="host-reveal-answer" class="host-reveal-answer hidden">
-            <span class="host-reveal-answer-label">{% trans "正确答案" %}</span>
-            <span class="host-reveal-answer-text" id="host-reveal-answer-text"></span>
-        </div>
-
-        <div class="host-stage-foot">
+        <div class="host-reveal-action-row">
             <button id="btn-next" class="token-btn-primary btn-host-next-q" onclick="nextQuestion()">
                 <span>{% trans "下一题" %}</span>
                 <span>→</span>
@@ -542,25 +550,28 @@ function renderQuestionReveal(state) {
         const colors = ['host-opt-a', 'host-opt-b', 'host-opt-c', 'host-opt-d'];
         const maxCount = Math.max(1, ...optionStats.map(s => s.count || 0));
         const correctBadgeText = _t('host.correct_answer');
+        
         chartEl.innerHTML = optionStats.map((stat, i) => {
             const count = stat.count || 0;
-            const pct = count > 0 ? Math.max(14, Math.round((count / maxCount) * 100)) : 8;
-            const correctClass = stat.is_correct ? ' is-correct' : '';
+            const pct = count > 0 ? Math.round((count / maxCount) * 72) + 20 : 12;
+            const isCorrect = !!stat.is_correct;
             const shape = shapes[i] || '●';
+            const colorClass = colors[i] || 'host-opt-a';
+            
             return `
-                <div class="host-reveal-bar-col${correctClass}">
+                <div class="host-reveal-bar-col ${isCorrect ? 'is-correct' : 'is-neutral'}">
                     <div class="host-reveal-bar-track">
+                        ${isCorrect ? `<div class="host-reveal-correct-pill">✔ ${correctBadgeText}</div>` : ''}
                         <div class="host-reveal-bar-count-pill">${count}</div>
-                        <div class="host-reveal-bar-fill ${colors[i] || 'host-opt-a'}" style="height: ${pct}%;"></div>
+                        <div class="host-reveal-bar-fill ${colorClass}" style="height: ${pct}%;"></div>
                     </div>
                     <div class="host-reveal-bar-footer">
-                        <div class="host-reveal-shape-badge ${colors[i] || 'host-opt-a'}">
+                        <div class="host-reveal-shape-badge ${colorClass}">
                             <span>${shape}</span>
                             <span>${escapeHtml(stat.key)}</span>
                         </div>
                         <div class="host-reveal-bar-text" title="${escapeHtml(stat.text || '')}">${escapeHtml(stat.text || '')}</div>
                     </div>
-                    ${stat.is_correct ? `<span class="host-reveal-bar-badge">${correctBadgeText}</span>` : ''}
                 </div>
             `;
         }).join('');
@@ -571,16 +582,15 @@ function renderQuestionReveal(state) {
         const unanswered = reveal.unanswered_count || 0;
         document.getElementById('host-reveal-short-meta').textContent = _t('host.short_meta', answered, unanswered);
         shortEl.classList.remove('hidden');
+        if (reveal.correct_answer_display) {
+            answerText.textContent = reveal.correct_answer_display;
+            answerWrap.classList.remove('hidden');
+        }
     }
 
     if (isWordCloud) {
         cloudWrap.classList.remove('hidden');
         renderWordCloud('host-leaderboard-word-cloud', q.word_cloud || []);
-    }
-
-    if (!isWordCloud && reveal.correct_answer_display) {
-        answerText.textContent = reveal.correct_answer_display;
-        answerWrap.classList.remove('hidden');
     }
 }
 

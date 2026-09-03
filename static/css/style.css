@@ -4131,44 +4131,109 @@ body:has(.host-app-viewport):has(#host-analytics:not(.hidden)) .host-app-viewpor
     margin: 0 0 0.65rem;
 }
 
-.host-reveal-stem {
-    font-size: 1.55rem;
-    line-height: 1.35;
-    max-width: 52rem;
-    margin-left: auto;
-    margin-right: auto;
+/* ==========================================================================
+   3. Host Question Reveal & Statistics Stage (Rebuilt Premium Big Screen)
+   ========================================================================== */
+.host-stage-card.host-reveal-stage {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    min-height: 520px;
+    padding: 1.5rem 2.25rem 1.75rem !important;
+    box-sizing: border-box;
 }
 
+.host-reveal-top-wrap {
+    text-align: center;
+    width: 100%;
+    flex-shrink: 0;
+    margin-bottom: 0.5rem;
+}
+
+.host-reveal-kicker-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 0.4rem;
+}
+
+.host-reveal-pill-tag {
+    font-family: var(--font-mono, monospace);
+    font-size: 0.85rem;
+    font-weight: 800;
+    background: #111111;
+    color: #ffffff;
+    padding: 0.25rem 0.85rem;
+    border-radius: 999px;
+    letter-spacing: 0.02em;
+}
+
+.host-reveal-stat-pill {
+    font-family: var(--font-mono, monospace);
+    font-size: 0.85rem;
+    font-weight: 700;
+    background: #f4f4f5;
+    color: #52525b;
+    border: 1.5px solid #e4e4e7;
+    padding: 0.22rem 0.8rem;
+    border-radius: 999px;
+}
+
+.host-reveal-stem-heading {
+    font-family: var(--font-hero, -apple-system, sans-serif);
+    font-size: clamp(1.6rem, 3.2vw, 2.3rem);
+    font-weight: 900;
+    color: #111111;
+    line-height: 1.25;
+    margin: 0.25rem auto 0;
+    max-width: 54rem;
+    text-align: center;
+}
+
+.host-reveal-main-stage {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-height: 280px;
+    margin: 0.5rem 0 1rem;
+    position: relative;
+}
+
+/* 3D Pillar Histogram */
 .host-reveal-chart {
     display: flex;
     align-items: flex-end;
     justify-content: center;
     gap: 1.5rem;
-    min-height: 200px;
-    max-height: 260px;
-    padding: 0.75rem 0.5rem 0.25rem;
-    margin-bottom: 0.85rem;
     width: 100%;
-    max-width: 840px;
-    margin-left: auto;
-    margin-right: auto;
+    max-width: 880px;
+    height: 290px;
+    padding: 2.2rem 1rem 0;
+    border-bottom: 3.5px solid #111111;
+    box-sizing: border-box;
+    position: relative;
+    margin: 0 auto;
 }
 
 .host-reveal-bar-col {
     flex: 1;
     max-width: 160px;
+    height: 100%;
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: flex-end;
-    gap: 0.5rem;
-    min-width: 0;
+    align-items: center;
     position: relative;
 }
 
 .host-reveal-bar-track {
     width: 100%;
-    height: 150px;
+    height: 195px;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
@@ -4176,145 +4241,194 @@ body:has(.host-app-viewport):has(#host-analytics:not(.hidden)) .host-app-viewpor
     position: relative;
 }
 
-.host-reveal-bar-count-pill {
-    font-family: var(--token-font-mono, monospace);
-    font-size: 1.25rem;
+.host-reveal-correct-pill {
+    position: absolute;
+    top: -2.35rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: #10B981;
+    color: #ffffff;
+    font-family: var(--font-mono, monospace);
+    font-size: 0.78rem;
     font-weight: 900;
-    color: #18181b;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    border: 2px solid #111111;
+    box-shadow: 0 2px 0 #111111;
+    white-space: nowrap;
+    z-index: 10;
+    animation: correctPillPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes correctPillPop {
+    0% { transform: translateX(-50%) scale(0.6); opacity: 0; }
+    100% { transform: translateX(-50%) scale(1); opacity: 1; }
+}
+
+.host-reveal-bar-count-pill {
+    font-family: var(--font-mono, monospace);
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: #111111;
     margin-bottom: 0.35rem;
     line-height: 1;
+    transition: transform 0.3s ease;
 }
 
 .host-reveal-bar-fill {
     width: 100%;
-    max-width: 80px;
-    border-radius: 12px 12px 4px 4px;
-    border: 2px solid #18181b;
-    box-shadow: 0 3px 0 #18181b;
-    transition: height 0.35s cubic-bezier(0.34, 1.3, 0.64, 1);
+    max-width: 100px;
+    min-height: 28px;
+    border-radius: 12px 12px 0 0;
+    border: 2.5px solid #111111;
+    border-bottom: none;
+    box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.45);
+    transition: height 0.45s cubic-bezier(0.34, 1.25, 0.64, 1);
     box-sizing: border-box;
 }
 
 .host-reveal-bar-col.is-correct .host-reveal-bar-fill {
-    outline: 3.5px solid #10B981;
-    outline-offset: 3px;
+    border-width: 3px;
+    box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.65), 0 0 16px rgba(16, 185, 129, 0.35);
+}
+
+.host-reveal-bar-col.is-neutral {
+    opacity: 0.85;
 }
 
 .host-reveal-bar-footer {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.35rem;
     width: 100%;
-    text-align: center;
+    padding-top: 0.6rem;
 }
 
 .host-reveal-shape-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.3rem;
-    padding: 0.2rem 0.75rem;
+    gap: 0.35rem;
+    width: 100%;
+    max-width: 100px;
+    padding: 0.32rem 0.5rem;
     border-radius: 10px;
-    border: 1.5px solid #18181b;
-    box-shadow: 0 2px 0 #18181b;
-    font-family: var(--token-font-hero);
+    border: 2px solid #111111;
+    box-shadow: 0 3px 0 #111111;
+    font-family: var(--font-mono, monospace);
     font-size: 0.95rem;
     font-weight: 900;
     color: #ffffff;
 }
 
 .host-reveal-shape-badge.host-opt-c {
-    color: #18181b !important;
+    color: #111111 !important;
 }
 
 .host-reveal-bar-text {
-    font-size: 0.92rem;
-    font-weight: 800;
-    color: #18181b;
-    line-height: 1.25;
-    max-width: 100%;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #111111;
+    line-height: 1.2;
+    max-width: 130px;
+    text-align: center;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    word-break: break-word;
 }
 
-.host-reveal-bar-badge {
-    font-size: 0.72rem;
-    font-weight: 800;
-    color: #047857;
-    background: #D1FAE5;
-    border: 1.5px solid #10B981;
-    border-radius: 999px;
-    padding: 0.15rem 0.55rem;
-}
-
-.host-reveal-short {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1.5rem 1rem 1.75rem;
-    margin-bottom: 1.25rem;
-}
-
-.host-reveal-short-count {
+/* Short answer card */
+.host-reveal-short-hero-box {
     display: flex;
     align-items: baseline;
-    gap: 0.65rem;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
 }
 
-.host-reveal-short-num {
-    font-family: var(--token-font-hero);
+.host-reveal-short-hero-box .host-reveal-short-num {
+    font-family: var(--font-hero, sans-serif);
     font-size: 4.5rem;
     font-weight: 900;
+    color: #111111;
     line-height: 1;
-    color: var(--token-text-primary);
 }
 
-.host-reveal-short-label {
+.host-reveal-short-hero-box .host-reveal-short-label {
     font-size: 1.35rem;
     font-weight: 800;
+    color: #52525b;
 }
 
-.host-reveal-short-meta {
-    margin: 0;
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--token-text-secondary);
-}
-
-.host-reveal-answer {
+.host-reveal-answer-block {
     display: inline-flex;
-    flex-direction: row;
     align-items: center;
-    justify-content: center;
     gap: 0.75rem;
-    background: #ECFDF5;
-    border: 1.5px solid #10B981;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.08);
+    background: #f0fdf4;
+    border: 2px solid #10b981;
     border-radius: 14px;
-    padding: 0.5rem 1.5rem;
-    margin: 0.5rem auto 0.75rem;
-    box-sizing: border-box;
-    max-width: 480px;
-    width: fit-content;
+    padding: 0.6rem 1.5rem;
+    margin-top: 0.75rem;
+    box-shadow: 0 3px 0 #10b981;
 }
 
-.host-reveal-answer-label {
-    font-size: 0.82rem;
-    font-weight: 800;
-    letter-spacing: 0.04em;
-    color: #047857;
-    margin: 0;
+.host-reveal-answer-badge {
+    font-family: var(--font-mono, monospace);
+    font-size: 0.8rem;
+    font-weight: 900;
+    background: #10b981;
+    color: #ffffff;
+    padding: 0.15rem 0.5rem;
+    border-radius: 6px;
 }
 
 .host-reveal-answer-text {
-    font-family: var(--token-font-hero);
-    font-size: 1.25rem;
-    font-weight: 900;
-    color: #065F46;
-    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #065f46;
+}
+
+/* Action button row */
+.host-reveal-action-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    flex-shrink: 0;
+    padding-top: 0.5rem;
+}
+
+.host-reveal-action-row .btn-host-next-q {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    padding: 0.85rem 3.5rem !important;
+    font-size: 1.2rem !important;
+    font-weight: 900 !important;
+    border-radius: 16px !important;
+    border: 2.5px solid #111111 !important;
+    background: #ff4f00 !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 0 #111111 !important;
+    cursor: pointer;
+    transition: all 0.16s ease !important;
+}
+
+.host-reveal-action-row .btn-host-next-q:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 0 #111111 !important;
+}
+
+.host-reveal-action-row .btn-host-next-q:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #111111 !important;
 }
 
 @media (max-width: 720px) {
