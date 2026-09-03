@@ -39,7 +39,8 @@
         </div>
         {% else %}
         <div class="alert alert-warning">
-            {% blocktranslate %}未检测到套题名称，请 <a href="{% url 'kahoot_new' %}">返回新建页</a> 先命名题库再选择 AI 生成。{% endblocktranslate %}
+            {% url 'kahoot_new' as kahoot_new_url %}
+            {% blocktranslate with new_url=kahoot_new_url %}未检测到套题名称，请 <a href="{{ new_url }}">返回新建页</a> 先命名题库再选择 AI 生成。{% endblocktranslate %}
         </div>
         {% endif %}
         <div class="form-group">
