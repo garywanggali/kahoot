@@ -789,15 +789,28 @@ def _default_ai_counts() -> dict[str, int]:
 
 
 def _ai_form_context(request, **extra):
+    saved = request.session.get('ai_kahoot_form') or {}
     counts = extra.get('counts')
     if counts is None:
-        counts = _parse_ai_counts(request) if request.method == 'POST' else _default_ai_counts()
+        counts = _parse_ai_counts(request) if request.method == 'POST' else saved.get('counts')
+    if not counts:
+        counts = _default_ai_counts()
     kahoot_title = extra.get('kahoot_title', '')
     if not kahoot_title:
         kahoot_title = request.session.get('kahoot_pending_title', '')
+    topic = extra.get('topic')
+    if topic is None:
+        topic = request.POST.get('topic', '').strip() if request.method == 'POST' else saved.get('topic', '')
+    description = extra.get('description')
+    if description is None:
+        description = (
+            request.POST.get('description', '').strip()
+            if request.method == 'POST'
+            else saved.get('description', '')
+        )
     return {
-        'topic': extra.get('topic', request.POST.get('topic', '').strip()),
-        'description': extra.get('description', request.POST.get('description', '').strip()),
+        'topic': topic or '',
+        'description': description or '',
         'kahoot_title': kahoot_title,
         'counts': counts,
         'ai_configured': stepfun_configured(),
@@ -885,14 +898,13 @@ def kahoot_ai(request):
             kahoot_title = posted_title
 
         request.session['ai_kahoot_preview'] = questions
-        preview_labels = _preview_labels_from(questions)
+        request.session['ai_kahoot_form'] = {
+            'topic': topic,
+            'description': description,
+            'counts': counts,
+        }
         messages.success(request, f'已生成 {len(questions)} 道题目，请预览后保存并进入编辑')
-        return render(request, 'game/kahoot_ai.html', _ai_form_context(
-            request,
-            counts=counts,
-            preview=preview_labels,
-            kahoot_title=kahoot_title,
-        ))
+        return redirect('kahoot_ai')
 
     preview_labels = _preview_labels_from(preview) if preview else None
 

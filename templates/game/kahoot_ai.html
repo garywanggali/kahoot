@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% block body_attrs %}data-turbo="false"{% endblock %}
+
 {% block title %}AI 生成 Kahoot - Kahoot{% endblock %}
 
 {% block content %}
@@ -26,7 +28,7 @@
 
 <div class="card">
     <h3 class="page-title">生成设置</h3>
-    <form method="post" id="kahoot-ai-form">
+    <form method="post" id="kahoot-ai-form" data-turbo="false">
         {% csrf_token %}
         <input type="hidden" name="kahoot_title" value="{{ kahoot_title|default:'' }}">
         {% if kahoot_title %}
@@ -162,10 +164,15 @@
     if (form && overlay) {
         form.addEventListener('submit', function () {
             overlay.classList.remove('hidden');
+            overlay.setAttribute('aria-busy', 'true');
             if (btn) {
                 btn.disabled = true;
                 btn.textContent = '生成中…';
             }
+        });
+        window.addEventListener('pageshow', function () {
+            overlay.classList.add('hidden');
+            overlay.setAttribute('aria-busy', 'false');
         });
     }
 })();

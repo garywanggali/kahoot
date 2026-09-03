@@ -541,6 +541,61 @@ class StudentStemVisibilityTests(TestCase):
         self.assertIn('显示题干和图片', html)
 
 
+class KahootAIGenerateTests(TestCase):
+    def setUp(self):
+        from .models import Teacher
+        self.teacher = Teacher.objects.create(username='t_ai')
+        self.teacher.set_password('password123')
+        self.teacher.save()
+        session = self.client.session
+        session['teacher_id'] = self.teacher.pk
+        session['kahoot_pending_title'] = '地理测验'
+        session.save()
+
+    def test_ai_page_disables_turbo(self):
+        from django.urls import reverse
+        from unittest.mock import patch
+
+        with patch('game.views.stepfun_configured', return_value=True):
+            resp = self.client.get(reverse('kahoot_ai'))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'data-turbo="false"')
+
+    def test_generate_redirects_to_preview(self):
+        from django.urls import reverse
+        from unittest.mock import patch
+
+        fake_questions = [{
+            'text': '中国的首都是？',
+            'question_type': 'single',
+            'option_a': '北京',
+            'option_b': '上海',
+            'option_c': '广州',
+            'option_d': '深圳',
+            'correct_option': 'A',
+            'time_limit': 20,
+        }]
+        with patch('game.views.stepfun_configured', return_value=True), patch(
+            'game.views.generate_kahoot_questions', return_value=fake_questions,
+        ):
+            url = reverse('kahoot_ai')
+            resp = self.client.post(url, {
+                'topic': '地理',
+                'description': '中等难度',
+                'kahoot_title': '地理测验',
+                'count_single': 1,
+                'count_multiple': 0,
+                'count_judgment': 0,
+                'count_short_answer': 0,
+            })
+        self.assertRedirects(resp, url)
+        follow = self.client.get(url)
+        self.assertContains(follow, '中国的首都是？')
+        self.assertContains(follow, '预览（1 道）')
+        self.assertContains(follow, 'ai-loading-overlay hidden')
+
+
+
 
 
 
