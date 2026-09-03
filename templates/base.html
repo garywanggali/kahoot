@@ -17,11 +17,13 @@
     <audio id="global-bgm" data-turbo-permanent preload="auto" loop
            src="{% static 'audio/Ticket_Booth_Waltz.mp3' %}"></audio>
     <div class="container">
+        {% block global_messages %}
         {% if messages %}
             {% for message in messages %}
                 <div class="alert alert-{{ message.tags }}">{{ message }}</div>
             {% endfor %}
         {% endif %}
+        {% endblock %}
         {% block content %}{% endblock %}
     </div>
     <script src="{% static 'js/avatar.js' %}?v=1"></script>
