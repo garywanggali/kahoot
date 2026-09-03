@@ -676,16 +676,16 @@ a:hover {
 }
 
 .option-a { background: var(--kh-option-a); }
-.option-a::before { content: '▲'; font-size: 1.3rem; margin-right: 1.1rem; }
+.option-a::before { content: '▲'; font-size: 1.8rem; margin-right: 1.1rem; }
 
 .option-b { background: var(--kh-option-b); }
-.option-b::before { content: '◆'; font-size: 1.4rem; margin-right: 1.1rem; }
+.option-b::before { content: '◆'; font-size: 2rem; margin-right: 1.1rem; }
 
 .option-c { background: var(--kh-option-c); color: #111; }
-.option-c::before { content: '●'; font-size: 1.4rem; margin-right: 1.1rem; }
+.option-c::before { content: '●'; font-size: 2rem; margin-right: 1.1rem; }
 
 .option-d { background: var(--kh-option-d); }
-.option-d::before { content: '■'; font-size: 1.4rem; margin-right: 1.1rem; }
+.option-d::before { content: '■'; font-size: 2rem; margin-right: 1.1rem; }
 
 .option-btn.selected {
     outline: 4px solid var(--text-black);
@@ -1833,19 +1833,33 @@ body:has(.play-app) .container {
     box-shadow: 0 6px 0 #000000, 0 12px 28px rgba(0, 0, 0, 0.3);
 }
 
-/* 选项符号 */
-.play-screen .option-a::before { content: '▲'; font-size: 2.4rem; }
-.play-screen .option-b::before { content: '◆'; font-size: 2.6rem; }
-.play-screen .option-c::before { content: '●'; font-size: 2.6rem; }
-.play-screen .option-d::before { content: '■'; font-size: 2.6rem; }
+/* 选项符号 — 增大几何图标体积 */
+.play-screen .option-a::before { content: '▲'; font-size: 3.8rem; }
+.play-screen .option-b::before { content: '◆'; font-size: 4.2rem; }
+.play-screen .option-c::before { content: '●'; font-size: 4.2rem; }
+.play-screen .option-d::before { content: '■'; font-size: 4.2rem; }
 
 /* 隐藏选项文字，只显示符号（学生端不需要看题干/选项文字，只需选色块） */
 .play-screen .option-btn {
     font-size: 0;
 }
 .play-screen .option-btn::before {
-    font-size: 2.6rem;
+    font-size: 4.2rem;
     margin-right: 0;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (max-width: 480px) {
+    .play-screen .option-a::before { font-size: 3.2rem; }
+    .play-screen .option-b::before { font-size: 3.5rem; }
+    .play-screen .option-c::before { font-size: 3.5rem; }
+    .play-screen .option-d::before { font-size: 3.5rem; }
+    .play-screen .option-btn::before {
+        font-size: 3.5rem;
+    }
 }
 
 /* hover/active */
@@ -3731,8 +3745,12 @@ body:has(.play-app) .container {
 }
 
 .host-opt-icon {
-    font-size: 1.65rem;
+    font-size: 2.2rem;
     font-weight: 900;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .host-opt-text {
