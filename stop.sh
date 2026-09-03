@@ -15,4 +15,5 @@ if [ -f "logs/server.pid" ]; then
 fi
 
 pkill -f "daphne.*kahoot_project.asgi" 2>/dev/null || true
+pkill -f "auto_push.sh" 2>/dev/null || true
 echo "Stopped."

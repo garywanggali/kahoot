@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load static %}
 
 {% block body_attrs %}data-turbo="false"{% endblock %}
 
@@ -345,6 +344,9 @@ function applyState(state) {
     if (state.status === 'ended') {
         document.getElementById('ended-screen').classList.remove('hidden');
         clearTimer();
+<<<<<<< HEAD
+        renderEndedPlayerInfo(state.leaderboard);
+=======
         if (typeof renderAwardsCeremony === 'function') {
             renderAwardsCeremony(
                 state.leaderboard,
@@ -353,7 +355,7 @@ function applyState(state) {
                 'player-final-rankings-title'
             );
         }
-        renderEndedPlayerInfo(state.leaderboard);
+>>>>>>> de6a39f (feat: Unify choice-box hover accents, full-screen immersive player answer buttons, enhanced feedback animations, and student-side podium ceremony)
     } else if (state.status === 'playing' && state.question) {
         document.getElementById('play-screen').classList.remove('hidden');
         showQuestion(state);
