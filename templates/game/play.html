@@ -91,10 +91,15 @@
         <div id="options-container" class="play-options"></div>
 
         <div id="text-answer-group" class="text-answer-group hidden">
-            <input type="text" id="text-answer-input" class="form-control text-answer-input"
-                   maxlength="100" placeholder="输入你的答案..." autocomplete="off">
-            <button type="button" id="submit-text-btn" class="btn btn-primary submit-text-btn"
-                    onclick="submitTextAnswer()">提交答案</button>
+            <div class="text-answer-hero-card">
+                <input type="text" id="text-answer-input" class="text-answer-input"
+                       maxlength="100" placeholder="在此输入你的答案..." autocomplete="off">
+                <button type="button" id="submit-text-btn" class="submit-text-btn"
+                        onclick="submitTextAnswer()">
+                    <span>提交答案</span>
+                    <span>→</span>
+                </button>
+            </div>
         </div>
 
         <button type="button" id="submit-multi-btn" class="btn btn-primary submit-multi-btn hidden"
@@ -119,19 +124,8 @@
     </div>
 
     <div id="ended-screen" class="play-ended hidden">
-        <div class="host-stage-title-wrap" style="margin-bottom: 1rem;">
-            <div class="host-ceremony-tag">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
-                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
-                    <path d="M4 22h16"></path>
-                    <path d="M10 14.66V17c0 .55-.45 1-1 1H7v4h10v-4h-2c-.55 0-1-.45-1-1v-2.34"></path>
-                    <path d="M6 4h12a2 2 0 0 1 2 2v3a6 6 0 0 1-6 6h-4a6 6 0 0 1-6-6V6a2 2 0 0 1 2-2z"></path>
-                </svg>
-                <span>HONOR PODIUM</span>
-            </div>
-            <h2 class="host-stage-title" style="font-size: 2rem;">颁奖典礼</h2>
-            <p class="host-stage-subtitle">全场最终积分榜前三甲荣誉领奖台</p>
+        <div class="host-stage-title-wrap" style="margin-bottom: 1.5rem;">
+            <h2 class="host-stage-title" style="font-size: 2.2rem;">颁奖典礼</h2>
         </div>
 
         <div id="player-podium-container" class="host-podium-outer" style="width: 100%;"></div>
@@ -151,10 +145,29 @@
 <div class="danmaku-rail">
     <div id="danmaku-layer" class="danmaku-layer"></div>
 </div>
-<div id="danmaku-bar" class="danmaku-bar hidden">
-    <input type="text" id="danmaku-input" class="danmaku-input" maxlength="40"
-           placeholder="发弹幕..." autocomplete="off">
-    <button type="button" class="btn btn-outline danmaku-send" onclick="sendDanmaku()">发送</button>
+
+<!-- 浮动收起式弹幕控制器 (不占据主屏幕高度空间) -->
+<div id="danmaku-container" class="danmaku-container hidden">
+    <!-- 展开后的输入气泡 -->
+    <div id="danmaku-drawer" class="danmaku-drawer hidden">
+        <input type="text" id="danmaku-input" class="danmaku-input" maxlength="40"
+               placeholder="输入弹幕..." autocomplete="off">
+        <button type="button" class="btn danmaku-send-btn" onclick="sendDanmaku()">发送</button>
+        <button type="button" class="danmaku-close-btn" onclick="toggleDanmakuDrawer(false)" title="收起">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+    </div>
+
+    <!-- 默认浮动触发胶囊 -->
+    <button type="button" id="danmaku-toggle-btn" class="danmaku-toggle-btn" onclick="toggleDanmakuDrawer(true)" title="发弹幕">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span>发弹幕</span>
+    </button>
 </div>
 {% endblock %}
 
@@ -481,8 +494,9 @@ function showQuestion(state) {
         textInput.value = '';
         textInput.disabled = false;
         textInput.maxLength = q.question_type === 'word_cloud' ? 40 : 100;
-        textInput.placeholder = q.question_type === 'word_cloud' ? '输入一个词或短语...' : '输入你的答案...';
+        textInput.placeholder = q.question_type === 'word_cloud' ? '输入一个词或短语...' : '在此输入你的答案...';
         textBtn.disabled = false;
+        setTimeout(() => textInput.focus(), 80);
     }
 
     const imgWrap = document.getElementById('question-image-wrap');
@@ -621,48 +635,52 @@ function renderFeedbackCard(opts) {
 
     const type = opts.type || 'waiting';
     card.className = 'feedback-card' + (type ? ` card-${type}` : '');
+    if (stage) {
+        stage.className = 'play-feedback-stage' + (type ? ` stage-${type}` : '');
+    }
 
     let iconSvg = '';
     if (type === 'correct') {
         iconSvg = `
-            <div class="feedback-icon-circle icon-correct">
-                <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20 6L9 17l-5-5"/>
+            <div class="feedback-coin-badge coin-correct">
+                <svg viewBox="0 0 24 24" width="70" height="70" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
             </div>
         `;
     } else if (type === 'wrong') {
         iconSvg = `
-            <div class="feedback-icon-circle icon-wrong">
-                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 6L6 18M6 6l12 12"/>
+            <div class="feedback-coin-badge coin-wrong">
+                <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
             </div>
         `;
     } else if (type === 'timeup') {
         iconSvg = `
-            <div class="feedback-icon-circle icon-timeup">
-                <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"/>
-                    <polyline points="12 6 12 12 16 14"/>
+            <div class="feedback-coin-badge coin-timeup">
+                <svg viewBox="0 0 24 24" width="66" height="66" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
                 </svg>
             </div>
         `;
     } else if (type === 'submitted') {
         iconSvg = `
-            <div class="feedback-icon-circle icon-submitted">
-                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M22 2L11 13"/>
-                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            <div class="feedback-coin-badge coin-submitted">
+                <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 2L11 13"></path>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                 </svg>
             </div>
         `;
     } else {
         iconSvg = `
-            <div class="feedback-icon-circle icon-waiting">
-                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"/>
-                    <polyline points="12 6 12 12 14 14"/>
+            <div class="feedback-coin-badge coin-waiting">
+                <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 14 14"></polyline>
                 </svg>
             </div>
         `;
@@ -799,13 +817,33 @@ function highlightCorrectAnswers(correctKeys) {
     });
 }
 
-function updateDanmakuBar(status) {
-    const bar = document.getElementById('danmaku-bar');
-    if (!joinedReady || status === 'ended') {
-        bar.classList.add('hidden');
-        danmakuEnabled = false;
+function toggleDanmakuDrawer(forceOpen) {
+    const drawer = document.getElementById('danmaku-drawer');
+    const toggleBtn = document.getElementById('danmaku-toggle-btn');
+    const input = document.getElementById('danmaku-input');
+    if (!drawer) return;
+
+    const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : drawer.classList.contains('hidden');
+    if (shouldOpen) {
+        drawer.classList.remove('hidden');
+        if (toggleBtn) toggleBtn.classList.add('hidden');
+        if (input) {
+            setTimeout(() => input.focus(), 60);
+        }
     } else {
-        bar.classList.remove('hidden');
+        drawer.classList.add('hidden');
+        if (toggleBtn) toggleBtn.classList.remove('hidden');
+    }
+}
+
+function updateDanmakuBar(status) {
+    const container = document.getElementById('danmaku-container');
+    if (!joinedReady || status === 'ended') {
+        if (container) container.classList.add('hidden');
+        danmakuEnabled = false;
+        toggleDanmakuDrawer(false);
+    } else {
+        if (container) container.classList.remove('hidden');
         danmakuEnabled = true;
     }
 }
@@ -822,6 +860,7 @@ function showDanmaku(data) {
 
 function showDanmakuHint(message) {
     const input = document.getElementById('danmaku-input');
+    if (!input) return;
     const old = input.placeholder;
     input.placeholder = message;
     setTimeout(() => { input.placeholder = old; }, 2000);
@@ -830,16 +869,21 @@ function showDanmakuHint(message) {
 function sendDanmaku() {
     if (!danmakuEnabled) return;
     const input = document.getElementById('danmaku-input');
+    if (!input) return;
     const text = input.value.trim();
     if (!text) return;
     sendWs({ action: 'send_danmaku', text });
     input.value = '';
+    toggleDanmakuDrawer(false);
 }
 
 document.getElementById('danmaku-input').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
         e.preventDefault();
         sendDanmaku();
+    } else if (e.key === 'Escape') {
+        e.preventDefault();
+        toggleDanmakuDrawer(false);
     }
 });
 

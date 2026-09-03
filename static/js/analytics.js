@@ -79,18 +79,16 @@
                     <div class="analytics-tab-header">
                         <div class="analytics-tabs" role="tablist">
                             <button type="button" class="analytics-tab-btn ${this.currentTab === 'question' ? 'active' : ''}" data-tab="question">
-                                <span class="tab-icon">📋</span>
                                 <span>按题目分析 (正误名单)</span>
                             </button>
                             <button type="button" class="analytics-tab-btn ${this.currentTab === 'player' ? 'active' : ''}" data-tab="player">
-                                <span class="tab-icon">👤</span>
                                 <span>按学生分析 (错对题单)</span>
                             </button>
                         </div>
 
                         ${summary.hardest_question ? `
                             <div class="analytics-spotlight-pill" title="全场得分率最低的易错题目">
-                                <span>⚠️ 易错攻坚：第 ${summary.hardest_question.order} 题 (正确率 ${summary.hardest_question.accuracy}%)</span>
+                                <span>易错题：第 ${summary.hardest_question.order} 题 (正确率 ${summary.hardest_question.accuracy}%)</span>
                             </div>
                         ` : ''}
                     </div>
@@ -140,7 +138,7 @@
                                             <span class="q-acc-count">${q.correct_count} 对 · ${q.wrong_count + q.unanswered_count} 错/未答</span>
                                         </div>
                                         <button type="button" class="btn-toggle-fold" aria-label="展开或收起">
-                                            ${isExpanded ? '▲ 收起' : '▼ 展开名单'}
+                                            ${isExpanded ? '收起' : '展开名单'}
                                         </button>
                                     </div>
                                 </div>
@@ -150,7 +148,7 @@
                                     <div class="analytics-card-content">
                                         <!-- 标准答案条 -->
                                         <div class="q-correct-answer-strip">
-                                            <span class="strip-label">🔑 标准答案：</span>
+                                            <span class="strip-label">标准答案：</span>
                                             <span class="strip-value">${escapeHtml(q.correct_answer_display || '—')}</span>
                                         </div>
 
@@ -160,7 +158,6 @@
                                             <div class="q-split-col col-correct">
                                                 <div class="col-head">
                                                     <div class="col-title-group">
-                                                        <span class="col-icon">✅</span>
                                                         <strong>答对学生名单</strong>
                                                     </div>
                                                     <span class="col-badge badge-green">${correctPlayers.length} 人</span>
@@ -176,14 +173,13 @@
                                             <div class="q-split-col col-wrong">
                                                 <div class="col-head">
                                                     <div class="col-title-group">
-                                                        <span class="col-icon">❌</span>
                                                         <strong>答错 / 未答名单</strong>
                                                     </div>
                                                     <span class="col-badge badge-red">${wrongPlayers.length + unansweredPlayers.length} 人</span>
                                                 </div>
                                                 <div class="col-player-list">
                                                     ${(wrongPlayers.length + unansweredPlayers.length) === 0 ? `
-                                                        <div class="col-empty text-success">全员答对！表现优异 🎉</div>
+                                                        <div class="col-empty text-success">全员答对，表现优异</div>
                                                     ` : `
                                                         ${wrongPlayers.map(p => this.renderPlayerAnswerChip(p, false, false)).join('')}
                                                         ${unansweredPlayers.map(p => this.renderUnansweredPlayerChip(p)).join('')}
@@ -259,7 +255,7 @@
                             ? window.AvatarSystem.renderSvg(p.avatar, 46, { nickname: p.nickname })
                             : `<span class="player-big-avatar-fallback">${escapeHtml(p.nickname.slice(0, 1))}</span>`;
 
-                        const rankIcon = p.rank === 1 ? '🥇 冠军' : (p.rank === 2 ? '🥈 亚军' : (p.rank === 3 ? '🥉 季军' : `#${p.rank}`));
+                        const rankIcon = p.rank === 1 ? '第 1 名 (冠军)' : (p.rank === 2 ? '第 2 名 (亚军)' : (p.rank === 3 ? '第 3 名 (季军)' : `#${p.rank}`));
                         const rankClass = p.rank === 1 ? 'rank-gold' : (p.rank === 2 ? 'rank-silver' : (p.rank === 3 ? 'rank-bronze' : ''));
 
                         const correctQs = p.correct_questions || [];
@@ -280,13 +276,13 @@
                                             <div class="p-stat-badges">
                                                 <span class="p-pill p-pill-score">总分 <strong>${p.score}</strong></span>
                                                 <span class="p-pill p-pill-acc">正确率 <strong>${p.accuracy_percent}%</strong></span>
-                                                <span class="p-pill p-pill-counts">✅ ${p.correct_count} 对 · ❌ ${p.wrong_count + p.unanswered_count} 错</span>
+                                                <span class="p-pill p-pill-counts">${p.correct_count} 对 · ${p.wrong_count + p.unanswered_count} 错</span>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="p-header-right">
                                         <button type="button" class="btn-toggle-fold">
-                                            ${isExpanded ? '▲ 收起错对题单' : '▼ 查看对题与错题'}
+                                            ${isExpanded ? '收起错对题单' : '查看对题与错题'}
                                         </button>
                                     </div>
                                 </div>
@@ -298,7 +294,7 @@
                                             <!-- 答对的题目 -->
                                             <div class="p-col p-col-correct">
                                                 <div class="p-col-title">
-                                                    <span>✅ 答对题目 (${correctQs.length})</span>
+                                                    <span>答对题目 (${correctQs.length})</span>
                                                 </div>
                                                 <div class="p-q-list">
                                                     ${correctQs.length === 0 ? `
@@ -323,11 +319,11 @@
                                             <!-- 答错或未作答的题目 -->
                                             <div class="p-col p-col-wrong">
                                                 <div class="p-col-title">
-                                                    <span>❌ 答错 / 未作答题目 (${wrongQs.length + unansweredQs.length})</span>
+                                                    <span>答错 / 未作答题目 (${wrongQs.length + unansweredQs.length})</span>
                                                 </div>
                                                 <div class="p-q-list">
                                                     ${(wrongQs.length + unansweredQs.length) === 0 ? `
-                                                        <div class="p-q-empty text-success">全对！未出现任何错题 🌟</div>
+                                                        <div class="p-q-empty text-success">全部答对，无错题</div>
                                                     ` : `
                                                         ${wrongQs.map(q => `
                                                             <div class="p-q-item p-q-item-wrong">
@@ -365,7 +361,7 @@
                                                                 </div>
                                                             </div>
                                                         `).join('')}
-                                                    `}
+                                                     `}
                                                 </div>
                                             </div>
                                         </div>
