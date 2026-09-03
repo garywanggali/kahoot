@@ -417,6 +417,8 @@ function showHostQuestion(state) {
     } else {
         if (stemBox) stemBox.classList.remove('stem-hero');
         container.classList.remove('hidden');
+        const isJudgment = q.question_type === 'judgment';
+        container.classList.toggle('judgment-options', isJudgment);
         const optionClasses = ['host-opt-a', 'host-opt-b', 'host-opt-c', 'host-opt-d'];
         const icons = ['▲', '◆', '●', '■'];
         container.innerHTML = q.options.map((opt, i) =>
