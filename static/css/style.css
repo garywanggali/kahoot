@@ -140,7 +140,7 @@ a:hover {
     margin: 0;
     position: relative;
     z-index: 2;
-    pointer-events: auto;
+    pointer-events: none;
 }
 
 /* ==========================================================================
@@ -159,8 +159,8 @@ a:hover {
 
 .keycap {
     position: absolute;
-    pointer-events: none !important;
-    cursor: default !important;
+    pointer-events: auto !important;
+    cursor: pointer !important;
     user-select: none;
     border-radius: 16px;
     padding: 3.5px;
@@ -7618,9 +7618,11 @@ html[lang="en"] .room-quiz-filter-tabs .tab-pill {
 .btn-exit,
 .global-page-topbar,
 .studio-header-actions,
+.landing-main-flow .flip-wrapper,
 .landing-main-flow button,
 .landing-main-flow a,
-.landing-main-flow input {
+.landing-main-flow input,
+.landing-main-flow form {
     position: relative;
     z-index: 30;
     pointer-events: auto;
