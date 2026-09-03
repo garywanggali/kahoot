@@ -12,7 +12,6 @@
     <div class="studio-header-bar">
         <div class="studio-title-group">
             <h1 class="studio-main-title">{% trans "老师控制台" %}</h1>
-            <p class="form-hint" style="margin-top: 0.2rem;">{% blocktranslate with user=teacher.display_name|default:teacher.username %}当前账号：{{ user }}{% endblocktranslate %}</p>
         </div>
         <div class="studio-header-actions">
             {% include "includes/lang_switcher.html" %}
@@ -296,10 +295,7 @@ function closeSettings() {
 }
 
 function updateDashboardName(profile) {
-    const hint = document.querySelector('.studio-title-group .form-hint');
-    if (hint && profile && profile.display_name) {
-        hint.textContent = _t('dash.current_user', profile.display_name);
-    }
+    // no-op: account hint removed from dashboard header
 }
 
 async function saveSettings(event) {
