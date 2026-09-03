@@ -1807,32 +1807,32 @@ body:has(.play-app) .container {
     box-sizing: border-box;
 }
 
-/* 选项色调 — 使用柔和渐变阴影取代粗黑实体阴影 */
+/* 选项色调 — 纯平年轻化高饱和色卡 (去除渐变，采用 3D 实体压感阴影) */
 .play-screen .option-a {
-    background: linear-gradient(145deg, #FF6B4A 0%, #E63F20 100%);
-    border: 2px solid #C13018;
-    box-shadow: 0 6px 0 #A52612, 0 12px 28px rgba(230, 63, 32, 0.25);
+    background: #E21B3C !important;
+    border: none !important;
+    box-shadow: 0 8px 0 #9E0D25, 0 12px 24px rgba(226, 27, 60, 0.22);
     color: #ffffff !important;
 }
 
 .play-screen .option-b {
-    background: linear-gradient(145deg, #4A9BFF 0%, #2070E0 100%);
-    border: 2px solid #185CC0;
-    box-shadow: 0 6px 0 #134AA0, 0 12px 28px rgba(32, 112, 224, 0.25);
+    background: #1368CE !important;
+    border: none !important;
+    box-shadow: 0 8px 0 #094793, 0 12px 24px rgba(19, 104, 206, 0.22);
     color: #ffffff !important;
 }
 
 .play-screen .option-c {
-    background: linear-gradient(145deg, #FFD04A 0%, #E8B300 100%);
-    border: 2px solid #C59800;
-    box-shadow: 0 6px 0 #A58000, 0 12px 28px rgba(232, 179, 0, 0.25);
+    background: #FFA602 !important;
+    border: none !important;
+    box-shadow: 0 8px 0 #B87300, 0 12px 24px rgba(255, 166, 2, 0.22);
     color: #ffffff !important;
 }
 
 .play-screen .option-d {
-    background: linear-gradient(145deg, #2A2A2E 0%, #111114 100%);
-    border: 2px solid #000000;
-    box-shadow: 0 6px 0 #000000, 0 12px 28px rgba(0, 0, 0, 0.3);
+    background: #18181C !important;
+    border: none !important;
+    box-shadow: 0 8px 0 #000000, 0 12px 24px rgba(0, 0, 0, 0.28);
     color: #ffffff !important;
 }
 
@@ -1882,35 +1882,35 @@ body:has(.play-app) .container {
 
 /* hover/active */
 .play-screen .option-btn:hover:not(:disabled) {
-    filter: brightness(1.08);
+    filter: brightness(1.06);
     transform: translateY(-3px);
 }
 
 .play-screen .option-btn:active:not(:disabled) {
-    transform: translateY(2px);
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4) !important;
 }
 
 /* 选中状态 */
 .play-screen .option-btn.selected {
-    outline: 4px solid rgba(255, 255, 255, 0.9);
-    outline-offset: -6px;
-    filter: brightness(1.12);
+    outline: 5px solid #ffffff;
+    outline-offset: -7px;
+    filter: brightness(1.1);
 }
 
 /* 正确/错误反馈 */
 .play-screen .option-btn.correct {
-    background: linear-gradient(145deg, #22C55E 0%, #16A34A 100%) !important;
-    border-color: #15803D !important;
-    box-shadow: 0 6px 0 #166534, 0 0 32px rgba(34, 197, 94, 0.4) !important;
+    background: #26890C !important;
+    box-shadow: 0 8px 0 #185E07, 0 0 32px rgba(38, 137, 12, 0.45) !important;
 }
 
 .play-screen .option-btn.wrong {
-    opacity: 0.3;
-    filter: grayscale(0.7) brightness(0.7);
+    opacity: 0.25;
+    filter: grayscale(0.8) brightness(0.6);
 }
 
 /* ==========================================================================
-   Play Screen Feedback Stage (全屏 100vw × 100vh 沉浸式高能即时反馈)
+   Play Screen Feedback Stage (全屏 100vw × 100vh 纯平年轻化高能即时反馈)
    ========================================================================== */
 .play-feedback-stage {
     position: fixed;
@@ -1928,7 +1928,7 @@ body:has(.play-app) .container {
     box-sizing: border-box;
     padding: 2rem 1.5rem;
     overflow: hidden;
-    animation: feedbackFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: feedbackFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes feedbackFadeIn {
@@ -1949,55 +1949,77 @@ body:has(.play-app) .container {
     align-items: center;
     justify-content: center;
     text-align: center;
-    gap: 2rem;
+    gap: 1.75rem;
     position: relative;
     box-shadow: none;
     border: none;
 }
 
-/* 1. 回答正确：全屏翡翠高能绿 (Kahoot Correct Fullscreen) */
+/* 1. 回答正确：纯平高能草绿 (Solid Kahoot Green) */
 .play-feedback-stage.stage-correct,
 .feedback-card.card-correct {
-    background: linear-gradient(160deg, #10B981 0%, #047857 100%) !important;
+    background: #26890C !important;
 }
 
-/* 2. 回答错误 / 做错了：全屏热情红 (Kahoot Wrong Fullscreen) */
+/* 2. 回答错误 / 做错了：纯平高能亮红 (Solid Kahoot Red) */
 .play-feedback-stage.stage-wrong,
 .feedback-card.card-wrong {
-    background: linear-gradient(160deg, #EF4444 0%, #B91C1C 100%) !important;
+    background: #E21B3C !important;
 }
 
-/* 3. 超时 / 时间到：全屏暖金橙 (Kahoot Time Up Fullscreen) */
+/* 3. 超时 / 时间到：纯平阳光金黄橙 (Solid Kahoot Sun Orange/Yellow) */
 .play-feedback-stage.stage-timeup,
 .feedback-card.card-timeup {
-    background: linear-gradient(160deg, #F59E0B 0%, #B45309 100%) !important;
+    background: #FFA602 !important;
 }
 
-/* 4. 答案已提交：全屏电光蓝 (Kahoot Submitted Fullscreen) */
+/* 4. 答案已提交：纯平电光蓝 (Solid Kahoot Blue) */
 .play-feedback-stage.stage-submitted,
 .feedback-card.card-submitted {
-    background: linear-gradient(160deg, #3B82F6 0%, #1D4ED8 100%) !important;
+    background: #1368CE !important;
 }
 
-/* 5. 等待状态：全屏黑灰 */
+/* 5. 等待状态：纯平石墨黑 */
 .play-feedback-stage.stage-waiting,
 .feedback-card.card-waiting {
-    background: linear-gradient(160deg, #18181b 0%, #09090b 100%) !important;
+    background: #18181C !important;
 }
 
-/* 矢量圆圈图标 (全屏放大) */
-.feedback-icon-circle {
-    width: 120px;
-    height: 120px;
+/* 实体圆盘金币徽章 (Solid White Tactile Coin Badge) */
+.feedback-coin-badge {
+    width: 136px;
+    height: 136px;
     border-radius: 50%;
+    background: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 10px 0 rgba(0, 0, 0, 0.16), 0 24px 48px rgba(0, 0, 0, 0.14);
     margin-bottom: 0.5rem;
-    background: rgba(255, 255, 255, 0.22);
-    border: 3.5px solid #ffffff;
-    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.2);
-    color: #ffffff;
+    animation: badgePop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes badgePop {
+    0% { transform: scale(0.6); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.feedback-coin-badge.coin-correct { color: #26890C; }
+.feedback-coin-badge.coin-wrong { color: #E21B3C; }
+.feedback-coin-badge.coin-timeup { color: #FFA602; }
+.feedback-coin-badge.coin-submitted { color: #1368CE; }
+.feedback-coin-badge.coin-waiting { color: #18181C; }
+
+@media (max-width: 600px) {
+    .feedback-coin-badge {
+        width: 108px;
+        height: 108px;
+        box-shadow: 0 8px 0 rgba(0, 0, 0, 0.15);
+    }
+    .feedback-coin-badge svg {
+        width: 54px;
+        height: 54px;
+    }
 }
 
 /* 文字与积分排版 */
@@ -2005,13 +2027,13 @@ body:has(.play-app) .container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
+    gap: 0.85rem;
     width: 100%;
 }
 
 .feedback-title {
     font-family: var(--token-font-hero);
-    font-size: 3.6rem;
+    font-size: clamp(3.2rem, 7.5vw, 4.6rem);
     font-weight: 900;
     color: #ffffff !important;
     letter-spacing: -0.02em;
@@ -2021,7 +2043,7 @@ body:has(.play-app) .container {
     gap: 1.25rem;
     flex-wrap: wrap;
     margin: 0;
-    text-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    text-shadow: 0 3px 0 rgba(0, 0, 0, 0.14);
 }
 
 .feedback-text-main {
@@ -2032,13 +2054,13 @@ body:has(.play-app) .container {
     display: inline-flex;
     align-items: center;
     background: #ffffff;
-    color: #047857;
+    color: #26890C;
     border-radius: var(--token-radius-pill, 9999px);
-    padding: 0.35rem 1.4rem;
+    padding: 0.35rem 1.5rem;
     font-family: var(--token-font-mono, monospace);
     font-size: 2.2rem;
     font-weight: 900;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 6px 0 rgba(0, 0, 0, 0.15);
 }
 
 .feedback-detail {
@@ -2047,12 +2069,11 @@ body:has(.play-app) .container {
     color: #ffffff;
     line-height: 1.5;
     margin: 0.25rem 0 0;
-    background: rgba(255, 255, 255, 0.24);
+    background: rgba(0, 0, 0, 0.16);
     border-radius: var(--token-radius-pill, 9999px);
-    padding: 0.65rem 2rem;
-    border: 1.5px solid rgba(255, 255, 255, 0.35);
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    padding: 0.65rem 2.25rem;
+    border: none;
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.1);
 }
 
 /* 等待下一题提示 */
@@ -2060,39 +2081,18 @@ body:has(.play-app) .container {
     display: inline-flex;
     align-items: center;
     gap: 0.75rem;
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(0, 0, 0, 0.18);
+    border: none;
     border-radius: var(--token-radius-pill, 9999px);
-    padding: 0.65rem 1.75rem;
+    padding: 0.65rem 1.8rem;
     font-family: var(--token-font-hero);
     font-size: 1.15rem;
     font-weight: 700;
     color: #ffffff;
     margin-top: 0.5rem;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.08);
 }
 
-.play-screen .inter-question-hint .waiting-dots-pulse span {
-    background: #ffffff;
-}
-
-@media (max-width: 600px) {
-    .feedback-title {
-        font-size: 2.75rem;
-    }
-    .feedback-icon-circle {
-        width: 96px;
-        height: 96px;
-    }
-    .feedback-points-pill {
-        font-size: 1.8rem;
-        padding: 0.25rem 1rem;
-    }
-    .feedback-detail {
-        font-size: 1.15rem;
-        padding: 0.5rem 1.4rem;
-    }
-}
 
 /* ==========================================================================
    Player Text Answer Hero Card (学生端居中高能大卡片，填满视野)

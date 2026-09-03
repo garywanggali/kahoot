@@ -617,44 +617,45 @@ function renderFeedbackCard(opts) {
     let iconSvg = '';
     if (type === 'correct') {
         iconSvg = `
-            <div class="feedback-icon-circle icon-correct">
-                <svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20 6L9 17l-5-5"/>
+            <div class="feedback-coin-badge coin-correct">
+                <svg viewBox="0 0 24 24" width="70" height="70" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
             </div>
         `;
     } else if (type === 'wrong') {
         iconSvg = `
-            <div class="feedback-icon-circle icon-wrong">
-                <svg viewBox="0 0 24 24" width="50" height="50" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 6L6 18M6 6l12 12"/>
+            <div class="feedback-coin-badge coin-wrong">
+                <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
             </div>
         `;
     } else if (type === 'timeup') {
         iconSvg = `
-            <div class="feedback-icon-circle icon-timeup">
-                <svg viewBox="0 0 24 24" width="52" height="52" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"/>
-                    <polyline points="12 6 12 12 16 14"/>
+            <div class="feedback-coin-badge coin-timeup">
+                <svg viewBox="0 0 24 24" width="66" height="66" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
                 </svg>
             </div>
         `;
     } else if (type === 'submitted') {
         iconSvg = `
-            <div class="feedback-icon-circle icon-submitted">
-                <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M22 2L11 13"/>
-                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            <div class="feedback-coin-badge coin-submitted">
+                <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 2L11 13"></path>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                 </svg>
             </div>
         `;
     } else {
         iconSvg = `
-            <div class="feedback-icon-circle icon-waiting">
-                <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"/>
-                    <polyline points="12 6 12 12 14 14"/>
+            <div class="feedback-coin-badge coin-waiting">
+                <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 14 14"></polyline>
                 </svg>
             </div>
         `;
