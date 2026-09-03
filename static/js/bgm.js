@@ -57,6 +57,7 @@
             const href = anchor.getAttribute('href') || '';
             if (
                 href.includes('/play/')
+                || href.includes('/practice/')
                 || href.includes('/edit/')
                 || /\/teacher\/rooms\/\d+/.test(href)
             ) {

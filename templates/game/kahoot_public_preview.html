@@ -19,6 +19,13 @@
         <p class="form-hint">
             {% blocktranslate with author=quiz_set.teacher.display_name|default:quiz_set.teacher.username n=questions|length %}作者 {{ author }} · {{ n }} 道题{% endblocktranslate %}
         </p>
+        {% if quiz_set.practice_code %}
+        <p class="practice-code-share">
+            {% trans "练习码" %}
+            <span class="practice-code-pill">{{ quiz_set.practice_code }}</span>
+            <span class="form-hint" style="display:inline; margin:0;">{% trans "学生在首页输入该字母码即可个人练习" %}</span>
+        </p>
+        {% endif %}
     </div>
     <div class="studio-header-actions">
         {% include "includes/lang_switcher.html" %}

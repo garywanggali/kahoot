@@ -27,6 +27,15 @@ msgstr "Game PIN"
 msgid "输入6位房间码"
 msgstr "Enter 6-digit PIN"
 
+msgid "房间号 / 练习码"
+msgstr "PIN / Practice code"
+
+msgid "6位数字PIN / 6位字母练习码"
+msgstr "6-digit PIN / 6-letter practice code"
+
+msgid "数字码加入老师房间，字母码进入公开题库个人练习。"
+msgstr "Digits join a teacher room. Letters start solo practice on a public quiz."
+
 msgid "昵称"
 msgstr "Nickname"
 
@@ -627,6 +636,48 @@ msgstr "Back to Create Quiz"
 
 msgid "公共题库"
 msgstr "Public Question Bank"
+
+msgid "预览公开套题、分享练习码，或复制到我的题库修改"
+msgstr "Preview public quizzes, share a practice code, or clone into your library."
+
+msgid "练习码"
+msgstr "Practice code"
+
+msgid "学生在首页输入该字母码即可个人练习"
+msgstr "Students enter this letter code on the home page to practice solo."
+
+msgid "练习"
+msgstr "Practice"
+
+msgid "个人练习"
+msgstr "Solo practice"
+
+msgid "没有老师、没有实时排行，答完后记总分并进入练习排行榜。"
+msgstr "No host, no live ranking. Score is saved at the end on this quiz's practice board."
+
+msgid "开始练习"
+msgstr "Start practice"
+
+msgid "练习完成"
+msgstr "Practice complete"
+
+msgid "本题库练习排行"
+msgstr "Practice leaderboard"
+
+msgid "请输入房间号/练习码和昵称"
+msgstr "Enter a room PIN or practice code and a nickname"
+
+msgid "请输入 6 位数字房间号，或 6 位字母练习码"
+msgstr "Enter a 6-digit room PIN or a 6-letter practice code"
+
+msgid "练习码不存在或该套题暂无题目"
+msgstr "Practice code not found, or this quiz has no questions yet"
+
+msgid "练习会话无效"
+msgstr "Practice session is invalid"
+
+msgid "请先输入昵称加入"
+msgstr "Enter a nickname first"
 
 msgid "复制其他老师公开的套题到我的题库，可在编辑器中修改"
 msgstr "Clone shared quiz sets from other teachers into your library to customize."

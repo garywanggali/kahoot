@@ -28,12 +28,23 @@ from .excel_import import (
 from .models import (
     Answer,
     Player,
+    PracticeAttempt,
     Question,
     QuizSet,
     Room,
     RoomQuestion,
     Teacher,
     TeacherInviteCode,
+)
+from .practice_utils import (
+    classify_join_code,
+    create_practice_attempt,
+    ensure_practice_code,
+    finish_practice_attempt,
+    get_public_quiz_by_practice_code,
+    practice_leaderboard,
+    record_practice_answer,
+    serialize_practice_quiz,
 )
 from .quiz_set_utils import (
     add_question_to_quiz_set,
@@ -82,28 +93,54 @@ def index(request):
     return render(request, 'game/index.html')
 
 
+def _render_join_error(request, message, code='', nickname='', status=422):
+    messages.error(request, message)
+    return render(
+        request,
+        'game/index.html',
+        {'code': code, 'nickname': nickname},
+        status=status,
+    )
+
+
 def join_room(request):
     if request.method == 'POST':
         code = request.POST.get('code', '').strip()
         nickname = request.POST.get('nickname', '').strip()
 
         if not code or not nickname:
-            messages.error(request, _('请输入房间号和昵称'))
-            return render(request, 'game/index.html', {'code': code, 'nickname': nickname}, status=422)
+            return _render_join_error(request, _('请输入房间号/练习码和昵称'), code, nickname)
+
+        kind, normalized = classify_join_code(code)
+        if kind == 'invalid':
+            return _render_join_error(
+                request,
+                _('请输入 6 位数字房间号，或 6 位字母练习码'),
+                code,
+                nickname,
+            )
+
+        if kind == 'practice':
+            quiz_set = get_public_quiz_by_practice_code(normalized)
+            if not quiz_set or not quiz_set.get_questions():
+                return _render_join_error(request, _('练习码不存在或该套题暂无题目'), code, nickname)
+            request.session['nickname'] = nickname
+            request.session['practice_code'] = quiz_set.practice_code
+            request.session.pop('room_code', None)
+            return redirect('practice_play', practice_code=quiz_set.practice_code)
 
         try:
-            room = Room.objects.get(code=code)
+            room = Room.objects.get(code=normalized)
         except Room.DoesNotExist:
-            messages.error(request, _('房间号不存在'))
-            return render(request, 'game/index.html', {'code': code, 'nickname': nickname}, status=422)
+            return _render_join_error(request, _('房间号不存在'), code, nickname)
 
         if room.status == Room.STATUS_ENDED:
-            messages.error(request, _('该房间游戏已结束'))
-            return render(request, 'game/index.html', {'code': code, 'nickname': nickname}, status=422)
+            return _render_join_error(request, _('该房间游戏已结束'), code, nickname)
 
         request.session['nickname'] = nickname
-        request.session['room_code'] = code
-        return redirect('play', room_code=code)
+        request.session['room_code'] = normalized
+        request.session.pop('practice_code', None)
+        return redirect('play', room_code=normalized)
 
     return render(request, 'game/index.html')
 
@@ -122,6 +159,116 @@ def play(request, room_code):
         'room': room,
         'nickname': nickname,
         'initial_state_json': json.dumps(get_room_state(room, runtime=get_runtime(room))),
+    })
+
+
+@ensure_csrf_cookie
+def practice_play(request, practice_code):
+    nickname = request.session.get('nickname')
+    if not nickname:
+        return redirect('join_room')
+    quiz_set = get_public_quiz_by_practice_code(practice_code)
+    if not quiz_set or not quiz_set.get_questions():
+        messages.error(request, _('练习码不存在或该套题暂无题目'))
+        return redirect('index')
+    return render(request, 'game/practice.html', {
+        'quiz_set': quiz_set,
+        'nickname': nickname,
+        'practice_code': quiz_set.practice_code,
+        'quiz_json': json.dumps(serialize_practice_quiz(quiz_set)),
+    })
+
+
+def _practice_json_error(message, status=400):
+    return JsonResponse({'ok': False, 'error': message}, status=status)
+
+
+def _practice_attempt_from_request(request):
+    payload = {}
+    if request.content_type and 'application/json' in request.content_type:
+        try:
+            payload = json.loads(request.body.decode() or '{}')
+        except json.JSONDecodeError:
+            payload = {}
+    else:
+        payload = request.POST.dict()
+    token = (payload.get('token') or request.session.get('practice_token') or '').strip()
+    if not token:
+        return None, payload, _practice_json_error(_('练习会话无效'), 400)
+    attempt = PracticeAttempt.objects.select_related('quiz_set', 'quiz_set__teacher').filter(token=token).first()
+    if not attempt:
+        return None, payload, _practice_json_error(_('练习会话无效'), 404)
+    return attempt, payload, None
+
+
+def practice_start(request, practice_code):
+    if request.method != 'POST':
+        return _practice_json_error(_('无效请求'), 405)
+    nickname = request.session.get('nickname')
+    if not nickname:
+        return _practice_json_error(_('请先输入昵称加入'), 401)
+    quiz_set = get_public_quiz_by_practice_code(practice_code)
+    if not quiz_set or not quiz_set.get_questions():
+        return _practice_json_error(_('练习码不存在或该套题暂无题目'), 404)
+    payload = {}
+    if request.content_type and 'application/json' in request.content_type:
+        try:
+            payload = json.loads(request.body.decode() or '{}')
+        except json.JSONDecodeError:
+            payload = {}
+    attempt = create_practice_attempt(quiz_set, nickname, avatar=payload.get('avatar'))
+    request.session['practice_token'] = attempt.token
+    return JsonResponse({
+        'ok': True,
+        'token': attempt.token,
+        'score': 0,
+        'quiz': serialize_practice_quiz(quiz_set),
+    })
+
+
+def practice_answer(request, practice_code):
+    if request.method != 'POST':
+        return _practice_json_error(_('无效请求'), 405)
+    attempt, payload, err = _practice_attempt_from_request(request)
+    if err:
+        return err
+    if attempt.quiz_set.practice_code != practice_code.upper():
+        return _practice_json_error(_('练习会话无效'), 400)
+    question_id = payload.get('question_id')
+    question = Question.objects.filter(pk=question_id).first()
+    if not question:
+        return _practice_json_error(_('题目不存在'), 404)
+    selected = payload.get('selected') or payload.get('answer_text') or ''
+    if isinstance(selected, list):
+        selected = ','.join(str(part).strip().upper() for part in selected if str(part).strip())
+    try:
+        result = record_practice_answer(
+            attempt,
+            question,
+            str(selected),
+            payload.get('response_time_ms') or 0,
+        )
+    except ValueError as exc:
+        return _practice_json_error(str(exc), 400)
+    return JsonResponse({'ok': True, **result})
+
+
+def practice_finish(request, practice_code):
+    if request.method != 'POST':
+        return _practice_json_error(_('无效请求'), 405)
+    attempt, _payload, err = _practice_attempt_from_request(request)
+    if err:
+        return err
+    if attempt.quiz_set.practice_code != practice_code.upper():
+        return _practice_json_error(_('练习会话无效'), 400)
+    finish_practice_attempt(attempt)
+    board = practice_leaderboard(attempt.quiz_set)
+    me = next((row for row in board if row['nickname'] == attempt.nickname), None)
+    return JsonResponse({
+        'ok': True,
+        'score': attempt.score,
+        'rank': me['rank'] if me else None,
+        'leaderboard': board,
     })
 
 
@@ -637,9 +784,18 @@ def kahoot_editor_meta(request, pk):
     if 'is_public' in request.POST:
         quiz_set.is_public = request.POST.get('is_public') == '1'
         update_fields.append('is_public')
+        if quiz_set.is_public:
+            ensure_practice_code(quiz_set)
     if update_fields:
         quiz_set.save(update_fields=update_fields)
-    return JsonResponse({'ok': True, 'title': quiz_set.title, 'is_public': quiz_set.is_public})
+    if quiz_set.is_public:
+        ensure_practice_code(quiz_set)
+    return JsonResponse({
+        'ok': True,
+        'title': quiz_set.title,
+        'is_public': quiz_set.is_public,
+        'practice_code': quiz_set.practice_code or '',
+    })
 
 
 def kahoot_question_add(request, pk):

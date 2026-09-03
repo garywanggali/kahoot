@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 
 from game.models import Question, QuizSet, Teacher
+from game.practice_utils import ensure_practice_code
 from game.quiz_set_utils import add_question_to_quiz_set
 
 MARKET_USERNAME = 'kahoot_market'
@@ -114,6 +115,7 @@ def seed_public_catalog():
             add_question_to_quiz_set(quiz_set, question, order=order)
             created_questions += 1
             existing_texts.add(qdata['text'])
+        ensure_practice_code(quiz_set)
 
     return teacher, created_sets, created_questions
 

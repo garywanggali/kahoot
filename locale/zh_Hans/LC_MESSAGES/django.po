@@ -27,6 +27,15 @@ msgstr "房间号"
 msgid "输入6位房间码"
 msgstr "输入6位房间码"
 
+msgid "房间号 / 练习码"
+msgstr "房间号 / 练习码"
+
+msgid "6位数字PIN / 6位字母练习码"
+msgstr "6位数字PIN / 6位字母练习码"
+
+msgid "数字码加入老师房间，字母码进入公开题库个人练习。"
+msgstr "数字码加入老师房间，字母码进入公开题库个人练习。"
+
 msgid "昵称"
 msgstr "昵称"
 

@@ -274,6 +274,19 @@ class JoinRoomViewTests(TestCase):
         # Check that error message is displayed
         self.assertIn('房间号不存在', content)
         self.assertIn('join-inline-error', content)
+        self.assertIn('keycaps-stage', content)
+        self.assertIn('6位数字PIN', content)
+        self.assertIn('[0-9A-Za-z]{6}', content)
+
+    def test_letter_code_unknown_keeps_landing(self):
+        from django.urls import reverse
+        resp = self.client.post(reverse('join_room'), {
+            'code': 'ABCDEF',
+            'nickname': 'TestUser',
+        })
+        self.assertEqual(resp.status_code, 422)
+        self.assertContains(resp, '练习码不存在', status_code=422)
+        self.assertContains(resp, 'keycaps-stage', status_code=422)
 
     def test_turbo_script_served_locally(self):
         resp = self.client.get('/')
@@ -1159,8 +1172,8 @@ class ClickThroughSafetyTests(TestCase):
         html = render_to_string('base.html', request=request)
         self.assertIn('name="csrf-token"', html)
         self.assertIn('csrfmiddlewaretoken', html)
-        self.assertIn('style.css?v=469', html)
-        self.assertIn('i18n.js?v=8', html)
+        self.assertIn('style.css?v=470', html)
+        self.assertIn('i18n.js?v=9', html)
         self.assertIn('data-action="toggle-lang"', html)
 
 
@@ -1191,6 +1204,8 @@ class PublicQuizLibraryTests(TestCase):
             teacher=self.owner,
         )
         QuizSetQuestion.objects.create(quiz_set=self.quiz, question=self.question, order=0)
+        from .practice_utils import ensure_practice_code
+        ensure_practice_code(self.quiz)
 
         self.private = QuizSet.objects.create(
             title='私有套题',
@@ -1210,6 +1225,7 @@ class PublicQuizLibraryTests(TestCase):
         self.assertContains(resp, '亚洲地理公开课')
         self.assertContains(resp, reverse('kahoot_public_preview', args=[self.quiz.pk]))
         self.assertContains(resp, '预览')
+        self.assertContains(resp, self.quiz.practice_code)
         self.assertNotContains(resp, '私有套题')
 
     def test_search_matches_title_author_and_question_text(self):
@@ -1278,5 +1294,142 @@ class PublicQuizLibraryTests(TestCase):
         self.assertContains(resp, '科学判断小测验')
         self.assertContains(resp, '趣味英语词汇')
         self.assertContains(resp, '题库精选')
+        self.assertTrue(
+            QuizSet.objects.filter(is_public=True, teacher__username='kahoot_market')
+            .exclude(practice_code='')
+            .exclude(practice_code__isnull=True)
+            .exists()
+        )
 
+
+class PracticeModeTests(TestCase):
+    def setUp(self):
+        from .models import Question, QuizSet, QuizSetQuestion, Teacher
+        from .practice_utils import ensure_practice_code
+
+        self.owner = Teacher.objects.create(username='practice_owner')
+        self.owner.set_password('password123')
+        self.owner.save()
+        self.quiz = QuizSet.objects.create(
+            title='练习地理',
+            teacher=self.owner,
+            is_public=True,
+        )
+        self.q1 = Question.objects.create(
+            text='中国的首都是？',
+            question_type=Question.TYPE_SINGLE,
+            option_a='北京',
+            option_b='上海',
+            option_c='广州',
+            option_d='深圳',
+            correct_option='A',
+            time_limit=20,
+            teacher=self.owner,
+        )
+        self.q2 = Question.objects.create(
+            text='1+1=？',
+            question_type=Question.TYPE_SINGLE,
+            option_a='1',
+            option_b='2',
+            option_c='3',
+            option_d='4',
+            correct_option='B',
+            time_limit=15,
+            teacher=self.owner,
+        )
+        QuizSetQuestion.objects.create(quiz_set=self.quiz, question=self.q1, order=0)
+        QuizSetQuestion.objects.create(quiz_set=self.quiz, question=self.q2, order=1)
+        self.code = ensure_practice_code(self.quiz)
+
+    def test_join_letter_code_opens_practice(self):
+        from django.urls import reverse
+
+        resp = self.client.post(reverse('join_room'), {
+            'code': self.code.lower(),
+            'nickname': '练习生',
+        })
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.url, reverse('practice_play', args=[self.code]))
+        follow = self.client.get(resp.url)
+        self.assertEqual(follow.status_code, 200)
+        self.assertContains(follow, '开始练习')
+        self.assertContains(follow, '练习地理')
+        self.assertNotContains(follow, '等待老师开始游戏')
+
+    def test_digit_pin_still_joins_live_room(self):
+        from django.urls import reverse
+
+        from .models import Room
+
+        room = Room.objects.create(code='654321', name='直播房')
+        resp = self.client.post(reverse('join_room'), {
+            'code': '654321',
+            'nickname': '学生甲',
+        })
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.url, reverse('play', args=['654321']))
+
+    def test_practice_scores_and_leaderboard(self):
+        import json
+
+        from django.urls import reverse
+
+        from .models import PracticeAttempt
+
+        self.client.post(reverse('join_room'), {
+            'code': self.code,
+            'nickname': 'Ace',
+        })
+        start = self.client.post(
+            reverse('practice_start', args=[self.code]),
+            data=json.dumps({'avatar': {'face': 1, 'hair': 2}}),
+            content_type='application/json',
+        )
+        self.assertEqual(start.status_code, 200)
+        token = start.json()['token']
+        quiz_payload = start.json()['quiz']
+        self.assertEqual(len(quiz_payload['questions']), 2)
+        self.assertNotIn('correct_option', quiz_payload['questions'][0])
+
+        ans1 = self.client.post(
+            reverse('practice_answer', args=[self.code]),
+            data=json.dumps({
+                'token': token,
+                'question_id': self.q1.id,
+                'selected': 'A',
+                'response_time_ms': 1000,
+            }),
+            content_type='application/json',
+        )
+        self.assertEqual(ans1.status_code, 200)
+        self.assertTrue(ans1.json()['is_correct'])
+        self.assertGreater(ans1.json()['points'], 0)
+
+        ans2 = self.client.post(
+            reverse('practice_answer', args=[self.code]),
+            data=json.dumps({
+                'token': token,
+                'question_id': self.q2.id,
+                'selected': 'A',
+                'response_time_ms': 500,
+            }),
+            content_type='application/json',
+        )
+        self.assertFalse(ans2.json()['is_correct'])
+
+        done = self.client.post(
+            reverse('practice_finish', args=[self.code]),
+            data=json.dumps({'token': token}),
+            content_type='application/json',
+        )
+        self.assertEqual(done.status_code, 200)
+        self.assertEqual(done.json()['score'], ans1.json()['points'])
+        self.assertEqual(done.json()['leaderboard'][0]['nickname'], 'Ace')
+        self.assertEqual(PracticeAttempt.objects.filter(quiz_set=self.quiz).count(), 1)
+
+    def test_classify_join_code(self):
+        from .practice_utils import classify_join_code
+        self.assertEqual(classify_join_code('123456'), ('pin', '123456'))
+        self.assertEqual(classify_join_code('abCdef'), ('practice', 'ABCDEF'))
+        self.assertEqual(classify_join_code('AB12CD')[0], 'invalid')
 

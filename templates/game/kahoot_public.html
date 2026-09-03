@@ -16,7 +16,7 @@
             <span>{% trans "返回创建题库" %}</span>
         </a>
         <h1 class="studio-main-title">{% trans "公共题库" %}</h1>
-        <p class="form-hint">{% trans "预览其他老师公开的套题，再复制到我的题库修改" %}</p>
+        <p class="form-hint">{% trans "预览公开套题、分享练习码，或复制到我的题库修改" %}</p>
     </div>
     <div class="studio-header-actions">
         {% include "includes/lang_switcher.html" %}
@@ -44,10 +44,11 @@
         <table class="quiz-set-table" id="public-quiz-table">
             <thead>
                 <tr>
-                    <th style="width: 38%;">{% trans "套题名称" %}</th>
-                    <th style="width: 18%;">{% trans "作者" %}</th>
-                    <th style="width: 14%;">{% trans "试题数量" %}</th>
-                    <th style="width: 30%; text-align: right;">{% trans "操作" %}</th>
+                    <th style="width: 32%;">{% trans "套题名称" %}</th>
+                    <th style="width: 14%;">{% trans "练习码" %}</th>
+                    <th style="width: 16%;">{% trans "作者" %}</th>
+                    <th style="width: 12%;">{% trans "试题数量" %}</th>
+                    <th style="width: 26%; text-align: right;">{% trans "操作" %}</th>
                 </tr>
             </thead>
             <tbody id="public-quiz-rows">
@@ -64,6 +65,13 @@
                             <span class="status-chip chip-public-contrast" style="margin-left: 0.35rem;">{% trans "我的" %}</span>
                             {% endif %}
                         </div>
+                    </td>
+                    <td>
+                        {% if qs.practice_code %}
+                        <span class="practice-code-pill">{{ qs.practice_code }}</span>
+                        {% else %}
+                        <span class="time-text-contrast">—</span>
+                        {% endif %}
                     </td>
                     <td>
                         <span class="time-text-contrast">{{ qs.teacher.display_name|default:qs.teacher.username }}</span>

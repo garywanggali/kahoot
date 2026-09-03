@@ -171,6 +171,7 @@ def _filter_quiz_sets_by_search(qs, search: str = ''):
         | Q(quiz_set_questions__question__option_b__icontains=term)
         | Q(quiz_set_questions__question__option_c__icontains=term)
         | Q(quiz_set_questions__question__option_d__icontains=term)
+        | Q(practice_code__icontains=term)
     ).distinct()
 
 

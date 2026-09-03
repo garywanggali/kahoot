@@ -271,6 +271,15 @@ class QuizSet(models.Model):
         related_name='quiz_sets',
     )
     is_public = models.BooleanField('公开套题', default=False, db_index=True)
+    practice_code = models.CharField(
+        '练习码',
+        max_length=6,
+        unique=True,
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text='公开套题的 6 位字母练习码，学生在首页输入后进入个人练习。',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -411,3 +420,32 @@ class Answer(models.Model):
 
     class Meta:
         unique_together = ['player', 'question']
+
+
+class PracticeAttempt(models.Model):
+    """One solo practice run against a public quiz set."""
+
+    quiz_set = models.ForeignKey(
+        QuizSet,
+        on_delete=models.CASCADE,
+        related_name='practice_attempts',
+    )
+    nickname = models.CharField('昵称', max_length=50)
+    token = models.CharField(max_length=64, unique=True, db_index=True)
+    avatar = models.CharField('个性化头像', max_length=120, default='{"face":0,"hair":0}')
+    score = models.IntegerField(default=0)
+    answers = models.JSONField(default=list)
+    started_at = models.DateTimeField(auto_now_add=True)
+    finished_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-score', 'finished_at', 'started_at']
+        indexes = [
+            models.Index(fields=['quiz_set', 'score']),
+        ]
+
+    def __str__(self):
+        return f'{self.nickname} · {self.quiz_set.title} ({self.score})'
+
+    def get_avatar_dict(self) -> dict:
+        return _parse_avatar_json(self.avatar)

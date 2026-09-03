@@ -33,8 +33,9 @@
         'landing.headline_1': 'every question.',
         'landing.headline_2': 'every answer.',
         'landing.student_title': '学生加入',
-        'landing.room_code': '房间号',
-        'landing.room_code_placeholder': '输入6位房间码',
+        'landing.room_code': '房间号 / 练习码',
+        'landing.room_code_placeholder': '6位数字PIN / 6位字母练习码',
+        'landing.join_hint': '数字码加入老师房间，字母码进入公开题库个人练习。',
         'landing.nickname': '昵称',
         'landing.nickname_placeholder': '输入你的昵称',
         'landing.btn_join': '进入游戏',
@@ -292,6 +293,11 @@
         'qlist.empty_title': '暂无测验套题',
         'qlist.empty_desc': '你可以前往创建向导，使用手动、AI 或 Excel 快速创建你的第一套题库。',
         'qlist.btn_create_first': '+ 新建测验题库 →',
+
+        'practice.score_now': '总分 %s',
+        'practice.final_score': '总分 %s',
+        'practice.your_rank': '第 %s 名',
+        'practice.empty_board': '还没有其他人的练习记录',
     };
 
     const DICT_EN = {
@@ -322,8 +328,9 @@
         'landing.headline_1': 'every question.',
         'landing.headline_2': 'every answer.',
         'landing.student_title': 'Join as Player',
-        'landing.room_code': 'Game PIN',
-        'landing.room_code_placeholder': 'Enter 6-digit PIN',
+        'landing.room_code': 'PIN / Practice code',
+        'landing.room_code_placeholder': '6-digit PIN or 6-letter code',
+        'landing.join_hint': 'Digits join a live room. Letters start solo practice on a public quiz.',
         'landing.nickname': 'Nickname',
         'landing.nickname_placeholder': 'Enter your nickname',
         'landing.btn_join': 'Enter Game',
@@ -581,6 +588,11 @@
         'qlist.empty_title': 'No Quiz Sets Yet',
         'qlist.empty_desc': 'Head to the creation wizard to craft your first quiz using Manual, AI, or Excel import.',
         'qlist.btn_create_first': '+ Create First Quiz →',
+
+        'practice.score_now': 'Score %s',
+        'practice.final_score': 'Score %s',
+        'practice.your_rank': 'Rank #%s',
+        'practice.empty_board': 'No other practice runs yet',
     };
 
     function getCookie(name) {

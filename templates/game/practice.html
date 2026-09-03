@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block body_attrs %}data-turbo="false"{% endblock %}
+
+{% block title %}{% trans "练习" %} - {{ quiz_set.title }}{% endblock %}
+
+{% block content %}
+<div id="app" class="play-app practice-app">
+    <div id="waiting-screen" class="play-waiting">
+        <div class="lobby-header-bar">
+            <div class="lobby-badge-item">
+                <span class="lobby-badge-label">{% trans "练习码" %}</span>
+                <span class="lobby-badge-value">{{ practice_code }}</span>
+            </div>
+            <div class="lobby-badge-item">
+                <span class="lobby-badge-label">{% trans "玩家" %}</span>
+                <span class="lobby-badge-value">{{ nickname }}</span>
+            </div>
+            <div class="lobby-badge-item lobby-badge-status">
+                <span class="status-indicator-dot"></span>
+                <span>{% trans "个人练习" %}</span>
+            </div>
+        </div>
+
+        <div class="lobby-main-stage">
+            <div class="lobby-avatar-card">
+                <div class="lobby-avatar-preview-wrap">
+                    <div id="lobby-avatar-preview" class="lobby-avatar-preview"></div>
+                    <button type="button" class="btn-avatar-random" onclick="randomizeAvatar()" title="{% trans '随机换装' %}">
+                        <svg class="btn-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                        </svg>
+                        <span>{% trans "随机换装" %}</span>
+                    </button>
+                </div>
+                <div class="lobby-avatar-customizer">
+                    <div class="avatar-picker-row">
+                        <span class="picker-label">{% trans "表情" %}</span>
+                        <div class="picker-control">
+                            <button type="button" class="picker-btn" onclick="cycleFace(-1)" aria-label="{% trans '上一个表情' %}">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                            </button>
+                            <span id="picker-face-name" class="picker-val-name"></span>
+                            <button type="button" class="picker-btn" onclick="cycleFace(1)" aria-label="{% trans '下一个表情' %}">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="avatar-picker-row">
+                        <span class="picker-label">{% trans "发型" %}</span>
+                        <div class="picker-control">
+                            <button type="button" class="picker-btn" onclick="cycleHair(-1)" aria-label="{% trans '上一个发型' %}">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                            </button>
+                            <span id="picker-hair-name" class="picker-val-name"></span>
+                            <button type="button" class="picker-btn" onclick="cycleHair(1)" aria-label="{% trans '下一个发型' %}">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="lobby-waiting-status">
+                <h2 class="lobby-waiting-title">{{ quiz_set.title }}</h2>
+                <p class="form-hint" style="margin: 0.35rem 0 1rem;">{% trans "没有老师、没有实时排行，答完后记总分并进入练习排行榜。" %}</p>
+                <button type="button" class="btn-industrial-primary" id="btn-start-practice" style="max-width: 280px; margin: 0 auto;">
+                    <span>{% trans "开始练习" %}</span>
+                    <span>→</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="play-screen" class="play-screen hidden">
+        <p class="question-number" id="question-number"></p>
+        <div class="timer-bar" id="timer-bar"><div class="timer-fill" id="timer-fill"></div></div>
+        <div id="question-image-wrap" class="question-image-wrap hidden">
+            <img id="question-image" src="" alt="{% trans '题目图片' %}">
+        </div>
+        <h2 class="question-text" id="question-text"></h2>
+        <div id="options-container" class="play-options"></div>
+        <div id="text-answer-group" class="text-answer-group hidden">
+            <div class="text-answer-hero-card">
+                <input type="text" id="text-answer-input" class="text-answer-input"
+                       maxlength="100" placeholder="{% trans '在此输入你的答案...' %}" autocomplete="off">
+                <button type="button" id="submit-text-btn" class="submit-text-btn">
+                    <span>{% trans "提交答案" %}</span>
+                    <span>→</span>
+                </button>
+            </div>
+        </div>
+        <button type="button" id="submit-multi-btn" class="btn btn-primary submit-multi-btn hidden">{% trans "提交答案" %}</button>
+        <button type="button" id="btn-skip-explanation" class="btn btn-primary submit-multi-btn hidden">{% trans "下一题" %}</button>
+        <div id="feedback-stage" class="play-feedback-stage hidden">
+            <div class="feedback-card" id="feedback-card">
+                <div class="feedback-icon" id="feedback-icon"></div>
+                <div class="feedback-body">
+                    <div id="answer-feedback" class="feedback-title"></div>
+                    <div id="answer-detail" class="feedback-detail hidden"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ended-screen" class="play-ended hidden">
+        <div class="host-stage-title-wrap play-ended-title-wrap">
+            <h2 class="host-stage-title">{% trans "练习完成" %}</h2>
+        </div>
+        <p class="practice-final-score" id="practice-final-score"></p>
+        <div id="practice-podium" class="host-podium-outer" style="width: 100%;"></div>
+        <h3 class="final-rankings-title" id="practice-rank-title">{% trans "本题库练习排行" %}</h3>
+        <div id="practice-leaderboard" class="host-leaderboard-scroll-list" style="max-height: 320px; width: 100%; max-width: 600px;"></div>
+        <div class="host-stage-foot play-ended-foot">
+            <a href="{% url 'index' %}" class="token-btn-secondary" style="display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none;">
+                <span>{% trans "返回首页" %}</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div id="question-countdown" class="q-countdown hidden" aria-live="assertive" aria-atomic="true" aria-hidden="true">
+    <div class="q-countdown-bg"></div>
+    <div class="q-countdown-card">
+        <span class="q-countdown-meta"></span>
+        <div class="q-countdown-num-box">
+            <span class="q-countdown-num">3</span>
+        </div>
+        <span class="q-countdown-hint"></span>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/awards.js' %}?v=6"></script>
+<script src="{% static 'js/question_countdown.js' %}?v=3"></script>
+<script src="{% static 'js/practice.js' %}?v=1"></script>
+<script>
+window.PRACTICE_BOOT = {
+    code: '{{ practice_code }}',
+    nickname: '{{ nickname|escapejs }}',
+    quiz: {{ quiz_json|safe }},
+    urls: {
+        start: '{% url "practice_start" practice_code %}',
+        answer: '{% url "practice_answer" practice_code %}',
+        finish: '{% url "practice_finish" practice_code %}',
+    },
+};
+</script>
+{% endblock %}
