@@ -1,6 +1,7 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}我的题库 - 测验套题管理{% endblock %}
+{% block title %}{% trans "我的题库 - 测验套题管理" %}{% endblock %}
 
 {% block content %}
 <div class="question-list-viewport">
@@ -13,16 +14,16 @@
                     <line x1="19" y1="12" x2="5" y2="12"></line>
                     <polyline points="12 19 5 12 12 5"></polyline>
                 </svg>
-                <span>返回控制台</span>
+                <span>{% trans "返回控制台" %}</span>
             </a>
-            <h1 class="studio-main-title" style="margin-top: 0.15rem;">我的题库</h1>
+            <h1 class="studio-main-title" style="margin-top: 0.15rem;">{% trans "我的题库" %}</h1>
         </div>
     </div>
 
-    <!-- 我的套题 (撞色工业风磨砂玻璃卡片，单屏零滑动 + 分页) -->
+    <!-- 我的套题 -->
     <div class="card card-glass quiz-list-card" style="margin-bottom: 0;">
         <div class="card-section-header">
-            <h3 class="card-section-title">我的测验套题</h3>
+            <h3 class="card-section-title">{% trans "我的测验套题" %}</h3>
         </div>
 
         {% if my_quiz_sets %}
@@ -30,11 +31,11 @@
             <table class="quiz-set-table" id="my-quiz-table">
                 <thead>
                     <tr>
-                        <th style="width: 38%;">套题名称</th>
-                        <th style="width: 14%;">试题数量</th>
-                        <th style="width: 14%;">可见权限</th>
-                        <th style="width: 18%;">创建时间</th>
-                        <th style="width: 16%; text-align: right;">快捷操作</th>
+                        <th style="width: 38%;">{% trans "套题名称" %}</th>
+                        <th style="width: 14%;">{% trans "试题数量" %}</th>
+                        <th style="width: 14%;">{% trans "可见权限" %}</th>
+                        <th style="width: 18%;">{% trans "创建时间" %}</th>
+                        <th style="width: 16%; text-align: right;">{% trans "快捷操作" %}</th>
                     </tr>
                 </thead>
                 <tbody id="quiz-rows-container">
@@ -51,16 +52,16 @@
                         <td>
                             <span class="badge-count-contrast">
                                 <span class="count-num">{{ qs.question_count }}</span>
-                                <span class="count-unit">题</span>
+                                <span class="count-unit">{% trans "题" %}</span>
                             </span>
                         </td>
                         <td>
                             {% if qs.is_public %}
                                 <span class="status-chip chip-public-contrast">
-                                    <span class="chip-dot-orange"></span>公开
+                                    <span class="chip-dot-orange"></span>{% trans "公开" %}
                                 </span>
                             {% else %}
-                                <span class="status-chip chip-private-contrast">私有</span>
+                                <span class="status-chip chip-private-contrast">{% trans "私有" %}</span>
                             {% endif %}
                         </td>
                         <td>
@@ -69,12 +70,12 @@
                         <td style="text-align: right;">
                             <div class="table-actions-inline">
                                 <a href="{% url 'kahoot_editor' qs.pk %}" class="btn-action-edit-contrast">
-                                    <span>编辑</span>
+                                    <span>{% trans "编辑" %}</span>
                                     <span>→</span>
                                 </a>
                                 <a href="{% url 'kahoot_delete' qs.pk %}" class="btn-action-delete-contrast"
-                                   onclick="return confirm('确定要删除套题「{{ qs.title }}」吗？此操作不可恢复。');"
-                                   title="删除套题">
+                                   onclick="return confirm('{% trans "确定要删除套题吗？此操作不可恢复。" %}');"
+                                   title="{% trans '删除套题' %}">
                                     <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <polyline points="3 6 5 6 21 6"></polyline>
                                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -88,14 +89,14 @@
             </table>
         </div>
 
-        <!-- 分页控制栏 (保证零滚动单屏) -->
+        <!-- 分页控制栏 -->
         <div class="pagination-bar" id="pagination-bar">
             <button type="button" class="btn-page" id="btn-prev-page" onclick="changePage(-1)">
-                ← 上一页
+                {% trans "← 上一页" %}
             </button>
             <span class="page-indicator" id="page-indicator">第 1 / 1 页</span>
             <button type="button" class="btn-page" id="btn-next-page" onclick="changePage(1)">
-                下一页 →
+                {% trans "下一页 →" %}
             </button>
         </div>
 
@@ -107,10 +108,10 @@
                     <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
                 </svg>
             </div>
-            <h4 class="empty-state-title">暂无测验套题</h4>
-            <p class="empty-state-desc">你可以前往创建向导，使用手动、AI 或 Excel 快速创建你的第一套题库。</p>
+            <h4 class="empty-state-title">{% trans "暂无测验套题" %}</h4>
+            <p class="empty-state-desc">{% trans "你可以前往创建向导，使用手动、AI 或 Excel 快速创建你的第一套题库。" %}</p>
             <a href="{% url 'kahoot_new' %}" class="btn-dual-primary" style="max-width: 240px; margin: 0 auto;">
-                + 新建测验题库 →
+                {% trans "+ 新建测验题库 →" %}
             </a>
         </div>
         {% endif %}
@@ -121,7 +122,6 @@
 
 {% block extra_js %}
 <script>
-// 纯前端极速分页逻辑 (每页 6 条，严格保持 100vh 单屏不滚动)
 const PAGE_SIZE = 6;
 let currentPage = 1;
 const rows = Array.from(document.querySelectorAll('#quiz-rows-container .quiz-set-row'));
@@ -150,8 +150,9 @@ function renderPage() {
         }
     });
 
+    const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
     if (indicator) {
-        indicator.textContent = `第 ${currentPage} / ${totalPages} 页`;
+        indicator.textContent = isEn ? `Page ${currentPage} of ${totalPages}` : `第 ${currentPage} / ${totalPages} 页`;
     }
 
     if (prevBtn) {
@@ -174,7 +175,6 @@ function changePage(delta) {
     }
 }
 
-// 初始化渲染
 renderPage();
 </script>
 {% endblock %}
