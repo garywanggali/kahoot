@@ -4,7 +4,7 @@ set -euo pipefail
 
 SERVER="${1:-gary@110.40.153.38}"
 PORT="${2:-5002}"
-DIR="${3:-shoot}"
+DIR="${3:-kahoot}"
 
 echo "==> 1/3 上传 UI + 启动脚本 ..."
 rsync -avz --progress \

@@ -2,8 +2,8 @@
 # 在服务器上首次执行：把 rsync 目录转为 git 仓库（保留 venv、db.sqlite3）
 set -euo pipefail
 
-DIR="${1:-$HOME/shoot}"
-REPO="${2:-https://github.com/garywanggali/shoot.git}"
+DIR="${1:-$HOME/kahoot}"
+REPO="${2:-https://github.com/garywanggali/kahoot.git}"
 
 cd "$DIR"
 

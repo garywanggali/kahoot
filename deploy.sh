@@ -3,7 +3,7 @@ set -euo pipefail
 
 SERVER="${1:-${DEPLOY_SERVER:-gary@110.40.153.38}}"
 PORT="${2:-${DEPLOY_PORT:-5002}}"
-REMOTE_DIR="${DEPLOY_DIR:-shoot}"
+REMOTE_DIR="${DEPLOY_DIR:-kahoot}"
 
 echo "==> Upload to ${SERVER}:~/${REMOTE_DIR} port ${PORT}"
 echo "==> Server venv and .requirements.hash will NOT be deleted"

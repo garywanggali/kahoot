@@ -69,7 +69,7 @@ export DEPLOY_SERVER=你的英文名@110.40.153.38
 ssh 你的英文名@110.40.153.38
 
 # 2. 上传代码后进入目录（或用 git clone）
-cd shoot
+cd kahoot
 
 # 3. 启动（后台运行）
 chmod +x run.sh stop.sh
@@ -99,7 +99,7 @@ tail -f logs/server.log
 若目录是 rsync 上传的，还没有 `.git`，先初始化一次（**保留 venv 和数据库**）：
 
 ```bash
-cd ~/shoot
+cd ~/kahoot
 chmod +x server_init_git.sh server_update.sh
 ./server_init_git.sh
 ```
@@ -107,7 +107,7 @@ chmod +x server_init_git.sh server_update.sh
 之后每次更新：
 
 ```bash
-cd ~/shoot
+cd ~/kahoot
 ./server_update.sh 5002
 ```
 
@@ -115,7 +115,7 @@ cd ~/shoot
 
 ```bash
 cd ~
-git clone https://github.com/garywanggali/shoot.git shoot-new
-cd shoot-new
+git clone https://github.com/garywanggali/kahoot.git kahoot-new
+cd kahoot-new
 ./run.sh 5002
 ```

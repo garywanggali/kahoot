@@ -3,7 +3,7 @@
 set -euo pipefail
 
 PORT="${1:-5002}"
-DIR="${2:-$HOME/shoot}"
+DIR="${2:-$HOME/kahoot}"
 
 cd "$DIR"
 

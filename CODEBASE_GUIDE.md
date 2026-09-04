@@ -243,7 +243,7 @@ python manage.py runserver 8000
 ssh gary@110.40.153.38
 
 # 进入项目目录
-cd ~/shoot
+cd ~/kahoot
 
 # 停止服务
 ./stop.sh

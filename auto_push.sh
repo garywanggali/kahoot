@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # 实时双向自动同步脚本：实时拉取 (Pull) GitHub 最新内容 + 实时推送 (Push) 本地改动
-# 仓库: https://github.com/garywanggali/shoot.git
+# 仓库: https://github.com/garywanggali/kahoot.git
 
 BRANCH="main"
 REMOTE="origin"
