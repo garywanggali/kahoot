@@ -13,7 +13,7 @@ from django.utils import timezone
 from .models import PracticeAttempt, Question, QuizSet, _parse_avatar_json
 from .question_save import _question_image_url
 from .text_utils import normalize_word_cloud_text
-from .utils import QUESTION_COUNTDOWN_SECONDS, calculate_points
+from .utils import calculate_points
 
 PRACTICE_CODE_LENGTH = 6
 # Skip I/O so letter codes are not confused with digit PINs 1/0.
@@ -79,9 +79,10 @@ def serialize_practice_question(question: Question) -> dict:
         'text': question.text,
         'question_type': question.question_type,
         'options': question.get_options(),
+        # Practice mode is untimed: keep time_limit for display/scoring ratio only.
         'time_limit': int(question.time_limit or 0),
         'no_score': question.question_type in Question.UNSCORED_TYPES,
-        'uses_countdown': question.question_type != Question.TYPE_EXPLANATION,
+        'uses_countdown': False,
     }
     if question.image:
         payload['image_url'] = _question_image_url(question)
@@ -95,7 +96,7 @@ def serialize_practice_quiz(quiz_set: QuizSet) -> dict:
         'practice_code': quiz_set.practice_code,
         'author': quiz_set.teacher.display_name or quiz_set.teacher.username,
         'total_questions': len(questions),
-        'countdown_seconds': QUESTION_COUNTDOWN_SECONDS,
+        'countdown_seconds': 0,
         'questions': [serialize_practice_question(q) for q in questions],
     }
 

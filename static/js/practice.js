@@ -40,7 +40,6 @@
     var selectedOptions = new Set();
     var questionStartTime = 0;
     var timerInterval = null;
-    var countdown = window.QuestionCountdown ? window.QuestionCountdown.create('question-countdown') : null;
 
     var STORAGE_AVATAR_KEY = 'shoot_player_avatar';
     var myAvatar = (function () {
@@ -222,25 +221,10 @@
         }
     }
 
-    function startTimer(seconds) {
+    function hideTimerBar() {
         clearTimer();
-        var fill = document.getElementById('timer-fill');
         var bar = document.getElementById('timer-bar');
-        if (!seconds || seconds <= 0) {
-            if (bar) bar.classList.add('hidden');
-            return;
-        }
-        if (bar) bar.classList.remove('hidden');
-        if (fill) fill.style.width = '100%';
-        var remaining = seconds;
-        timerInterval = setInterval(function () {
-            remaining -= 0.1;
-            if (fill) fill.style.width = Math.max(0, (remaining / seconds) * 100) + '%';
-            if (remaining <= 0) {
-                clearTimer();
-                if (!hasAnswered) submitCurrent('');
-            }
-        }, 100);
+        if (bar) bar.classList.add('hidden');
     }
 
     function renderQuestion() {
@@ -255,6 +239,7 @@
         questionStartTime = Date.now();
         hideFeedback();
         hidePracticeWordCloud();
+        hideTimerBar();
 
         var total = quiz.total_questions || (quiz.questions || []).length;
         var numEl = document.getElementById('question-number');
@@ -337,13 +322,6 @@
             playScreen.classList.toggle('play-show-stem', true);
             playScreen.classList.remove('play-hide-stem');
         }
-
-        startTimer(isExplain ? 0 : q.time_limit);
-    }
-
-    function afterCountdown() {
-        questionStartTime = Date.now();
-        renderQuestion();
     }
 
     function beginQuestion() {
@@ -354,15 +332,7 @@
         }
         showScreen('play-screen');
         hideFeedback();
-        if (countdown && q.uses_countdown) {
-            countdown.run({
-                countdown_remaining_ms: (quiz.countdown_seconds || 3) * 1000,
-                current_question_index: index,
-                total_questions: quiz.total_questions || quiz.questions.length,
-            }, afterCountdown);
-        } else {
-            afterCountdown();
-        }
+        renderQuestion();
     }
 
     function submitCurrent(selected) {
@@ -429,7 +399,6 @@
 
     function finishPractice() {
         clearTimer();
-        if (countdown) countdown.hide();
         var urls = (getBoot().urls || {});
         postJson(urls.finish, { token: token }).then(function (data) {
             showScreen('ended-screen');

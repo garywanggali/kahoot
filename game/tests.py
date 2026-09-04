@@ -1417,8 +1417,16 @@ class PracticeModeTests(TestCase):
             html.find('js/practice.js'),
         )
         self.assertIn(reverse('practice_start', args=[self.code]), html)
+        self.assertNotContains(follow, 'question-countdown')
+        self.assertNotContains(follow, 'question_countdown.js')
+        payload = follow.context['quiz_json']
+        if isinstance(payload, str):
+            import json
+            payload = json.loads(payload)
+        self.assertEqual(payload.get('countdown_seconds'), 0)
+        for q in payload.get('questions') or []:
+            self.assertFalse(q.get('uses_countdown'))
 
-    def test_digit_pin_still_joins_live_room(self):
         from django.urls import reverse
 
         from .models import Room

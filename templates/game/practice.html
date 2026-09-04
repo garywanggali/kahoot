@@ -74,7 +74,7 @@
 
     <div id="play-screen" class="play-screen hidden">
         <p class="question-number" id="question-number"></p>
-        <div class="timer-bar" id="timer-bar"><div class="timer-fill" id="timer-fill"></div></div>
+        <div class="timer-bar hidden" id="timer-bar"><div class="timer-fill" id="timer-fill"></div></div>
         <div id="question-image-wrap" class="question-image-wrap hidden">
             <img id="question-image" src="" alt="{% trans '题目图片' %}">
         </div>
@@ -123,17 +123,6 @@
         </div>
     </div>
 </div>
-
-<div id="question-countdown" class="q-countdown hidden" aria-live="assertive" aria-atomic="true" aria-hidden="true">
-    <div class="q-countdown-bg"></div>
-    <div class="q-countdown-card">
-        <span class="q-countdown-meta"></span>
-        <div class="q-countdown-num-box">
-            <span class="q-countdown-num">3</span>
-        </div>
-        <span class="q-countdown-hint"></span>
-    </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -151,6 +140,5 @@ window.PRACTICE_BOOT = {
 </script>
 <script src="{% static 'js/wordcloud.js' %}?v=5"></script>
 <script src="{% static 'js/awards.js' %}?v=6"></script>
-<script src="{% static 'js/question_countdown.js' %}?v=3"></script>
-<script src="{% static 'js/practice.js' %}?v=4"></script>
+<script src="{% static 'js/practice.js' %}?v=5"></script>
 {% endblock %}
