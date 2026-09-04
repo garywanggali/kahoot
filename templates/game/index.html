@@ -67,9 +67,14 @@
                                    placeholder="{% trans '输入你的昵称' %}" maxlength="50"
                                    value="{{ nickname|default:'' }}" required autocomplete="nickname">
                         </div>
-                        <button type="submit" class="btn-industrial-primary" id="btn-submit-student">
-                            <span>{% trans "进入游戏" %}</span>
-                            <span>→</span>
+                        <button type="submit" class="btn-industrial-primary btn-particle-orange" id="btn-submit-student">
+                            <span class="inner">
+                                <span>{% trans "进入游戏" %}</span>
+                                <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5">
+                                    <path d="M5 12h14"></path>
+                                    <path d="m12 5 7 7-7 7"></path>
+                                </svg>
+                            </span>
                         </button>
                     </form>
                     
@@ -101,9 +106,14 @@
                             <input type="password" id="password" name="password" class="input-industrial"
                                    placeholder="{% trans '注册时设置的密码（不是邀请码）' %}" required autocomplete="current-password">
                         </div>
-                        <button type="submit" class="btn-industrial-primary" id="btn-submit-teacher">
-                            <span>{% trans "登录老师控制台" %}</span>
-                            <span>→</span>
+                        <button type="submit" class="btn-industrial-primary btn-particle-orange" id="btn-submit-teacher">
+                            <span class="inner">
+                                <span>{% trans "登录老师控制台" %}</span>
+                                <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5">
+                                    <path d="M5 12h14"></path>
+                                    <path d="m12 5 7 7-7 7"></path>
+                                </svg>
+                            </span>
                         </button>
                     </form>
                     

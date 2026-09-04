@@ -465,37 +465,210 @@ a:hover {
     color: #c4c4be !important;
 }
 
-/* High-Impact 撞色 CTA Button (Safety Orange + Bold Black Shadow) */
-.btn-industrial-primary {
-    width: 100%;
-    display: flex;
+/* High-Impact CTA Button (Clean Industrial Safety Orange + Kinetic Sliding Text) */
+.btn-particle-orange,
+.btn-industrial-primary,
+.token-btn-primary.btn-host-large-start {
+    cursor: pointer;
+    position: relative;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.6rem;
+    overflow: hidden;
+    width: 100%;
     padding: 1rem 1.75rem;
-    background: var(--orange);
+    min-height: 52px;
+    background: var(--orange, #ff4f00);
     color: #ffffff;
-    border: 2px solid var(--text-black);
-    border-radius: var(--radius-pill);
+    border: 2px solid var(--text-black, #111111);
+    border-radius: var(--radius-pill, 9999px);
     font-family: var(--font-hero);
     font-size: 1.15rem;
     font-weight: 800;
-    cursor: pointer;
-    transition: all 0.18s cubic-bezier(0.2, 0, 0, 1);
-    box-shadow: 0 4px 0 var(--text-black);
+    text-decoration: none;
+    transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+    box-shadow: 0 4px 0 var(--text-black, #111111);
     margin-top: 0.75rem;
 }
 
-.btn-industrial-primary:hover {
-    background: var(--text-black);
+.btn-particle-orange:hover,
+.btn-industrial-primary:hover,
+.token-btn-primary.btn-host-large-start:hover {
+    background: var(--orange-hover, #e54600);
     color: #ffffff;
-    box-shadow: 0 4px 0 var(--orange);
+    box-shadow: 0 4px 0 var(--text-black, #111111);
     transform: translateY(-2px);
 }
 
-.btn-industrial-primary:active {
+.btn-particle-orange:active,
+.btn-industrial-primary:active,
+.token-btn-primary.btn-host-large-start:active {
     transform: translateY(2px);
-    box-shadow: 0 1px 0 var(--text-black);
+    box-shadow: 0 1px 0 var(--text-black, #111111);
+}
+
+.btn-particle-orange .inner,
+.btn-industrial-primary .inner,
+.token-btn-primary.btn-host-large-start .inner,
+.btn-particle-orange > span,
+.btn-industrial-primary > span,
+.token-btn-primary.btn-host-large-start > span {
+    z-index: 2;
+    gap: 8px;
+    position: relative;
+    width: 100%;
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-hero, inherit);
+    font-size: 1.15rem;
+    font-weight: 800;
+    line-height: 1.5;
+    transition: color 0.2s ease-in-out;
+}
+
+/* Original top text layer */
+.btn-particle-orange .original,
+.btn-industrial-primary .original,
+.token-btn-primary.btn-host-large-start .original {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    z-index: 2;
+    color: #ffffff;
+    font-family: var(--font-hero, inherit);
+    font-size: 1.15rem;
+    font-weight: 800;
+    line-height: 1.5;
+    transition: transform 0.28s cubic-bezier(0.87, 0, 0.13, 1), opacity 0.22s ease;
+    user-select: none;
+}
+
+/* Hover slide original label down */
+.btn-particle-orange:hover .original,
+.btn-industrial-primary:hover .original,
+.token-btn-primary.btn-host-large-start:hover .original {
+    transform: translateY(105%);
+    opacity: 0;
+}
+
+/* Kinetic letters layer underneath */
+.btn-particle-orange .letters,
+.btn-industrial-primary .letters,
+.token-btn-primary.btn-host-large-start .letters {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.04em;
+    z-index: 2;
+    color: #ffffff;
+    font-family: var(--font-hero, inherit);
+    font-size: 1.15rem;
+    font-weight: 800;
+    line-height: 1.5;
+    user-select: none;
+}
+
+.btn-particle-orange .letters span.char,
+.btn-industrial-primary .letters span.char,
+.token-btn-primary.btn-host-large-start .letters span.char,
+.btn-particle-orange .letters span:not(.icon):not(.btn-icon),
+.btn-industrial-primary .letters span:not(.icon):not(.btn-icon),
+.token-btn-primary.btn-host-large-start .letters span:not(.icon):not(.btn-icon) {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(-16px);
+    transition: transform 0.28s cubic-bezier(0.87, 0, 0.13, 1), opacity 0.22s ease;
+    color: #ffffff;
+    white-space: pre;
+}
+
+/* Alternate letter vertical direction for every 2nd letter */
+.btn-particle-orange .letters span.char:nth-child(2n),
+.btn-industrial-primary .letters span.char:nth-child(2n),
+.token-btn-primary.btn-host-large-start .letters span.char:nth-child(2n),
+.btn-particle-orange .letters span:not(.icon):not(.btn-icon):nth-child(2n),
+.btn-industrial-primary .letters span:not(.icon):not(.btn-icon):nth-child(2n),
+.token-btn-primary.btn-host-large-start .letters span:not(.icon):not(.btn-icon):nth-child(2n) {
+    transform: translateY(16px);
+}
+
+/* Reveal letters on hover */
+.btn-particle-orange:hover .letters span.char,
+.btn-industrial-primary:hover .letters span.char,
+.token-btn-primary.btn-host-large-start:hover .letters span.char,
+.btn-particle-orange:hover .letters span:not(.icon):not(.btn-icon),
+.btn-industrial-primary:hover .letters span:not(.icon):not(.btn-icon),
+.token-btn-primary.btn-host-large-start:hover .letters span:not(.icon):not(.btn-icon) {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Staggered delay for letters */
+.btn-particle-orange:hover .letters span:nth-child(1),
+.btn-industrial-primary:hover .letters span:nth-child(1),
+.token-btn-primary.btn-host-large-start:hover .letters span:nth-child(1) { transition-delay: 0.02s; }
+.btn-particle-orange:hover .letters span:nth-child(2),
+.btn-industrial-primary:hover .letters span:nth-child(2),
+.token-btn-primary.btn-host-large-start:hover .letters span:nth-child(2) { transition-delay: 0.05s; }
+.btn-particle-orange:hover .letters span:nth-child(3),
+.btn-industrial-primary:hover .letters span:nth-child(3),
+.token-btn-primary.btn-host-large-start:hover .letters span:nth-child(3) { transition-delay: 0.08s; }
+.btn-particle-orange:hover .letters span:nth-child(4),
+.btn-industrial-primary:hover .letters span:nth-child(4),
+.token-btn-primary.btn-host-large-start:hover .letters span:nth-child(4) { transition-delay: 0.11s; }
+.btn-particle-orange:hover .letters span:nth-child(5),
+.btn-industrial-primary:hover .letters span:nth-child(5),
+.token-btn-primary.btn-host-large-start:hover .letters span:nth-child(5) { transition-delay: 0.14s; }
+.btn-particle-orange:hover .letters span:nth-child(6),
+.btn-industrial-primary:hover .letters span:nth-child(6),
+.token-btn-primary.btn-host-large-start:hover .letters span:nth-child(6) { transition-delay: 0.17s; }
+.btn-particle-orange:hover .letters span:nth-child(7),
+.btn-industrial-primary:hover .letters span:nth-child(7),
+.token-btn-primary.btn-host-large-start:hover .letters span:nth-child(7) { transition-delay: 0.20s; }
+.btn-particle-orange:hover .letters span:nth-child(8),
+.btn-industrial-primary:hover .letters span:nth-child(8),
+.token-btn-primary.btn-host-large-start:hover .letters span:nth-child(8) { transition-delay: 0.23s; }
+.btn-particle-orange:hover .letters span:nth-child(9),
+.btn-industrial-primary:hover .letters span:nth-child(9),
+.token-btn-primary.btn-host-large-start:hover .letters span:nth-child(9) { transition-delay: 0.26s; }
+.btn-particle-orange:hover .letters span:nth-child(10),
+.btn-industrial-primary:hover .letters span:nth-child(10),
+.token-btn-primary.btn-host-large-start:hover .letters span:nth-child(10) { transition-delay: 0.29s; }
+.btn-particle-orange:hover .letters span:nth-child(11),
+.btn-industrial-primary:hover .letters span:nth-child(11),
+.token-btn-primary.btn-host-large-start:hover .letters span:nth-child(11) { transition-delay: 0.32s; }
+.btn-particle-orange:hover .letters span:nth-child(12),
+.btn-industrial-primary:hover .letters span:nth-child(12),
+.token-btn-primary.btn-host-large-start:hover .letters span:nth-child(12) { transition-delay: 0.35s; }
+
+.btn-particle-orange svg.icon,
+.btn-industrial-primary svg.icon,
+.token-btn-primary.btn-host-large-start svg.icon,
+.btn-particle-orange svg.btn-icon,
+.btn-industrial-primary svg.btn-icon,
+.token-btn-primary.btn-host-large-start svg.btn-icon {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    stroke: #ffffff;
+    fill: none;
+    margin-left: 4px;
+}
+
+.btn-particle-orange:hover svg.icon,
+.btn-industrial-primary:hover svg.icon,
+.token-btn-primary.btn-host-large-start:hover svg.icon,
+.btn-particle-orange:hover svg.btn-icon,
+.btn-industrial-primary:hover svg.btn-icon,
+.token-btn-primary.btn-host-large-start:hover svg.btn-icon {
+    transform: translateX(4px);
 }
 
 .flip-footer-switch {

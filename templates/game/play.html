@@ -67,6 +67,19 @@
                             </button>
                         </div>
                     </div>
+
+                    <div class="avatar-picker-row">
+                        <span class="picker-label">{% trans "配饰" %}</span>
+                        <div class="picker-control">
+                            <button type="button" class="picker-btn" onclick="cycleAcc(-1)" aria-label="{% trans '上一个配饰' %}">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                            </button>
+                            <span id="picker-acc-name" class="picker-val-name">无配饰</span>
+                            <button type="button" class="picker-btn" onclick="cycleAcc(1)" aria-label="{% trans '下一个配饰' %}">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -94,16 +107,29 @@
             <div class="text-answer-hero-card">
                 <input type="text" id="text-answer-input" class="text-answer-input"
                        maxlength="100" placeholder="{% trans '在此输入你的答案...' %}" autocomplete="off">
-                <button type="button" id="submit-text-btn" class="submit-text-btn"
+                <button type="button" id="submit-text-btn" class="submit-text-btn btn-particle-orange"
                         onclick="submitTextAnswer()">
-                    <span>{% trans "提交答案" %}</span>
-                    <span>→</span>
+                    <span class="inner">
+                        <span>{% trans "提交答案" %}</span>
+                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5">
+                            <path d="M5 12h14"></path>
+                            <path d="m12 5 7 7-7 7"></path>
+                        </svg>
+                    </span>
                 </button>
             </div>
         </div>
 
-        <button type="button" id="submit-multi-btn" class="btn btn-primary submit-multi-btn hidden"
-                onclick="submitMultiAnswer()">{% trans "提交答案" %}</button>
+        <button type="button" id="submit-multi-btn" class="submit-multi-btn btn-particle-orange hidden"
+                onclick="submitMultiAnswer()">
+            <span class="inner">
+                <span>{% trans "提交答案" %}</span>
+                <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5">
+                    <path d="M5 12h14"></path>
+                    <path d="m12 5 7 7-7 7"></path>
+                </svg>
+            </span>
+        </button>
 
         <!-- 核心答题反馈与转场舞台 -->
         <div id="feedback-stage" class="play-feedback-stage hidden">
@@ -248,13 +274,19 @@ function updateAvatarUi() {
     }
     const faceName = window.AvatarSystem.getFaceName ? window.AvatarSystem.getFaceName(myAvatar.face) : '';
     const hairName = window.AvatarSystem.getHairName ? window.AvatarSystem.getHairName(myAvatar.hair) : '';
+    const accName = window.AvatarSystem.getAccName ? window.AvatarSystem.getAccName(myAvatar.acc) : '';
     const faceEl = document.getElementById('picker-face-name');
     const hairEl = document.getElementById('picker-hair-name');
+    const accEl = document.getElementById('picker-acc-name');
     if (faceEl) {
         faceEl.textContent = `${faceName} (${myAvatar.face + 1}/${window.AvatarSystem.FACES.length})`;
     }
     if (hairEl) {
         hairEl.textContent = `${hairName} (${myAvatar.hair + 1}/${window.AvatarSystem.HAIRS.length})`;
+    }
+    if (accEl) {
+        const accIdx = (myAvatar.acc || 0) + 1;
+        accEl.textContent = `${accName} (${accIdx}/${window.AvatarSystem.ACCESSORIES.length})`;
     }
 }
 
@@ -278,6 +310,20 @@ function cycleHair(delta) {
     if (!window.AvatarSystem) return;
     const total = window.AvatarSystem.HAIRS.length;
     myAvatar.hair = (myAvatar.hair + delta + total) % total;
+    syncAvatarToServer();
+}
+
+function cycleAcc(delta) {
+    if (!window.AvatarSystem) return;
+    const total = window.AvatarSystem.ACCESSORIES.length;
+    const current = myAvatar.acc || 0;
+    myAvatar.acc = (current + delta + total) % total;
+    syncAvatarToServer();
+}
+
+function applyCartiLook() {
+    if (!window.AvatarSystem) return;
+    myAvatar = window.AvatarSystem.applyLook('wlr');
     syncAvatarToServer();
 }
 

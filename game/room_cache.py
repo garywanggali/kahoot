@@ -26,7 +26,7 @@ class CachedPlayer:
     db_id: int | None = None
     joined_at: float = field(default_factory=time.time)
     score_dirty: bool = False
-    avatar: dict = field(default_factory=lambda: {'face': 0, 'hair': 0})
+    avatar: dict = field(default_factory=lambda: {'face': 0, 'hair': 0, 'acc': 0})
     avatar_dirty: bool = False
 
 
@@ -122,10 +122,11 @@ def _clean_avatar(avatar) -> dict:
             return {
                 'face': max(0, int(avatar.get('face', 0))),
                 'hair': max(0, int(avatar.get('hair', 0))),
+                'acc': max(0, int(avatar.get('acc', avatar.get('accessory', 0)))),
             }
         except (ValueError, TypeError):
             pass
-    return {'face': 0, 'hair': 0}
+    return {'face': 0, 'hair': 0, 'acc': 0}
 
 
 def _hydrate_from_db(runtime: RoomRuntime) -> None:

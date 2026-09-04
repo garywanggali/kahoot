@@ -74,9 +74,14 @@
 
         <!-- 底部开始游戏控制条 -->
         <div class="host-waiting-foot">
-            <button id="btn-start" class="token-btn-primary btn-host-large-start" onclick="startGame()">
-                <span>{% trans "开始游戏" %}</span>
-                <span>→</span>
+            <button id="btn-start" class="token-btn-primary btn-host-large-start btn-particle-orange" onclick="startGame()">
+                <span class="inner">
+                    <span>{% trans "开始游戏" %}</span>
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5">
+                        <path d="M5 12h14"></path>
+                        <path d="m12 5 7 7-7 7"></path>
+                    </svg>
+                </span>
             </button>
         </div>
     </div>

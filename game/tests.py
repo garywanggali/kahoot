@@ -50,7 +50,7 @@ class AvatarFeatureTests(TestCase):
             session_id='sess_1',
             avatar='{"face": 2, "hair": 4}',
         )
-        self.assertEqual(p.get_avatar_dict(), {'face': 2, 'hair': 4})
+        self.assertEqual(p.get_avatar_dict(), {'face': 2, 'hair': 4, 'acc': 0})
 
         # Test malformed avatar fallback
         p_bad = Player.objects.create(
@@ -59,7 +59,7 @@ class AvatarFeatureTests(TestCase):
             session_id='sess_2',
             avatar='invalid json',
         )
-        self.assertEqual(p_bad.get_avatar_dict(), {'face': 0, 'hair': 0})
+        self.assertEqual(p_bad.get_avatar_dict(), {'face': 0, 'hair': 0, 'acc': 0})
 
     def test_room_cache_avatar_update(self):
         from .models import Room
@@ -72,17 +72,17 @@ class AvatarFeatureTests(TestCase):
             runtime, 'Charlie', 'sess_3', avatar={'face': 1, 'hair': 3},
         )
         self.assertIsNone(err)
-        self.assertEqual(cached.avatar, {'face': 1, 'hair': 3})
+        self.assertEqual(cached.avatar, {'face': 1, 'hair': 3, 'acc': 0})
 
         # Update avatar
-        updated, ok = update_player_avatar(runtime, 'sess_3', {'face': 5, 'hair': 2})
+        updated, ok = update_player_avatar(runtime, 'sess_3', {'face': 5, 'hair': 2, 'acc': 1})
         self.assertTrue(ok)
-        self.assertEqual(updated.avatar, {'face': 5, 'hair': 2})
+        self.assertEqual(updated.avatar, {'face': 5, 'hair': 2, 'acc': 1})
 
         # Check leaderboard includes avatar
         lb = runtime.get_leaderboard()
         self.assertEqual(len(lb), 1)
-        self.assertEqual(lb[0]['avatar'], {'face': 5, 'hair': 2})
+        self.assertEqual(lb[0]['avatar'], {'face': 5, 'hair': 2, 'acc': 1})
 
     def test_flush_retries_after_player_already_persisted(self):
         from .models import Answer, Player, Question, Room
@@ -966,7 +966,7 @@ class TeacherSettingsTests(TestCase):
         self.assertTrue(payload['ok'])
         self.assertEqual(payload['teacher']['display_name'], '地理老师')
         self.assertEqual(payload['teacher']['gender'], 'female')
-        self.assertEqual(payload['teacher']['avatar'], {'face': 3, 'hair': 2})
+        self.assertEqual(payload['teacher']['avatar'], {'face': 3, 'hair': 2, 'acc': 0})
         teacher = Teacher.objects.get(pk=self.teacher.pk)
         self.assertEqual(teacher.display_name, '地理老师')
         self.assertEqual(teacher.gender, 'female')

@@ -58,9 +58,14 @@
                                placeholder="{% trans '再次输入密码' %}" required minlength="6" autocomplete="new-password">
                     </div>
                     
-                    <button type="submit" class="btn-industrial-primary">
-                        <span>{% trans "注册并登录" %}</span>
-                        <span>→</span>
+                    <button type="submit" class="btn-industrial-primary btn-particle-orange">
+                        <span class="inner">
+                            <span>{% trans "注册并登录" %}</span>
+                            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5">
+                                <path d="M5 12h14"></path>
+                                <path d="m12 5 7 7-7 7"></path>
+                            </svg>
+                        </span>
                     </button>
                 </form>
                 
