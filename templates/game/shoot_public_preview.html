@@ -8,7 +8,7 @@
 {% block content %}
 <div class="studio-header-bar">
     <div class="studio-title-group">
-        <a href="{% if from_assign %}{% url 'practice_assign' %}{% else %}{% url 'kahoot_public_list' %}{% endif %}{% if search_query %}?q={{ search_query|urlencode }}{% endif %}" class="btn-back">
+        <a href="{% if from_assign %}{% url 'practice_assign' %}{% else %}{% url 'shoot_public_list' %}{% endif %}{% if search_query %}?q={{ search_query|urlencode }}{% endif %}" class="btn-back">
             <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="19" y1="12" x2="5" y2="12"></line>
                 <polyline points="12 19 5 12 12 5"></polyline>
@@ -38,9 +38,9 @@
     <div class="studio-header-actions">
         {% include "includes/lang_switcher.html" %}
         {% if is_owner %}
-        <a href="{% url 'kahoot_editor' quiz_set.pk %}" class="btn-action-edit-contrast">{% trans "去编辑" %}</a>
+        <a href="{% url 'shoot_editor' quiz_set.pk %}" class="btn-action-edit-contrast">{% trans "去编辑" %}</a>
         {% else %}
-        <form method="post" action="{% url 'kahoot_public_clone' quiz_set.pk %}" class="inline-form">
+        <form method="post" action="{% url 'shoot_public_clone' quiz_set.pk %}" class="inline-form">
             {% csrf_token %}
             <input type="hidden" name="title" value="{{ quiz_set.title }} ({% trans '副本' %})">
             <button type="submit" class="btn-action-edit-contrast">{% trans "复制到我的题库" %}</button>
@@ -51,11 +51,11 @@
 
 <div class="card card-glass public-preview-card">
     {% if questions %}
-    <div class="kahoot-preview-list public-preview-list">
+    <div class="shoot-preview-list public-preview-list">
         {% for q in questions %}
-        <article class="kahoot-preview-item public-preview-item">
-            <div class="kahoot-preview-meta">
-                <span class="kahoot-preview-type">
+        <article class="shoot-preview-item public-preview-item">
+            <div class="shoot-preview-meta">
+                <span class="shoot-preview-type">
                     {% if q.question_type == 'multiple' %}{% trans "多选" %}
                     {% elif q.question_type == 'judgment' %}{% trans "判断" %}
                     {% elif q.question_type == 'short_answer' %}{% trans "简答" %}
@@ -64,12 +64,12 @@
                     {% else %}{% trans "单选" %}{% endif %}
                 </span>
                 {% if q.question_type != 'explanation' %}
-                <span class="kahoot-preview-time">{{ q.time_limit }}s</span>
+                <span class="shoot-preview-time">{{ q.time_limit }}s</span>
                 {% endif %}
                 <span class="public-preview-index">{% blocktranslate with n=forloop.counter %}第 {{ n }} 题{% endblocktranslate %}</span>
             </div>
             {% if q.text %}
-            <p class="kahoot-preview-text">{{ q.text }}</p>
+            <p class="shoot-preview-text">{{ q.text }}</p>
             {% endif %}
             {% if q.image %}
             <div class="public-preview-image-wrap">
@@ -77,11 +77,11 @@
             </div>
             {% endif %}
             {% if q.question_type == 'short_answer' %}
-            <p class="kahoot-preview-answer">{% trans "参考答案：" %}{{ q.option_a }}</p>
+            <p class="shoot-preview-answer">{% trans "参考答案：" %}{{ q.option_a }}</p>
             {% elif q.question_type == 'word_cloud' %}
-            <p class="kahoot-preview-answer">{% trans "词云题：学生提交文字后实时汇总，无标准答案。" %}</p>
+            <p class="shoot-preview-answer">{% trans "词云题：学生提交文字后实时汇总，无标准答案。" %}</p>
             {% elif q.question_type == 'explanation' %}
-            <p class="kahoot-preview-answer">{% trans "解释页：上课铺满大屏，学生不看、不作答。" %}</p>
+            <p class="shoot-preview-answer">{% trans "解释页：上课铺满大屏，学生不看、不作答。" %}</p>
             {% elif q.question_type == 'judgment' %}
             <ul class="public-preview-options">
                 <li class="{% if q.correct_option == 'A' %}is-correct{% endif %}">A. {{ q.option_a }}</li>

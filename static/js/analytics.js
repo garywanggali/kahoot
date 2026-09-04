@@ -1,5 +1,5 @@
 /**
- * Kahoot Match Analytics System
+ * Shoot Match Analytics System
  * Provides multi-dimensional post-game review:
  * 1. By Question: see who got each question right and who got it wrong
  * 2. By Player: see which questions each player got right and which they got wrong
@@ -45,7 +45,7 @@
 
         render() {
             if (!this.container) return;
-            const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+            const isEn = window.ShootI18n ? window.ShootI18n.isEn() : false;
 
             if (!this.data) {
                 this.container.innerHTML = `
@@ -68,7 +68,7 @@
                         </div>
                         <div class="analytics-kpi-card">
                             <span class="kpi-label">${_t('analytics.kpi_accuracy')}</span>
-                            <div class="kpi-value ${summary.overall_accuracy >= 60 ? 'text-success' : 'text-warning'}">${summary.overall_accuracy || 0}%</div>
+                            <div class="kpi-value ${summary.has_scored_questions === false ? 'text-muted' : ((summary.overall_accuracy || 0) >= 60 ? 'text-success' : 'text-warning')}">${summary.has_scored_questions === false ? (isEn ? 'N/A' : '不适用') : `${summary.overall_accuracy || 0}%`}</div>
                         </div>
                         <div class="analytics-kpi-card">
                             <span class="kpi-label">${_t('analytics.kpi_avg_score')}</span>
@@ -99,7 +99,11 @@
                             <div class="analytics-spotlight-pill" title="${isEn ? 'Question with lowest accuracy rate' : '全场得分率最低的易错题目'}">
                                 <span>${_t('analytics.spotlight_hardest', summary.hardest_question.order, summary.hardest_question.accuracy)}</span>
                             </div>
-                        ` : ''}
+                        ` : (summary.has_scored_questions === false ? `
+                            <div class="analytics-spotlight-pill" title="${isEn ? 'No scored questions in this match' : '本场没有计分题'}">
+                                <span>${isEn ? 'Explanation / interactive only — no accuracy stats' : '本场均为讲解/互动题，无正确率统计'}</span>
+                            </div>
+                        ` : '')}
                     </div>
 
                     <!-- 3. 主体分析内容区 -->
@@ -115,7 +119,7 @@
 
         renderQuestionView() {
             const list = this.data.by_questions || [];
-            const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+            const isEn = window.ShootI18n ? window.ShootI18n.isEn() : false;
 
             if (list.length === 0) {
                 return `<div class="analytics-empty">${isEn ? 'No question analytics data available' : '本房间暂无试题数据'}</div>`;
@@ -127,7 +131,8 @@
                         const isExpanded = this.expandedQuestions.has(q.id);
                         const accRate = q.accuracy_percent;
                         let accClass = 'badge-success';
-                        if (q.is_explanation) accClass = 'badge-neutral';
+                        if (q.is_explanation || q.is_unscored) accClass = 'badge-neutral';
+                        else if (accRate == null) accClass = 'badge-neutral';
                         else if (accRate < 50) accClass = 'badge-danger';
                         else if (accRate < 75) accClass = 'badge-warning';
 
@@ -139,12 +144,12 @@
                         const typeLabel = (isEn && _t('qtype.label.' + q.question_type)) ? _t('qtype.label.' + q.question_type) : q.type_label;
                         const accBadgeText = q.is_explanation
                             ? (isEn ? 'Explanation' : '讲解')
-                            : (q.is_word_cloud ? (isEn ? 'Interactive' : '互动题') : (isEn ? `Accuracy ${accRate}%` : `正确率 ${accRate}%`));
+                            : (q.is_word_cloud ? (isEn ? 'Interactive' : '互动题') : (isEn ? `Accuracy ${accRate ?? 0}%` : `正确率 ${accRate ?? 0}%`));
                         const countsText = q.is_explanation
                             ? (isEn ? 'Students do not answer' : '学生无需作答')
                             : (isEn
-                                ? `${q.correct_count} correct · ${q.wrong_count + q.unanswered_count} wrong/unanswered`
-                                : `${q.correct_count} 对 · ${q.wrong_count + q.unanswered_count} 错/未答`);
+                                ? `${q.correct_count || 0} correct · ${(q.wrong_count || 0) + (q.unanswered_count || 0)} wrong/unanswered`
+                                : `${q.correct_count || 0} 对 · ${(q.wrong_count || 0) + (q.unanswered_count || 0)} 错/未答`);
                         const foldBtnText = isExpanded
                             ? (isEn ? 'Collapse' : '收起')
                             : (isEn ? 'View Students' : '展开名单');
@@ -231,10 +236,15 @@
         }
 
         renderPlayerAnswerChip(p, isCorrect, isWordCloud) {
-            const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
-            const avatarSvg = window.AvatarSystem
-                ? window.AvatarSystem.renderSvg(p.avatar, 30, { nickname: p.nickname })
-                : `<span class="chip-avatar-fallback">${escapeHtml(p.nickname.slice(0, 1))}</span>`;
+            const isEn = window.ShootI18n ? window.ShootI18n.isEn() : false;
+            let avatarSvg = `<span class="chip-avatar-fallback">${escapeHtml((p.nickname || '?').slice(0, 1))}</span>`;
+            try {
+                if (window.AvatarSystem) {
+                    avatarSvg = window.AvatarSystem.renderSvg(p.avatar, 30, { nickname: p.nickname });
+                }
+            } catch (err) {
+                console.warn('Avatar render failed', err);
+            }
 
             const optPrefix = isEn ? 'Option: ' : '选项：';
             const ptsUnit = isEn ? 'pts' : '分';
@@ -260,10 +270,15 @@
         }
 
         renderUnansweredPlayerChip(p) {
-            const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
-            const avatarSvg = window.AvatarSystem
-                ? window.AvatarSystem.renderSvg(p.avatar, 28, { nickname: p.nickname })
-                : `<span class="chip-avatar-fallback">${escapeHtml(p.nickname.slice(0, 1))}</span>`;
+            const isEn = window.ShootI18n ? window.ShootI18n.isEn() : false;
+            let avatarSvg = `<span class="chip-avatar-fallback">${escapeHtml((p.nickname || '?').slice(0, 1))}</span>`;
+            try {
+                if (window.AvatarSystem) {
+                    avatarSvg = window.AvatarSystem.renderSvg(p.avatar, 28, { nickname: p.nickname });
+                }
+            } catch (err) {
+                console.warn('Avatar render failed', err);
+            }
 
             return `
                 <div class="analytics-player-chip chip-unanswered">
@@ -283,7 +298,7 @@
 
         renderPlayerView() {
             const list = this.data.by_players || [];
-            const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+            const isEn = window.ShootI18n ? window.ShootI18n.isEn() : false;
 
             if (list.length === 0) {
                 return `<div class="analytics-empty">${isEn ? 'No participating players in this room' : '本房间暂无参与学生'}</div>`;
@@ -293,9 +308,14 @@
                 <div class="analytics-player-grid">
                     ${list.map(p => {
                         const isExpanded = this.expandedPlayers.has(p.id);
-                        const avatarSvg = window.AvatarSystem
-                            ? window.AvatarSystem.renderSvg(p.avatar, 46, { nickname: p.nickname })
-                            : `<span class="player-big-avatar-fallback">${escapeHtml(p.nickname.slice(0, 1))}</span>`;
+                        let avatarSvg = `<span class="player-big-avatar-fallback">${escapeHtml((p.nickname || '?').slice(0, 1))}</span>`;
+                        try {
+                            if (window.AvatarSystem) {
+                                avatarSvg = window.AvatarSystem.renderSvg(p.avatar, 46, { nickname: p.nickname });
+                            }
+                        } catch (err) {
+                            console.warn('Avatar render failed', err);
+                        }
 
                         const rankIcon = p.rank === 1
                             ? (isEn ? '#1 Champion' : '第 1 名 (冠军)')
@@ -311,10 +331,12 @@
                         const unansweredQs = p.unanswered_questions || [];
 
                         const scorePill = isEn ? `Score: <strong>${p.score}</strong>` : `总分 <strong>${p.score}</strong>`;
-                        const accPill = isEn ? `Accuracy: <strong>${p.accuracy_percent}%</strong>` : `正确率 <strong>${p.accuracy_percent}%</strong>`;
+                        const accPill = (p.accuracy_percent == null || p.has_scored_questions === false)
+                            ? (isEn ? 'Accuracy: <strong>N/A</strong>' : '正确率 <strong>不适用</strong>')
+                            : (isEn ? `Accuracy: <strong>${p.accuracy_percent}%</strong>` : `正确率 <strong>${p.accuracy_percent}%</strong>`);
                         const countsPill = isEn
-                            ? `${p.correct_count} correct · ${p.wrong_count + p.unanswered_count} wrong`
-                            : `${p.correct_count} 对 · ${p.wrong_count + p.unanswered_count} 错`;
+                            ? `${p.correct_count || 0} correct · ${(p.wrong_count || 0) + (p.unanswered_count || 0)} wrong`
+                            : `${p.correct_count || 0} 对 · ${(p.wrong_count || 0) + (p.unanswered_count || 0)} 错`;
                         const foldBtnText = isExpanded
                             ? (isEn ? 'Collapse List' : '收起错对题单')
                             : (isEn ? 'View Performance' : '查看对题与错题');
@@ -487,7 +509,7 @@
     async function loadAndRenderAnalytics(containerId, apiUrl) {
         const container = document.getElementById(containerId);
         if (!container) return;
-        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+        const isEn = window.ShootI18n ? window.ShootI18n.isEn() : false;
         const renderer = new AnalyticsRenderer(container, null);
         renderer.render();
 

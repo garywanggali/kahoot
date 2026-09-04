@@ -239,7 +239,7 @@
 {% block extra_js %}
 <script src="{% static 'js/wordcloud.js' %}?v=5"></script>
 <script src="{% static 'js/awards.js' %}?v=6"></script>
-<script src="{% static 'js/analytics.js' %}?v=4"></script>
+<script src="{% static 'js/analytics.js' %}?v=6"></script>
 <script src="{% static 'js/question_countdown.js' %}?v=3"></script>
 <script>
 function _t(key, ...args) {
@@ -253,7 +253,7 @@ const ROOM_CODE = '{{ room.code }}';
 const NICKNAME = '{{ nickname }}';
 const INITIAL_STATE = {{ initial_state_json|safe }};
 
-const STORAGE_AVATAR_KEY = 'kahoot_player_avatar';
+const STORAGE_AVATAR_KEY = 'shoot_player_avatar';
 let myAvatar = (function() {
     try {
         const saved = localStorage.getItem(STORAGE_AVATAR_KEY);
@@ -341,7 +341,7 @@ function randomizeAvatar() {
 }
 
 let ws = null;
-let sessionId = localStorage.getItem('kahoot_session_' + ROOM_CODE) || '';
+let sessionId = localStorage.getItem('shoot_session_' + ROOM_CODE) || '';
 let currentQuestionId = null;
 let questionStartTime = null;
 let questionPhase = null;
@@ -427,7 +427,7 @@ function handleEvent(event, data) {
         case 'joined':
             sessionId = data.session_id;
             joinedReady = true;
-            localStorage.setItem('kahoot_session_' + ROOM_CODE, sessionId);
+            localStorage.setItem('shoot_session_' + ROOM_CODE, sessionId);
             if (data.avatar) {
                 myAvatar = window.AvatarSystem.normalize(data.avatar);
                 saveMyAvatar();

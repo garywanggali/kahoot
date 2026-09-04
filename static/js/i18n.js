@@ -1,5 +1,5 @@
 /**
- * Kahoot Studio Frontend Internationalization (i18n) Engine
+ * Shoot Studio Frontend Internationalization (i18n) Engine
  * Supports seamless bilingual switching between 简体中文 (zh-hans) & English (en)
  */
 (function (global) {
@@ -7,7 +7,7 @@
 
     const DICT_ZH = {
         // --- 通用 / General ---
-        'app.title': 'Kahoot Studio',
+        'app.title': 'Shoot Studio',
         'lang.name': '简体中文',
         'lang.switch': 'English',
         'btn.back': '返回',
@@ -60,9 +60,9 @@
         'assign.share_text': '请同学们打开测验首页，输入练习码 %s，开始《%s》个人练习。',
         'assign.copied_code': '已复制练习码 %s',
         'assign.copied_share': '已复制发给学生的文案',
-        'dash.quiz_bank_title': '新建 Kahoot / 我的题库',
+        'dash.quiz_bank_title': '新建 Shoot / 我的题库',
         'dash.quiz_bank_desc': '支持手动编排或使用 AI 智能批量出题，自由配置单选、多选、判断与配图题型。',
-        'dash.btn_new_kahoot': '+ 新建 Kahoot',
+        'dash.btn_new_shoot': '+ 新建 Shoot',
         'dash.btn_manage_bank': '管理我的题库 (%s)',
         'dash.settings': '账号设置',
         'dash.settings_hint': '管理头像、性别与登录信息',
@@ -296,8 +296,8 @@
         'analytics.status_wrong': '错误',
         'analytics.status_unanswered': '未作答',
 
-        // --- 题目编辑器 / Kahoot Editor ---
-        'editor.placeholder_title': 'Kahoot 名称',
+        // --- 题目编辑器 / Shoot Editor ---
+        'editor.placeholder_title': 'Shoot 名称',
         'editor.toast_saved': '已快速保存',
         'editor.btn_add': '+ 添加',
         'editor.upload_img_tip': '点击上传题目图片（可选）',
@@ -359,7 +359,7 @@
 
     const DICT_EN = {
         // --- 通用 / General ---
-        'app.title': 'Kahoot Studio',
+        'app.title': 'Shoot Studio',
         'lang.name': 'English',
         'lang.switch': '中文',
         'btn.back': 'Back',
@@ -412,9 +412,9 @@
         'assign.share_text': 'Open the quiz home page and enter practice code %s to start “%s”.',
         'assign.copied_code': 'Copied practice code %s',
         'assign.copied_share': 'Copied the student share message',
-        'dash.quiz_bank_title': 'Create Kahoot / My Quiz Bank',
+        'dash.quiz_bank_title': 'Create Shoot / My Quiz Bank',
         'dash.quiz_bank_desc': 'Build manually or use AI generation, freely configuring single, multiple, true/false, and media questions.',
-        'dash.btn_new_kahoot': '+ New Kahoot',
+        'dash.btn_new_shoot': '+ New Shoot',
         'dash.btn_manage_bank': 'Manage My Quizzes (%s)',
         'dash.settings': 'Account Settings',
         'dash.settings_hint': 'Manage avatar, gender, and login details',
@@ -648,8 +648,8 @@
         'analytics.status_wrong': 'Wrong',
         'analytics.status_unanswered': 'Unanswered',
 
-        // --- 题目编辑器 / Kahoot Editor ---
-        'editor.placeholder_title': 'Kahoot Title',
+        // --- 题目编辑器 / Shoot Editor ---
+        'editor.placeholder_title': 'Shoot Title',
         'editor.toast_saved': 'Saved',
         'editor.btn_add': '+ Add',
         'editor.upload_img_tip': 'Click to upload question image (optional)',
@@ -733,7 +733,7 @@
             if (lower.startsWith('en')) return 'en';
             if (lower.startsWith('zh')) return 'zh-hans';
         }
-        const storageLang = localStorage.getItem('kahoot_lang');
+        const storageLang = localStorage.getItem('shoot_lang');
         if (storageLang) {
             return storageLang === 'en' ? 'en' : 'zh-hans';
         }
@@ -742,7 +742,7 @@
 
     let currentLocale = detectLocale();
 
-    const KahootI18n = {
+    const ShootI18n = {
         getLocale() {
             return currentLocale;
         },
@@ -775,7 +775,7 @@
         setLanguage(lang) {
             const target = (lang || '').toLowerCase().startsWith('en') ? 'en' : 'zh-hans';
             currentLocale = target;
-            localStorage.setItem('kahoot_lang', target);
+            localStorage.setItem('shoot_lang', target);
             setCookie('django_language', target, 365);
 
             // Redirect through django set_language or refresh page
@@ -832,13 +832,13 @@
         }
     };
 
-    global.KahootI18n = KahootI18n;
+    global.ShootI18n = ShootI18n;
     global.t = function (key, ...args) {
-        return KahootI18n.t(key, ...args);
+        return ShootI18n.t(key, ...args);
     };
 
-    KahootI18n.initLanguageSwitchers();
-    document.addEventListener('turbo:load', () => KahootI18n.initLanguageSwitchers());
-    document.addEventListener('DOMContentLoaded', () => KahootI18n.initLanguageSwitchers());
+    ShootI18n.initLanguageSwitchers();
+    document.addEventListener('turbo:load', () => ShootI18n.initLanguageSwitchers());
+    document.addEventListener('DOMContentLoaded', () => ShootI18n.initLanguageSwitchers());
 
 })(typeof window !== 'undefined' ? window : this);

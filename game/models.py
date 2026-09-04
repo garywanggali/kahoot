@@ -265,7 +265,7 @@ class Question(models.Model):
 
 
 class QuizSet(models.Model):
-    """一组 Kahoot 题目（套题），创建房间时整组选用。"""
+    """一组 Shoot 题目（套题），创建房间时整组选用。"""
 
     title = models.CharField('名称', max_length=200)
     teacher = models.ForeignKey(
@@ -287,8 +287,8 @@ class QuizSet(models.Model):
 
     class Meta:
         ordering = ['-created_at']
-        verbose_name = 'Kahoot 套题'
-        verbose_name_plural = 'Kahoot 套题'
+        verbose_name = 'Shoot 套题'
+        verbose_name_plural = 'Shoot 套题'
 
     def __str__(self):
         return self.title

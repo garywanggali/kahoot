@@ -29,7 +29,7 @@ if [ -f "logs/server.pid" ]; then
 fi
 
 echo "[$(date '+%H:%M:%S')] 启动 0.0.0.0:${PORT} ..."
-nohup venv/bin/daphne -b 0.0.0.0 -p "${PORT}" kahoot_project.asgi:application \
+nohup venv/bin/daphne -b 0.0.0.0 -p "${PORT}" shoot_project.asgi:application \
   > logs/server.log 2>&1 &
 
 echo $! > logs/server.pid

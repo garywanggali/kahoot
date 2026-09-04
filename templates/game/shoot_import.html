@@ -1,26 +1,26 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Excel 导入题库 - Kahoot" %}{% endblock %}
+{% block title %}{% trans "Excel 导入题库 - Shoot" %}{% endblock %}
 
 {% block global_topbar %}{% endblock %}
 
 {% block content %}
 <div class="studio-header-bar">
     <div class="studio-title-group">
-        <a href="{% url 'kahoot_new' %}" class="btn-back">
+        <a href="{% url 'shoot_new' %}" class="btn-back">
             <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="19" y1="12" x2="5" y2="12"></line>
                 <polyline points="12 19 5 12 12 5"></polyline>
             </svg>
-            <span>{% trans "返回新建 Kahoot" %}</span>
+            <span>{% trans "返回新建 Shoot" %}</span>
         </a>
         <h1 class="studio-main-title">{% trans "Excel 导入题库" %}</h1>
-        <p class="form-hint">{% trans "按严格表头格式上传，一键生成整套 Kahoot" %}</p>
+        <p class="form-hint">{% trans "按严格表头格式上传，一键生成整套 Shoot" %}</p>
     </div>
     <div class="studio-header-actions">
         {% include "includes/lang_switcher.html" %}
-        <a href="{% url 'kahoot_import_template' %}" class="btn btn-outline">{% trans "下载模板 .xlsx" %}</a>
+        <a href="{% url 'shoot_import_template' %}" class="btn btn-outline">{% trans "下载模板 .xlsx" %}</a>
     </div>
 </div>
 
@@ -51,7 +51,7 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="form-group">
-            <label for="title">{% trans "Kahoot 名称" %}</label>
+            <label for="title">{% trans "Shoot 名称" %}</label>
             <input type="text" id="title" name="title" class="form-control" required
                    value="{{ title }}" placeholder="{% trans '导入后的套题名称' %}">
         </div>

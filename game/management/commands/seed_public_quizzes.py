@@ -4,7 +4,7 @@ from game.models import Question, QuizSet, Teacher
 from game.practice_utils import ensure_practice_code
 from game.quiz_set_utils import add_question_to_quiz_set
 
-MARKET_USERNAME = 'kahoot_market'
+MARKET_USERNAME = 'shoot_market'
 MARKET_DISPLAY_NAME = '题库精选'
 
 
@@ -89,6 +89,12 @@ PUBLIC_CATALOG = [
 
 
 def seed_public_catalog():
+    # Rename legacy market account if present (product rebrand Kahoot → Shoot).
+    legacy = Teacher.objects.filter(username='kahoot_market').first()
+    if legacy and not Teacher.objects.filter(username=MARKET_USERNAME).exists():
+        legacy.username = MARKET_USERNAME
+        legacy.save(update_fields=['username'])
+
     teacher, created_teacher = Teacher.objects.get_or_create(
         username=MARKET_USERNAME,
         defaults={'display_name': MARKET_DISPLAY_NAME, 'is_active': True},

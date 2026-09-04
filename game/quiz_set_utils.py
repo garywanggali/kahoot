@@ -1,4 +1,4 @@
-"""Quiz set (Kahoot bundle) helpers."""
+"""Quiz set (Shoot bundle) helpers."""
 
 from __future__ import annotations
 

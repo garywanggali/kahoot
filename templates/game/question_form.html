@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% if action == 'edit' %}{% trans "编辑题目" %}{% else %}{% trans "添加题目" %}{% endif %} - Kahoot{% endblock %}
+{% block title %}{% if action == 'edit' %}{% trans "编辑题目" %}{% else %}{% trans "添加题目" %}{% endif %} - Shoot{% endblock %}
 
 {% block global_topbar %}{% endblock %}
 
 {% block content %}
 <div class="studio-header-bar">
     <div class="studio-title-group">
-        <a href="{% if quiz_set %}{% url 'kahoot_editor' quiz_set.pk %}{% else %}{% url 'question_list' %}{% endif %}" class="btn-back">
+        <a href="{% if quiz_set %}{% url 'shoot_editor' quiz_set.pk %}{% else %}{% url 'question_list' %}{% endif %}" class="btn-back">
             <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="19" y1="12" x2="5" y2="12"></line>
                 <polyline points="12 19 5 12 12 5"></polyline>
@@ -193,7 +193,7 @@ function updateAnswerFields() {
     const isWordCloud = type === 'word_cloud';
     const isExplanation = type === 'explanation';
     const hideOptions = isShort || isWordCloud || isExplanation;
-    const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+    const isEn = window.ShootI18n ? window.ShootI18n.isEn() : false;
 
     document.getElementById('single-answer-group').classList.toggle('hidden', isMultiple || isJudgment || isShort || isWordCloud || isExplanation);
     document.getElementById('multiple-answer-group').classList.toggle('hidden', !isMultiple);

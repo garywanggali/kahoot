@@ -3,21 +3,21 @@
 
 {% block body_attrs %}data-turbo="false"{% endblock %}
 
-{% block title %}{% trans "AI 生成 Kahoot - Kahoot" %}{% endblock %}
+{% block title %}{% trans "AI 生成 Shoot - Shoot" %}{% endblock %}
 
 {% block global_topbar %}{% endblock %}
 
 {% block content %}
 <div class="studio-header-bar">
     <div class="studio-title-group">
-        <a href="{% url 'kahoot_new' %}" class="btn-back">
+        <a href="{% url 'shoot_new' %}" class="btn-back">
             <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="19" y1="12" x2="5" y2="12"></line>
                 <polyline points="12 19 5 12 12 5"></polyline>
             </svg>
-            <span>{% trans "返回新建 Kahoot" %}</span>
+            <span>{% trans "返回新建 Shoot" %}</span>
         </a>
-        <h1 class="studio-main-title">{% trans "AI 智能生成 Kahoot" %}</h1>
+        <h1 class="studio-main-title">{% trans "AI 智能生成 Shoot" %}</h1>
     </div>
     <div class="studio-header-actions">
         {% include "includes/lang_switcher.html" %}
@@ -34,18 +34,18 @@
 
 <div class="card">
     <h3 class="page-title">{% trans "生成设置" %}</h3>
-    <form method="post" id="kahoot-ai-form" data-turbo="false">
+    <form method="post" id="shoot-ai-form" data-turbo="false">
         {% csrf_token %}
-        <input type="hidden" name="kahoot_title" value="{{ kahoot_title|default:'' }}">
-        {% if kahoot_title %}
+        <input type="hidden" name="shoot_title" value="{{ shoot_title|default:'' }}">
+        {% if shoot_title %}
         <div class="form-group">
             <label>{% trans "套题名称" %}</label>
-            <p class="form-hint"><strong>{{ kahoot_title }}</strong>（{% trans "在新建页已设定，保存后将使用此名称" %}）</p>
+            <p class="form-hint"><strong>{{ shoot_title }}</strong>（{% trans "在新建页已设定，保存后将使用此名称" %}）</p>
         </div>
         {% else %}
         <div class="alert alert-warning">
-            {% url 'kahoot_new' as kahoot_new_url %}
-            {% blocktranslate with new_url=kahoot_new_url %}未检测到套题名称，请 <a href="{{ new_url }}">返回新建页</a> 先命名题库再选择 AI 生成。{% endblocktranslate %}
+            {% url 'shoot_new' as shoot_new_url %}
+            {% blocktranslate with new_url=shoot_new_url %}未检测到套题名称，请 <a href="{{ new_url }}">返回新建页</a> 先命名题库再选择 AI 生成。{% endblocktranslate %}
         </div>
         {% endif %}
         <div class="form-group">
@@ -56,37 +56,37 @@
         </div>
         <div class="form-group">
             <label for="description">{% trans "详细要求（可选）" %}</label>
-            <textarea id="description" name="description" class="form-control kahoot-ai-description" rows="5"
+            <textarea id="description" name="description" class="form-control shoot-ai-description" rows="5"
                       placeholder="{% trans '可写任意长度的限制说明，例如：着重中国地理，考查学生如何把中国地理特点跟政权更迭联系起来的能力；题目难度中等，避免过于偏门的知识点。' %}">{{ description }}</textarea>
         </div>
         <div class="form-group">
             <label>{% blocktranslate with max=max_total %}各题型数量（总计不超过 {{ max }} 道）{% endblocktranslate %}</label>
-            <div class="kahoot-count-grid">
-                <div class="kahoot-count-item">
-                    <span class="kahoot-count-label">{% trans "单选题" %}</span>
-                    <input type="number" name="count_single" class="form-control kahoot-count-input"
+            <div class="shoot-count-grid">
+                <div class="shoot-count-item">
+                    <span class="shoot-count-label">{% trans "单选题" %}</span>
+                    <input type="number" name="count_single" class="form-control shoot-count-input"
                            min="0" max="{{ max_per_type }}" value="{{ counts.single }}">
                 </div>
-                <div class="kahoot-count-item">
-                    <span class="kahoot-count-label">{% trans "多选题" %}</span>
-                    <input type="number" name="count_multiple" class="form-control kahoot-count-input"
+                <div class="shoot-count-item">
+                    <span class="shoot-count-label">{% trans "多选题" %}</span>
+                    <input type="number" name="count_multiple" class="form-control shoot-count-input"
                            min="0" max="{{ max_per_type }}" value="{{ counts.multiple }}">
                 </div>
-                <div class="kahoot-count-item">
-                    <span class="kahoot-count-label">{% trans "判断题" %}</span>
-                    <input type="number" name="count_judgment" class="form-control kahoot-count-input"
+                <div class="shoot-count-item">
+                    <span class="shoot-count-label">{% trans "判断题" %}</span>
+                    <input type="number" name="count_judgment" class="form-control shoot-count-input"
                            min="0" max="{{ max_per_type }}" value="{{ counts.judgment }}">
                 </div>
-                <div class="kahoot-count-item">
-                    <span class="kahoot-count-label">{% trans "简答题" %}</span>
-                    <input type="number" name="count_short_answer" class="form-control kahoot-count-input"
+                <div class="shoot-count-item">
+                    <span class="shoot-count-label">{% trans "简答题" %}</span>
+                    <input type="number" name="count_short_answer" class="form-control shoot-count-input"
                            min="0" max="{{ max_per_type }}" value="{{ counts.short_answer }}">
                 </div>
             </div>
             <p class="form-hint">{% trans "AI 仅生成以上四种题型，不含词云题。" %}</p>
         </div>
         <button type="submit" class="btn btn-primary" id="btn-ai-generate"
-                {% if not ai_configured or not kahoot_title %}disabled{% endif %}
+                {% if not ai_configured or not shoot_title %}disabled{% endif %}
                 {% if not ai_configured %}data-ai-missing{% endif %}>
             {% trans "生成题目" %}
         </button>
@@ -96,26 +96,26 @@
 {% if preview %}
 <div class="card section-gap">
     <h3 class="page-title">{% blocktranslate with count=preview|length %}预览（{{ count }} 道）{% endblocktranslate %}</h3>
-    <p class="form-hint">{% blocktranslate with title=kahoot_title %}套题名称：<strong>{{ title }}</strong>。确认内容后进入可视化编辑器审核修改。{% endblocktranslate %}</p>
-    <div class="kahoot-preview-list">
+    <p class="form-hint">{% blocktranslate with title=shoot_title %}套题名称：<strong>{{ title }}</strong>。确认内容后进入可视化编辑器审核修改。{% endblocktranslate %}</p>
+    <div class="shoot-preview-list">
         {% for q in preview %}
-        <div class="kahoot-preview-item">
-            <div class="kahoot-preview-meta">
-                <span class="kahoot-preview-type">{{ q.type_label }}</span>
-                <span class="kahoot-preview-time">{{ q.time_limit }}s</span>
+        <div class="shoot-preview-item">
+            <div class="shoot-preview-meta">
+                <span class="shoot-preview-type">{{ q.type_label }}</span>
+                <span class="shoot-preview-time">{{ q.time_limit }}s</span>
             </div>
-            <p class="kahoot-preview-text">{{ q.text }}</p>
+            <p class="shoot-preview-text">{{ q.text }}</p>
             {% if q.question_type == 'short_answer' %}
-            <p class="kahoot-preview-answer">{% trans "参考答案：" %}{{ q.option_a }}</p>
+            <p class="shoot-preview-answer">{% trans "参考答案：" %}{{ q.option_a }}</p>
             {% elif q.question_type == 'judgment' %}
-            <p class="kahoot-preview-options">{% trans "正确 / 错误 · 答案：" %}{% if q.correct_option == 'A' %}{{ q.option_a }}{% else %}{{ q.option_b }}{% endif %}</p>
+            <p class="shoot-preview-options">{% trans "正确 / 错误 · 答案：" %}{% if q.correct_option == 'A' %}{{ q.option_a }}{% else %}{{ q.option_b }}{% endif %}</p>
             {% elif q.question_type == 'multiple' %}
-            <p class="kahoot-preview-options">
+            <p class="shoot-preview-options">
                 A. {{ q.option_a }} · B. {{ q.option_b }} · C. {{ q.option_c }} · D. {{ q.option_d }}
                 <br>{% trans "正确答案：" %}{{ q.correct_option }}
             </p>
             {% else %}
-            <p class="kahoot-preview-options">
+            <p class="shoot-preview-options">
                 A. {{ q.option_a }} · B. {{ q.option_b }} · C. {{ q.option_c }} · D. {{ q.option_d }}
                 <br>{% trans "正确答案：" %}{{ q.correct_option }}
             </p>
@@ -123,14 +123,14 @@
         </div>
         {% endfor %}
     </div>
-    <div class="kahoot-preview-actions">
+    <div class="shoot-preview-actions">
         <form method="post" class="inline-form">
             {% csrf_token %}
             <input type="hidden" name="action" value="save">
-            <input type="hidden" name="kahoot_title" value="{{ kahoot_title }}">
+            <input type="hidden" name="shoot_title" value="{{ shoot_title }}">
             <button type="submit" class="btn btn-primary">{% trans "保存并进入编辑 →" %}</button>
         </form>
-        <form method="post" action="{% url 'kahoot_ai_discard' %}" class="inline-form">
+        <form method="post" action="{% url 'shoot_ai_discard' %}" class="inline-form">
             {% csrf_token %}
             <button type="submit" class="btn btn-outline">{% trans "放弃并重新生成" %}</button>
         </form>
@@ -150,10 +150,10 @@
 {% block extra_js %}
 <script>
 (function () {
-    const inputs = document.querySelectorAll('.kahoot-count-input');
+    const inputs = document.querySelectorAll('.shoot-count-input');
     const maxTotal = {{ max_total }};
     const btn = document.getElementById('btn-ai-generate');
-    const form = document.getElementById('kahoot-ai-form');
+    const form = document.getElementById('shoot-ai-form');
     const overlay = document.getElementById('ai-loading-overlay');
 
     if (btn) {
@@ -161,7 +161,7 @@
             let sum = 0;
             inputs.forEach(el => { sum += parseInt(el.value || 0, 10); });
             if (btn.hasAttribute('data-ai-missing')) return;
-            const hasTitle = form && form.querySelector('input[name=kahoot_title]')?.value.trim();
+            const hasTitle = form && form.querySelector('input[name=shoot_title]')?.value.trim();
             btn.disabled = !hasTitle || sum === 0 || sum > maxTotal;
         }
         inputs.forEach(el => el.addEventListener('input', updateTotal));
@@ -174,7 +174,7 @@
             overlay.setAttribute('aria-busy', 'true');
             if (btn) {
                 btn.disabled = true;
-                btn.textContent = window.KahootI18n && window.KahootI18n.isEn() ? 'Generating…' : '生成中…';
+                btn.textContent = window.ShootI18n && window.ShootI18n.isEn() ? 'Generating…' : '生成中…';
             }
         });
         window.addEventListener('pageshow', function () {

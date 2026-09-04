@@ -88,7 +88,7 @@
                     </p>
                 </div>
 
-                <form method="post" action="{% url 'kahoot_start' %}" id="wizard-submit-form" style="margin: 0;">
+                <form method="post" action="{% url 'shoot_start' %}" id="wizard-submit-form" style="margin: 0;">
                     {% csrf_token %}
                     <input type="hidden" name="title" id="hidden-quiz-title" value="{{ pending_title|default:'' }}">
                     

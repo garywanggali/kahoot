@@ -18,7 +18,7 @@ function _tr(key, fallback) {
 }
 
 function getRankBadge(rank) {
-    const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+    const isEn = window.ShootI18n ? window.ShootI18n.isEn() : false;
     if (rank === 1) {
         return {
             emoji: '👑',
@@ -44,7 +44,7 @@ function getRankBadge(rank) {
 }
 
 function renderPodiumSlot(rank, player) {
-    const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+    const isEn = window.ShootI18n ? window.ShootI18n.isEn() : false;
     const badge = getRankBadge(rank);
     const ptsUnit = isEn ? 'PTS' : '分';
     const emptyText = isEn ? 'Awaiting Winner' : '虚位以待';
@@ -108,7 +108,7 @@ function renderPodium(leaderboard, containerId) {
         3: list.find(p => p.rank === 3),
     };
 
-    const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+    const isEn = window.ShootI18n ? window.ShootI18n.isEn() : false;
     const podiumAria = isEn ? 'Top 3 Champions Podium' : '前三名荣誉领奖台';
 
     container.innerHTML = `

@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
 # 实时双向自动同步脚本：实时拉取 (Pull) GitHub 最新内容 + 实时推送 (Push) 本地改动
-# 仓库: https://github.com/garywanggali/kahoot.git
+# 仓库: https://github.com/garywanggali/shoot.git
 
 BRANCH="main"
 REMOTE="origin"
 INTERVAL=3  # 检查间隔（秒）
 
 echo "=================================================="
-echo " 🚀 Kahoot 实时双向同步已启动"
+echo " 🚀 Shoot 实时双向同步已启动"
 echo " 📁 监控目录: $(pwd)"
 echo " 🔗 远程分支: ${REMOTE}/${BRANCH}"
 echo " ⏱️  检测频率: 每 ${INTERVAL} 秒 (实时 Pull + Push)"

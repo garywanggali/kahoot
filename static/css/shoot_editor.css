@@ -1,16 +1,16 @@
-/* Kahoot-style visual question editor */
-body:has(.kahoot-editor-app) {
+/* Shoot-style visual question editor */
+body:has(.shoot-editor-app) {
     overflow: hidden;
     height: 100vh;
 }
 
-body:has(.kahoot-editor-app) .container {
+body:has(.shoot-editor-app) .container {
     max-width: none;
     padding: 0;
     margin: 0;
 }
 
-.kahoot-editor-app {
+.shoot-editor-app {
     min-height: 100vh;
     height: 100vh;
     background: var(--bg-base);
@@ -18,7 +18,7 @@ body:has(.kahoot-editor-app) .container {
     flex-direction: column;
 }
 
-.kahoot-editor-topbar {
+.shoot-editor-topbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -29,7 +29,7 @@ body:has(.kahoot-editor-app) .container {
     flex-wrap: wrap;
 }
 
-.kahoot-editor-topbar-left {
+.shoot-editor-topbar-left {
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -37,13 +37,13 @@ body:has(.kahoot-editor-app) .container {
     min-width: 0;
 }
 
-.kahoot-editor-back {
+.shoot-editor-back {
     flex-shrink: 0;
     text-decoration: none;
     font-weight: 600;
 }
 
-.kahoot-editor-title-input {
+.shoot-editor-title-input {
     flex: 1;
     min-width: 12rem;
     max-width: 28rem;
@@ -56,14 +56,14 @@ body:has(.kahoot-editor-app) .container {
     border-radius: var(--radius-md);
 }
 
-.kahoot-editor-topbar-right {
+.shoot-editor-topbar-right {
     display: flex;
     align-items: center;
     gap: 0.75rem;
     flex-wrap: wrap;
 }
 
-.kahoot-editor-public-toggle {
+.shoot-editor-public-toggle {
     display: inline-flex;
     align-items: center;
     cursor: pointer;
@@ -147,7 +147,7 @@ body:has(.kahoot-editor-app) .container {
     transform: translateY(-1px);
 }
 
-.kahoot-editor-body {
+.shoot-editor-body {
     display: grid;
     grid-template-columns: 200px 1fr 260px;
     flex: 1;
@@ -155,24 +155,24 @@ body:has(.kahoot-editor-app) .container {
 }
 
 @media (max-width: 960px) {
-    .kahoot-editor-body {
+    .shoot-editor-body {
         grid-template-columns: 1fr;
     }
-    .kahoot-editor-sidebar,
-    .kahoot-editor-props {
+    .shoot-editor-sidebar,
+    .shoot-editor-props {
         border: none;
         border-bottom: 1px solid var(--border-light);
     }
 }
 
-.kahoot-editor-sidebar {
+.shoot-editor-sidebar {
     background: var(--bg-surface);
     border-right: 1px solid var(--border-light);
     padding: 0.75rem;
     overflow-y: auto;
 }
 
-.kahoot-editor-sidebar-head {
+.shoot-editor-sidebar-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -186,13 +186,13 @@ body:has(.kahoot-editor-app) .container {
     font-size: 0.8rem;
 }
 
-.kahoot-editor-q-list {
+.shoot-editor-q-list {
     list-style: none;
     margin: 0;
     padding: 0;
 }
 
-.kahoot-editor-q-item {
+.shoot-editor-q-item {
     display: flex;
     gap: 0.5rem;
     align-items: flex-start;
@@ -205,29 +205,29 @@ body:has(.kahoot-editor-app) .container {
     line-height: 1.35;
 }
 
-.kahoot-editor-q-item:hover {
+.shoot-editor-q-item:hover {
     background: var(--bg-subtle);
 }
 
-.kahoot-editor-q-item.active {
+.shoot-editor-q-item.active {
     border-color: var(--orange);
     background: var(--orange-subtle);
 }
 
-.kahoot-editor-q-num {
+.shoot-editor-q-num {
     font-family: var(--font-mono);
     font-weight: 700;
     color: var(--orange);
     flex-shrink: 0;
 }
 
-.kahoot-editor-q-empty {
+.shoot-editor-q-empty {
     color: var(--text-muted);
     font-size: 0.85rem;
     padding: 0.5rem;
 }
 
-.kahoot-editor-stage {
+.shoot-editor-stage {
     padding: 1.5rem 2rem;
     overflow-y: auto;
     background: var(--bg-base);
@@ -236,23 +236,23 @@ body:has(.kahoot-editor-app) .container {
     min-height: 0;
 }
 
-.kahoot-editor-stage:has(.preview-explanation) {
+.shoot-editor-stage:has(.preview-explanation) {
     padding: 0;
     overflow: hidden;
 }
 
-.kahoot-editor-preview {
+.shoot-editor-preview {
     max-width: 52rem;
     margin: 0 auto;
     width: 100%;
 }
 
-.kahoot-editor-timer {
+.shoot-editor-timer {
     margin-bottom: 1.25rem;
     opacity: 0.5;
 }
 
-.kahoot-editor-media {
+.shoot-editor-media {
     position: relative;
     margin-bottom: 1.25rem;
     border: 2px dashed var(--border-light);
@@ -265,26 +265,26 @@ body:has(.kahoot-editor-app) .container {
     cursor: pointer;
 }
 
-.kahoot-editor-media-placeholder {
+.shoot-editor-media-placeholder {
     text-align: center;
     color: var(--text-muted);
     padding: 1rem;
 }
 
-.kahoot-editor-media-placeholder span {
+.shoot-editor-media-placeholder span {
     font-size: 2rem;
     display: block;
     margin-bottom: 0.25rem;
 }
 
-.kahoot-editor-preview-img {
+.shoot-editor-preview-img {
     max-height: 200px;
     max-width: 100%;
     object-fit: contain;
     border-radius: var(--radius-md);
 }
 
-.kahoot-editor-preview.preview-explanation {
+.shoot-editor-preview.preview-explanation {
     position: relative;
     max-width: none;
     flex: 1;
@@ -294,13 +294,13 @@ body:has(.kahoot-editor-app) .container {
     height: 100%;
 }
 
-.kahoot-editor-preview.preview-explanation .question-number,
-.kahoot-editor-preview.preview-explanation .kahoot-editor-timer,
-.kahoot-editor-preview.preview-explanation .kahoot-editor-hint {
+.shoot-editor-preview.preview-explanation .question-number,
+.shoot-editor-preview.preview-explanation .shoot-editor-timer,
+.shoot-editor-preview.preview-explanation .shoot-editor-hint {
     display: none;
 }
 
-.kahoot-editor-media.media-explanation {
+.shoot-editor-media.media-explanation {
     flex: 1;
     min-height: 0;
     margin: 0;
@@ -310,11 +310,11 @@ body:has(.kahoot-editor-app) .container {
     overflow: hidden;
 }
 
-.kahoot-editor-media.media-explanation:has(#media-placeholder:not(.hidden)) {
+.shoot-editor-media.media-explanation:has(#media-placeholder:not(.hidden)) {
     border: 2px dashed #52525b;
 }
 
-.kahoot-editor-media.media-explanation .kahoot-editor-preview-img:not(.hidden) {
+.shoot-editor-media.media-explanation .shoot-editor-preview-img:not(.hidden) {
     max-height: none;
     width: 100%;
     height: 100%;
@@ -323,11 +323,11 @@ body:has(.kahoot-editor-app) .container {
     background: #111111;
 }
 
-.kahoot-editor-media.media-explanation .kahoot-editor-media-placeholder {
+.shoot-editor-media.media-explanation .shoot-editor-media-placeholder {
     color: #d4d4d8;
 }
 
-.kahoot-editor-media.media-explanation #btn-remove-image {
+.shoot-editor-media.media-explanation #btn-remove-image {
     position: absolute;
     top: 0.75rem;
     right: 0.75rem;
@@ -335,7 +335,7 @@ body:has(.kahoot-editor-app) .container {
     background: #ffffff;
 }
 
-.kahoot-editor-preview.preview-explanation .kahoot-editor-save-hint {
+.shoot-editor-preview.preview-explanation .shoot-editor-save-hint {
     position: absolute;
     left: 0;
     right: 0;
@@ -346,7 +346,7 @@ body:has(.kahoot-editor-app) .container {
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
 }
 
-.kahoot-editor-stem-input {
+.shoot-editor-stem-input {
     width: 100%;
     min-height: 108px;
     font-family: var(--font-hero);
@@ -367,30 +367,30 @@ body:has(.kahoot-editor-app) .container {
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.kahoot-editor-stem-input:focus {
+.shoot-editor-stem-input:focus {
     outline: none;
     border-color: var(--orange);
     box-shadow: 0 0 0 4px rgba(255, 79, 0, 0.2), 0 6px 20px rgba(255, 79, 0, 0.25);
 }
 
-.kahoot-editor-stem-input::placeholder {
+.shoot-editor-stem-input::placeholder {
     color: rgba(0, 0, 0, 0.35);
     text-align: center;
 }
 
-.kahoot-editor-options {
+.shoot-editor-options {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1.25rem;
 }
 
 @media (max-width: 640px) {
-    .kahoot-editor-options {
+    .shoot-editor-options {
         grid-template-columns: 1fr;
     }
 }
 
-.kahoot-editor-option {
+.shoot-editor-option {
     display: flex;
     align-items: center;
     gap: 0.85rem;
@@ -405,17 +405,17 @@ body:has(.kahoot-editor-app) .container {
 }
 
 /* 编辑器自带图标 span，禁用 play 页 .option-a::before 等伪元素 */
-.kahoot-editor-options .kahoot-editor-option::before {
+.shoot-editor-options .shoot-editor-option::before {
     content: none;
     display: none;
 }
 
-.kahoot-editor-option.option-a { background: var(--kh-option-a); }
-.kahoot-editor-option.option-b { background: var(--kh-option-b); }
-.kahoot-editor-option.option-c { background: var(--kh-option-c); color: #111; }
-.kahoot-editor-option.option-d { background: var(--kh-option-d); }
+.shoot-editor-option.option-a { background: var(--kh-option-a); }
+.shoot-editor-option.option-b { background: var(--kh-option-b); }
+.shoot-editor-option.option-c { background: var(--kh-option-c); color: #111; }
+.shoot-editor-option.option-d { background: var(--kh-option-d); }
 
-.kahoot-editor-option-icon {
+.shoot-editor-option-icon {
     font-size: 1.8rem;
     flex-shrink: 0;
     width: 2.4rem;
@@ -423,7 +423,7 @@ body:has(.kahoot-editor-app) .container {
     font-weight: 900;
 }
 
-.kahoot-editor-option-input {
+.shoot-editor-option-input {
     flex: 1;
     min-width: 0;
     border: none;
@@ -436,15 +436,15 @@ body:has(.kahoot-editor-app) .container {
     box-sizing: border-box;
 }
 
-.kahoot-editor-option-input::placeholder {
+.shoot-editor-option-input::placeholder {
     color: rgba(255, 255, 255, 0.75);
 }
 
-.kahoot-editor-option.option-c .kahoot-editor-option-input::placeholder {
+.shoot-editor-option.option-c .shoot-editor-option-input::placeholder {
     color: rgba(0, 0, 0, 0.45);
 }
 
-.kahoot-editor-mark-correct {
+.shoot-editor-mark-correct {
     flex-shrink: 0;
     width: 2.4rem;
     height: 2.4rem;
@@ -461,50 +461,50 @@ body:has(.kahoot-editor-app) .container {
     justify-content: center;
 }
 
-.kahoot-editor-option.option-c .kahoot-editor-mark-correct {
+.shoot-editor-option.option-c .shoot-editor-mark-correct {
     border-color: rgba(0, 0, 0, 0.35);
     color: #111;
 }
 
-.kahoot-editor-mark-correct.is-correct {
+.shoot-editor-mark-correct.is-correct {
     opacity: 1;
     background: #fff;
     color: var(--correct);
     border-color: #fff;
 }
 
-.kahoot-editor-short {
+.shoot-editor-short {
     max-width: 28rem;
     margin: 0 auto;
 }
 
-.kahoot-editor-hint {
+.shoot-editor-hint {
     text-align: center;
     color: var(--text-muted);
     padding: 1rem;
 }
 
-.kahoot-editor-save-hint {
+.shoot-editor-save-hint {
     text-align: center;
     margin-top: 1rem;
     font-size: 0.9rem;
     color: var(--text-muted);
 }
 
-.kahoot-editor-props {
+.shoot-editor-props {
     background: var(--bg-surface);
     border-left: 1px solid var(--border-light);
     padding: 1rem 1.25rem;
     overflow-y: auto;
 }
 
-.kahoot-editor-props-title {
+.shoot-editor-props-title {
     font-size: 0.95rem;
     margin: 0 0 1rem;
     font-weight: 700;
 }
 
-.kahoot-editor-props-actions {
+.shoot-editor-props-actions {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -512,7 +512,7 @@ body:has(.kahoot-editor-app) .container {
 }
 
 /* Create hub 4 options */
-.kahoot-create-grid {
+.shoot-create-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
@@ -520,12 +520,12 @@ body:has(.kahoot-editor-app) .container {
 }
 
 @media (max-width: 720px) {
-    .kahoot-create-grid {
+    .shoot-create-grid {
         grid-template-columns: 1fr;
     }
 }
 
-.kahoot-create-card {
+.shoot-create-card {
     display: block;
     width: 100%;
     text-decoration: none;
@@ -541,46 +541,46 @@ body:has(.kahoot-editor-app) .container {
     box-sizing: border-box;
 }
 
-button.kahoot-create-card {
+button.shoot-create-card {
     appearance: none;
     -webkit-appearance: none;
 }
 
-.kahoot-create-card:hover {
+.shoot-create-card:hover {
     border-color: var(--orange);
     box-shadow: 0 4px 20px var(--orange-subtle);
     transform: translateY(-2px);
     color: inherit;
 }
 
-.kahoot-create-card-ai {
+.shoot-create-card-ai {
     background: linear-gradient(145deg, var(--bg-surface) 0%, var(--bg-subtle) 100%);
 }
 
-.kahoot-create-form {
+.shoot-create-form {
     display: block;
     margin: 0;
 }
 
-.kahoot-create-icon {
+.shoot-create-icon {
     font-size: 1.75rem;
     margin-bottom: 0.5rem;
 }
 
-.kahoot-create-title {
+.shoot-create-title {
     font-size: 1.1rem;
     font-weight: 800;
     margin: 0 0 0.35rem;
 }
 
-.kahoot-create-desc {
+.shoot-create-desc {
     font-size: 0.88rem;
     color: var(--text-muted);
     margin: 0;
     line-height: 1.45;
 }
 
-.kahoot-create-cta {
+.shoot-create-cta {
     display: block;
     margin-top: 0.75rem;
     font-weight: 700;

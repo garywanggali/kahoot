@@ -1,5 +1,5 @@
 (function () {
-    const root = document.getElementById('kahoot-editor');
+    const root = document.getElementById('shoot-editor');
     if (!root) return;
 
     const quizId = root.dataset.quizId;
@@ -38,7 +38,7 @@
     }
 
     function showQuestionImage(url) {
-        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+        const isEn = window.ShootI18n ? window.ShootI18n.isEn() : false;
         const src = normalizeImageUrl(url);
         if (!src) {
             els.previewImage.removeAttribute('src');
@@ -100,7 +100,7 @@
     }
 
     function csrfToken() {
-        const input = document.querySelector('#kahoot-editor input[name=csrfmiddlewaretoken]');
+        const input = document.querySelector('#shoot-editor input[name=csrfmiddlewaretoken]');
         if (input && input.value) return input.value;
         const m = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
         return m ? decodeURIComponent(m[1]) : '';
@@ -115,7 +115,7 @@
     }
 
     function typeLabel(t) {
-        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+        const isEn = window.ShootI18n ? window.ShootI18n.isEn() : false;
         if (isEn) {
             const mapEn = {
                 single: 'Single',
@@ -157,31 +157,31 @@
     }
 
     function renderList() {
-        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+        const isEn = window.ShootI18n ? window.ShootI18n.isEn() : false;
         els.list.innerHTML = '';
         questions.forEach((q, i) => {
             const li = document.createElement('li');
-            li.className = 'kahoot-editor-q-item' + (i === activeIndex ? ' active' : '');
+            li.className = 'shoot-editor-q-item' + (i === activeIndex ? ' active' : '');
             const isExplanation = (q.question_type === 'explanation');
             const emptyLabel = isEn ? '(Untitled question)' : '（未填写题干）';
             const rawLabel = (q.text || '').trim();
             const label = isExplanation
                 ? (isEn ? 'Full-screen image' : '全屏图片')
                 : (rawLabel || emptyLabel);
-            li.innerHTML = `<span class="kahoot-editor-q-num">${i + 1}</span>
-                <span class="kahoot-editor-q-label">${typeLabel(q.question_type)} · ${label.slice(0, 28)}</span>`;
+            li.innerHTML = `<span class="shoot-editor-q-num">${i + 1}</span>
+                <span class="shoot-editor-q-label">${typeLabel(q.question_type)} · ${label.slice(0, 28)}</span>`;
             li.onclick = () => { void selectQuestion(i); };
             els.list.appendChild(li);
         });
         if (questions.length === 0) {
-            els.list.innerHTML = `<li class="kahoot-editor-q-empty">${isEn ? 'No questions, click "+ Add"' : '暂无题目，点击「+ 添加」'}</li>`;
+            els.list.innerHTML = `<li class="shoot-editor-q-empty">${isEn ? 'No questions, click "+ Add"' : '暂无题目，点击「+ 添加」'}</li>`;
         }
     }
 
     function updateCorrectMarks() {
-        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+        const isEn = window.ShootI18n ? window.ShootI18n.isEn() : false;
         const markTitle = isEn ? 'Mark as correct' : '标为正确答案';
-        document.querySelectorAll('.kahoot-editor-mark-correct').forEach(btn => {
+        document.querySelectorAll('.shoot-editor-mark-correct').forEach(btn => {
             const key = btn.dataset.key;
             btn.title = markTitle;
             btn.classList.toggle('is-correct', correctKeys.has(key));
@@ -198,7 +198,7 @@
     }
 
     function applyTypeUi(type) {
-        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+        const isEn = window.ShootI18n ? window.ShootI18n.isEn() : false;
         const isShort = type === 'short_answer';
         const isWord = type === 'word_cloud';
         const isExplanation = type === 'explanation';
@@ -211,7 +211,7 @@
         if (els.preview) els.preview.classList.toggle('preview-explanation', isExplanation);
         if (els.mediaZone) els.mediaZone.classList.toggle('media-explanation', isExplanation);
         if (els.previewNumber) els.previewNumber.classList.toggle('hidden', isExplanation);
-        const timerBar = document.querySelector('.kahoot-editor-timer');
+        const timerBar = document.querySelector('.shoot-editor-timer');
         if (timerBar) timerBar.classList.toggle('hidden', isExplanation);
         const timeGroup = document.getElementById('time-limit-group');
         if (timeGroup) timeGroup.classList.toggle('hidden', isExplanation);
@@ -260,7 +260,7 @@
     }
 
     function fillForm(q) {
-        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+        const isEn = window.ShootI18n ? window.ShootI18n.isEn() : false;
         els.text.value = q.text || '';
         els.type.value = q.question_type || 'single';
         els.time.value = String(q.time_limit || 20);
@@ -335,7 +335,7 @@
     }
 
     async function apiPost(url, body) {
-        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+        const isEn = window.ShootI18n ? window.ShootI18n.isEn() : false;
         const token = csrfToken();
         const opts = {
             method: 'POST',
@@ -366,7 +366,7 @@
     }
 
     async function saveQuestion(options = {}) {
-        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+        const isEn = window.ShootI18n ? window.ShootI18n.isEn() : false;
         const silent = options.silent;
         const force = options.force;
 
@@ -384,7 +384,7 @@
             if (!silent) setSaveStatus(isEn ? 'Saving…' : '保存中…');
             try {
                 const data = await apiPost(
-                    `/teacher/kahoot/${quizId}/questions/save/`,
+                    `/teacher/shoot/${quizId}/questions/save/`,
                     readFormToPayload(),
                 );
                 questions[activeIndex] = data.question;
@@ -428,7 +428,7 @@
             payload.is_public = els.modalQuizPublic && els.modalQuizPublic.checked ? '1' : '0';
         }
         try {
-            await apiPost(`/teacher/kahoot/${quizId}/meta/`, payload);
+            await apiPost(`/teacher/shoot/${quizId}/meta/`, payload);
             return true;
         } catch (e) {
             if (!silent) throw e;
@@ -464,7 +464,7 @@
             await saveQuestion({ silent: true });
         }
         try {
-            const data = await apiPost(`/teacher/kahoot/${quizId}/questions/add/`, new FormData());
+            const data = await apiPost(`/teacher/shoot/${quizId}/questions/add/`, new FormData());
             questions.push(data.question);
             activeIndex = questions.length - 1;
             dirty = false;
@@ -476,12 +476,12 @@
     }
 
     async function deleteQuestion() {
-        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+        const isEn = window.ShootI18n ? window.ShootI18n.isEn() : false;
         const q = currentQuestion();
         if (!q || !q.id) return;
         if (!confirm(isEn ? 'Are you sure you want to delete this question?' : '确定删除这道题？')) return;
         try {
-            await apiPost(`/teacher/kahoot/${quizId}/questions/${q.id}/delete/`, new FormData());
+            await apiPost(`/teacher/shoot/${quizId}/questions/${q.id}/delete/`, new FormData());
             questions.splice(activeIndex, 1);
             dirty = false;
             if (questions.length === 0) {
@@ -512,7 +512,7 @@
     }
 
     async function saveOnly() {
-        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+        const isEn = window.ShootI18n ? window.ShootI18n.isEn() : false;
         const btn = document.getElementById('btn-save-quiz');
         const label = btn ? btn.textContent : '';
         if (btn) {
@@ -538,7 +538,7 @@
     }
 
     async function saveCurrentQuestion() {
-        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+        const isEn = window.ShootI18n ? window.ShootI18n.isEn() : false;
         try {
             await saveQuestion({ silent: false });
         } catch (e) {
@@ -566,7 +566,7 @@
     }
 
     async function confirmLeave() {
-        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+        const isEn = window.ShootI18n ? window.ShootI18n.isEn() : false;
         const shouldSave = els.modalSaveChanges ? els.modalSaveChanges.checked : false;
         const label = btnConfirmExit ? btnConfirmExit.textContent : (isEn ? 'Confirm & Exit' : '确认离开');
 
@@ -627,7 +627,7 @@
     });
 
     els.type.addEventListener('change', () => {
-        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+        const isEn = window.ShootI18n ? window.ShootI18n.isEn() : false;
         applyTypeUi(els.type.value);
         if (els.type.value === 'judgment') {
             if (!els.optionA.value) els.optionA.value = isEn ? 'True' : '正确';
@@ -640,7 +640,7 @@
         markDirty();
     });
 
-    document.querySelectorAll('.kahoot-editor-mark-correct').forEach(btn => {
+    document.querySelectorAll('.shoot-editor-mark-correct').forEach(btn => {
         btn.addEventListener('click', () => {
             const key = btn.dataset.key;
             const type = els.type.value;
@@ -662,7 +662,7 @@
         });
     }
     els.imageInput.addEventListener('change', () => {
-        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+        const isEn = window.ShootI18n ? window.ShootI18n.isEn() : false;
         const file = els.imageInput.files[0];
         if (!file) return;
         if (file.size > MAX_IMAGE_MB * 1024 * 1024) {

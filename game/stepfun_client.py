@@ -10,8 +10,8 @@ import urllib.request
 
 from django.conf import settings
 
-from .ai_kahoot import (
-    AIKahootError,
+from .ai_shoot import (
+    AIShootError,
     MAX_PER_TYPE,
     MAX_TOTAL_QUESTIONS,
     build_system_prompt,
@@ -107,7 +107,7 @@ def _request_chat(body: dict) -> dict:
         raise StepfunHTTPError(e.code, message, detail) from e
     except urllib.error.URLError as e:
         logger.warning('StepFun network error: %s', e)
-        raise AIKahootError('无法连接阶跃星辰 API，请检查网络后重试。') from e
+        raise AIShootError('无法连接阶跃星辰 API，请检查网络后重试。') from e
 
 
 def _models_to_try() -> list[str]:
@@ -158,7 +158,7 @@ def _raise_final_error(tried_models: list[str], last: StepfunHTTPError | None) -
     elif _is_transient_capacity_error(code, message):
         hint = ' 服务繁忙，请稍后再试或减少题目数量。'
 
-    raise AIKahootError(f'AI 服务请求失败 ({code})：{message}.{hint}')
+    raise AIShootError(f'AI 服务请求失败 ({code})：{message}.{hint}')
 
 
 def _parse_chat_response(payload: dict) -> list:
@@ -166,30 +166,30 @@ def _parse_chat_response(payload: dict) -> list:
         choice = payload['choices'][0]
         finish_reason = choice.get('finish_reason', '')
         if finish_reason == 'length':
-            raise AIKahootError('AI 输出被长度限制截断，请减少题目数量后重试。')
+            raise AIShootError('AI 输出被长度限制截断，请减少题目数量后重试。')
         content = choice['message']['content']
         data = json.loads(content)
         return data['questions']
     except (KeyError, IndexError, json.JSONDecodeError, TypeError) as e:
         logger.warning('StepFun parse error: %s', str(payload)[:500])
-        raise AIKahootError('AI 返回格式异常，请重试。') from e
+        raise AIShootError('AI 返回格式异常，请重试。') from e
 
 
-def generate_kahoot_questions(
+def generate_shoot_questions(
     topic: str,
     description: str,
     counts: dict[str, int],
 ) -> list[dict]:
     if not stepfun_configured():
-        raise AIKahootError(
+        raise AIShootError(
             '未配置 STEPFUN_API_KEY。请在阶跃星辰开放平台获取 API Key 后设置环境变量。'
         )
 
     total = sum(counts.values())
     if total == 0:
-        raise AIKahootError('请至少指定 1 道题')
+        raise AIShootError('请至少指定 1 道题')
     if total > MAX_TOTAL_QUESTIONS:
-        raise AIKahootError(f'题目总数不能超过 {MAX_TOTAL_QUESTIONS} 道')
+        raise AIShootError(f'题目总数不能超过 {MAX_TOTAL_QUESTIONS} 道')
 
     models = _models_to_try()
     tried: list[str] = []
@@ -228,7 +228,7 @@ def generate_kahoot_questions(
                     )
                     break
                 _raise_final_error(tried, e)
-            except AIKahootError:
+            except AIShootError:
                 raise
 
         if raw_questions is not None:

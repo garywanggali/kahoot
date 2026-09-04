@@ -47,6 +47,25 @@ def _format_option_answer(question: Question, selected: str) -> str:
     return ', '.join(parts) if parts else selected
 
 
+def _safe_response_time_sec(response_time_ms) -> float:
+    """Convert ms to seconds; tolerate None / bad values from partial flushes."""
+    try:
+        if response_time_ms is None:
+            return 0.0
+        return round(float(response_time_ms) / 1000.0, 1)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def _safe_image_url(question: Question) -> str:
+    try:
+        if question.image:
+            return question.image.url
+    except Exception:
+        logger.exception('Failed to resolve image URL for question %s', getattr(question, 'pk', None))
+    return ''
+
+
 def get_room_analytics_data(room: Room) -> dict[str, Any]:
     """Calculate thorough post-game analytics by question and by player."""
     try:
@@ -154,12 +173,12 @@ def get_room_analytics_data(room: Room) -> dict[str, Any]:
             questions_analysis.append({
                 'id': q.id,
                 'order': idx,
-                'text': q.text,
+                'text': q.text or '解释',
                 'question_type': q.question_type,
                 'type_label': type_labels.get(q.question_type, '选择题'),
                 'correct_answer_display': q.get_correct_option_display(),
-                'image_url': q.image.url if q.image else '',
-                'accuracy_percent': 0.0,
+                'image_url': _safe_image_url(q),
+                'accuracy_percent': None,
                 'correct_count': 0,
                 'wrong_count': 0,
                 'unanswered_count': 0,
@@ -190,9 +209,9 @@ def get_room_analytics_data(room: Room) -> dict[str, Any]:
                     'avatar': p_avatar,
                     'selected': ans.selected_option,
                     'selected_display': formatted_sel,
-                    'points': ans.points,
-                    'response_time_ms': ans.response_time_ms,
-                    'response_time_sec': round(ans.response_time_ms / 1000, 1),
+                    'points': ans.points or 0,
+                    'response_time_ms': ans.response_time_ms or 0,
+                    'response_time_sec': _safe_response_time_sec(ans.response_time_ms),
                 }
                 if is_word_cloud or ans.is_correct:
                     correct_players.append(item)
@@ -215,7 +234,7 @@ def get_room_analytics_data(room: Room) -> dict[str, Any]:
             'question_type': q.question_type,
             'type_label': type_labels.get(q.question_type, '选择题'),
             'correct_answer_display': q.get_correct_option_display(),
-            'image_url': q.image.url if q.image else '',
+            'image_url': _safe_image_url(q),
             'accuracy_percent': accuracy_percent,
             'correct_count': len(correct_players),
             'wrong_count': len(wrong_players),
@@ -263,8 +282,8 @@ def get_room_analytics_data(room: Room) -> dict[str, Any]:
                     'selected': ans.selected_option,
                     'selected_display': formatted_sel,
                     'correct_answer_display': correct_display,
-                    'points': ans.points,
-                    'response_time_sec': round(ans.response_time_ms / 1000, 1),
+                    'points': ans.points or 0,
+                    'response_time_sec': _safe_response_time_sec(ans.response_time_ms),
                     'is_word_cloud': is_word_cloud,
                 }
                 if is_word_cloud or ans.is_correct:
@@ -272,14 +291,17 @@ def get_room_analytics_data(room: Room) -> dict[str, Any]:
                 else:
                     wrong_list.append(q_item)
 
-        scored_q_count = max(1, total_scored_questions)
-        p_accuracy = round((len(correct_list) / scored_q_count) * 100, 1)
+        # Explanation-only / unscored-only rooms have 0 scored questions — do not fake a divisor.
+        if total_scored_questions > 0:
+            p_accuracy = round((len(correct_list) / total_scored_questions) * 100, 1)
+        else:
+            p_accuracy = None
 
         players_analysis.append({
             'id': p.id,
             'nickname': p.nickname,
             'avatar': p_avatar,
-            'score': p.score,
+            'score': p.score or 0,
             'rank': rank_idx,
             'accuracy_percent': p_accuracy,
             'correct_count': len(correct_list),
@@ -288,6 +310,7 @@ def get_room_analytics_data(room: Room) -> dict[str, Any]:
             'correct_questions': correct_list,
             'wrong_questions': wrong_list,
             'unanswered_questions': unanswered_list,
+            'has_scored_questions': total_scored_questions > 0,
         })
 
     # 3. Overall Summary
@@ -295,19 +318,22 @@ def get_room_analytics_data(room: Room) -> dict[str, Any]:
     overall_accuracy = (
         round((total_correct_answers / total_possible_correct) * 100, 1)
         if total_possible_correct > 0
-        else 0.0
+        else None
     )
     avg_score = (
-        round(sum(p.score for p in players) / player_count, 1)
+        round(sum((p.score or 0) for p in players) / player_count, 1)
         if player_count > 0
         else 0.0
     )
-    highest_score = max((p.score for p in players), default=0)
+    highest_score = max(((p.score or 0) for p in players), default=0)
 
-    # Most difficult / easiest questions
-    scored_questions = [qa for qa in questions_analysis if not qa.get('is_unscored')]
-    hardest_q = min(scored_questions, key=lambda x: x['accuracy_percent'], default=None)
-    easiest_q = max(scored_questions, key=lambda x: x['accuracy_percent'], default=None)
+    # Most difficult / easiest questions (skip unscored: explanation / word cloud)
+    scored_questions = [
+        qa for qa in questions_analysis
+        if not qa.get('is_unscored') and qa.get('accuracy_percent') is not None
+    ]
+    hardest_q = min(scored_questions, key=lambda x: x['accuracy_percent']) if scored_questions else None
+    easiest_q = max(scored_questions, key=lambda x: x['accuracy_percent']) if scored_questions else None
 
     return {
         'room': {
@@ -321,6 +347,7 @@ def get_room_analytics_data(room: Room) -> dict[str, Any]:
             'total_players': player_count,
             'total_questions': question_count,
             'total_scored_questions': total_scored_questions,
+            'has_scored_questions': total_scored_questions > 0,
             'overall_accuracy': overall_accuracy,
             'avg_score': avg_score,
             'highest_score': highest_score,

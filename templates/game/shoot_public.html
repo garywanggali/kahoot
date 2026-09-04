@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static i18n %}
 
-{% block title %}{% if assign_mode %}{% trans "布置练习 - Kahoot" %}{% else %}{% trans "公共题库 - Kahoot" %}{% endif %}{% endblock %}
+{% block title %}{% if assign_mode %}{% trans "布置练习 - Shoot" %}{% else %}{% trans "公共题库 - Shoot" %}{% endif %}{% endblock %}
 
 {% block global_topbar %}{% endblock %}
 
@@ -19,7 +19,7 @@
         <h1 class="studio-main-title">{% trans "布置练习" %}</h1>
         <p class="form-hint">{% trans "浏览公开题库，复制 6 位字母练习码发给学生（钉钉 / 微信均可）。学生在首页输入该码即可个人练习。" %}</p>
         {% else %}
-        <a href="{% url 'kahoot_new' %}" class="btn-back">
+        <a href="{% url 'shoot_new' %}" class="btn-back">
             <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="19" y1="12" x2="5" y2="12"></line>
                 <polyline points="12 19 5 12 12 5"></polyline>
@@ -69,7 +69,7 @@
                     <td>
                         <div class="quiz-title-cell">
                             <span class="row-num-pill">{% if forloop.counter < 10 %}0{% endif %}{{ forloop.counter }}</span>
-                            <a href="{% url 'kahoot_public_preview' qs.pk %}{% if assign_mode %}?from=assign{% endif %}{% if search_query %}{% if assign_mode %}&{% else %}?{% endif %}q={{ search_query|urlencode }}{% endif %}"
+                            <a href="{% url 'shoot_public_preview' qs.pk %}{% if assign_mode %}?from=assign{% endif %}{% if search_query %}{% if assign_mode %}&{% else %}?{% endif %}q={{ search_query|urlencode }}{% endif %}"
                                class="quiz-title-link">
                                 <strong>{{ qs.title }}</strong>
                             </a>
@@ -106,13 +106,13 @@
                                     data-quiz-title="{{ qs.title|escape }}"
                                     data-copy-kind="share">{% trans "复制发给学生" %}</button>
                             {% endif %}
-                            <a href="{% url 'kahoot_public_preview' qs.pk %}{% if assign_mode %}?from=assign{% endif %}{% if search_query %}{% if assign_mode %}&{% else %}?{% endif %}q={{ search_query|urlencode }}{% endif %}"
+                            <a href="{% url 'shoot_public_preview' qs.pk %}{% if assign_mode %}?from=assign{% endif %}{% if search_query %}{% if assign_mode %}&{% else %}?{% endif %}q={{ search_query|urlencode }}{% endif %}"
                                class="btn-action-preview">{% trans "预览" %}</a>
                             {% if not assign_mode %}
                             {% if teacher and qs.teacher_id == teacher.pk %}
-                            <a href="{% url 'kahoot_editor' qs.pk %}" class="btn-action-edit-contrast">{% trans "去编辑" %}</a>
+                            <a href="{% url 'shoot_editor' qs.pk %}" class="btn-action-edit-contrast">{% trans "去编辑" %}</a>
                             {% else %}
-                            <form method="post" action="{% url 'kahoot_public_clone' qs.pk %}" class="inline-form">
+                            <form method="post" action="{% url 'shoot_public_clone' qs.pk %}" class="inline-form">
                                 {% csrf_token %}
                                 <input type="hidden" name="title" value="{{ qs.title }} ({% trans '副本' %})">
                                 <button type="submit" class="btn-action-edit-contrast">{% trans "复制到我的题库" %}</button>

@@ -625,7 +625,7 @@ class StudentStemVisibilityTests(TestCase):
         self.assertIn('显示题干和图片', html)
 
 
-class KahootAIGenerateTests(TestCase):
+class ShootAIGenerateTests(TestCase):
     def setUp(self):
         from .models import Teacher
         self.teacher = Teacher.objects.create(username='t_ai')
@@ -633,7 +633,7 @@ class KahootAIGenerateTests(TestCase):
         self.teacher.save()
         session = self.client.session
         session['teacher_id'] = self.teacher.pk
-        session['kahoot_pending_title'] = '地理测验'
+        session['shoot_pending_title'] = '地理测验'
         session.save()
 
     def test_ai_page_disables_turbo(self):
@@ -641,7 +641,7 @@ class KahootAIGenerateTests(TestCase):
         from unittest.mock import patch
 
         with patch('game.views.stepfun_configured', return_value=True):
-            resp = self.client.get(reverse('kahoot_ai'))
+            resp = self.client.get(reverse('shoot_ai'))
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, 'data-turbo="false"')
 
@@ -660,13 +660,13 @@ class KahootAIGenerateTests(TestCase):
             'time_limit': 20,
         }]
         with patch('game.views.stepfun_configured', return_value=True), patch(
-            'game.views.generate_kahoot_questions', return_value=fake_questions,
+            'game.views.generate_shoot_questions', return_value=fake_questions,
         ):
-            url = reverse('kahoot_ai')
+            url = reverse('shoot_ai')
             resp = self.client.post(url, {
                 'topic': '地理',
                 'description': '中等难度',
-                'kahoot_title': '地理测验',
+                'shoot_title': '地理测验',
                 'count_single': 1,
                 'count_multiple': 0,
                 'count_judgment': 0,
@@ -783,6 +783,28 @@ class ExplanationQuestionTests(TestCase):
         self.assertEqual(data['summary']['total_scored_questions'], 1)
         self.assertEqual(data['by_players'][0]['unanswered_count'], 1)
 
+    def test_analytics_explanation_only_room(self):
+        """A quiz with only an explanation slide must not crash analytics."""
+        from .analytics import get_room_analytics_data
+        from .models import Player, Room, RoomQuestion
+
+        question = self._make_explanation()
+        room = Room.objects.create(code='334456', name='Only Explanation', status=Room.STATUS_ENDED)
+        RoomQuestion.objects.create(room=room, question=question, order=0)
+        Player.objects.create(room=room, nickname='Ann', session_id='ann-only', score=0)
+
+        data = get_room_analytics_data(room)
+        self.assertEqual(data['summary']['total_questions'], 1)
+        self.assertEqual(data['summary']['total_scored_questions'], 0)
+        self.assertFalse(data['summary']['has_scored_questions'])
+        self.assertIsNone(data['summary']['overall_accuracy'])
+        self.assertIsNone(data['summary']['hardest_question'])
+        self.assertEqual(len(data['by_questions']), 1)
+        self.assertTrue(data['by_questions'][0]['is_explanation'])
+        self.assertIsNone(data['by_players'][0]['accuracy_percent'])
+        self.assertEqual(data['by_players'][0]['unanswered_count'], 0)
+        self.assertEqual(data['by_players'][0]['correct_count'], 0)
+
     def test_editor_save_api(self):
         from django.urls import reverse
 
@@ -796,12 +818,12 @@ class ExplanationQuestionTests(TestCase):
         session['teacher_id'] = teacher.pk
         session.save()
 
-        add_url = reverse('kahoot_question_add', args=[quiz_set.pk])
+        add_url = reverse('shoot_question_add', args=[quiz_set.pk])
         add_resp = self.client.post(add_url)
         self.assertEqual(add_resp.status_code, 200)
         qid = add_resp.json()['question']['id']
 
-        save_url = reverse('kahoot_question_save', args=[quiz_set.pk])
+        save_url = reverse('shoot_question_save', args=[quiz_set.pk])
         resp = self.client.post(save_url, {
             'question_id': qid,
             'question_type': 'explanation',
@@ -1157,7 +1179,7 @@ class ClickThroughSafetyTests(TestCase):
         self.assertIn('.btn-lang-toggle', css)
         self.assertIn('pointer-events: none !important', css)
 
-        editor_css = (Path(settings.BASE_DIR) / 'static' / 'css' / 'kahoot_editor.css').read_text()
+        editor_css = (Path(settings.BASE_DIR) / 'static' / 'css' / 'shoot_editor.css').read_text()
         self.assertIn('.modal-overlay.hidden', editor_css)
         self.assertIn('pointer-events: none !important', editor_css)
 
@@ -1176,8 +1198,8 @@ class ClickThroughSafetyTests(TestCase):
         html = render_to_string('base.html', request=request)
         self.assertIn('name="csrf-token"', html)
         self.assertIn('csrfmiddlewaretoken', html)
-        self.assertIn('style.css?v=474', html)
-        self.assertIn('i18n.js?v=12', html)
+        self.assertIn('style.css?v=475', html)
+        self.assertIn('i18n.js?v=13', html)
         self.assertIn('data-action="toggle-lang"', html)
 
 
@@ -1223,11 +1245,11 @@ class PublicQuizLibraryTests(TestCase):
     def test_list_shows_search_and_preview(self):
         from django.urls import reverse
 
-        resp = self.client.get(reverse('kahoot_public_list'))
+        resp = self.client.get(reverse('shoot_public_list'))
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, 'id="public-quiz-search"')
         self.assertContains(resp, '亚洲地理公开课')
-        self.assertContains(resp, reverse('kahoot_public_preview', args=[self.quiz.pk]))
+        self.assertContains(resp, reverse('shoot_public_preview', args=[self.quiz.pk]))
         self.assertContains(resp, '预览')
         self.assertContains(resp, self.quiz.practice_code)
         self.assertContains(resp, '复制发给学生')
@@ -1247,7 +1269,7 @@ class PublicQuizLibraryTests(TestCase):
         self.assertContains(page, reverse('teacher_dashboard'))
         self.assertNotContains(page, '复制到我的题库')
         preview = self.client.get(
-            reverse('kahoot_public_preview', args=[self.quiz.pk]),
+            reverse('shoot_public_preview', args=[self.quiz.pk]),
             {'from': 'assign'},
         )
         self.assertContains(preview, '返回布置练习')
@@ -1256,7 +1278,7 @@ class PublicQuizLibraryTests(TestCase):
     def test_search_matches_title_author_and_question_text(self):
         from django.urls import reverse
 
-        url = reverse('kahoot_public_list')
+        url = reverse('shoot_public_list')
         by_title = self.client.get(url, {'q': '亚洲地理'})
         self.assertContains(by_title, '亚洲地理公开课')
 
@@ -1276,26 +1298,26 @@ class PublicQuizLibraryTests(TestCase):
     def test_preview_shows_questions_and_blocks_private(self):
         from django.urls import reverse
 
-        resp = self.client.get(reverse('kahoot_public_preview', args=[self.quiz.pk]))
+        resp = self.client.get(reverse('shoot_public_preview', args=[self.quiz.pk]))
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, '中国的首都是？')
         self.assertContains(resp, '北京')
         self.assertContains(resp, '复制到我的题库')
         self.assertContains(resp, 'is-correct')
 
-        blocked = self.client.get(reverse('kahoot_public_preview', args=[self.private.pk]))
+        blocked = self.client.get(reverse('shoot_public_preview', args=[self.private.pk]))
         self.assertEqual(blocked.status_code, 302)
-        self.assertEqual(blocked.url, reverse('kahoot_public_list'))
+        self.assertEqual(blocked.url, reverse('shoot_public_list'))
 
     def test_wizard_public_action_opens_marketplace(self):
         from django.urls import reverse
 
-        resp = self.client.post(reverse('kahoot_start'), {
+        resp = self.client.post(reverse('shoot_start'), {
             'action': 'public',
             'title': '随便起的名字',
         })
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(resp.url, reverse('kahoot_public_list'))
+        self.assertEqual(resp.url, reverse('shoot_public_list'))
 
     def test_seed_command_creates_marketplace_quizzes(self):
         from io import StringIO
@@ -1309,10 +1331,10 @@ class PublicQuizLibraryTests(TestCase):
         call_command('seed_public_quizzes', stdout=out)
         call_command('seed_public_quizzes', stdout=out)
         self.assertGreaterEqual(
-            QuizSet.objects.filter(is_public=True, teacher__username='kahoot_market').count(),
+            QuizSet.objects.filter(is_public=True, teacher__username='shoot_market').count(),
             6,
         )
-        resp = self.client.get(reverse('kahoot_public_list'))
+        resp = self.client.get(reverse('shoot_public_list'))
         self.assertContains(resp, '世界地理入门')
         self.assertContains(resp, '小学数学口算')
         self.assertContains(resp, '中国历史常识')
@@ -1322,13 +1344,13 @@ class PublicQuizLibraryTests(TestCase):
         self.assertContains(resp, '题库精选')
         self.assertTrue(
             Question.objects.filter(
-                teacher__username='kahoot_market',
+                teacher__username='shoot_market',
                 question_type=Question.TYPE_WORD_CLOUD,
                 text='用一个词形容今天的心情',
             ).exists()
         )
         self.assertTrue(
-            QuizSet.objects.filter(is_public=True, teacher__username='kahoot_market')
+            QuizSet.objects.filter(is_public=True, teacher__username='shoot_market')
             .exclude(practice_code='')
             .exclude(practice_code__isnull=True)
             .exists()

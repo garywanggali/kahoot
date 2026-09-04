@@ -4,7 +4,7 @@ set -euo pipefail
 
 SERVER="${1:-gary@110.40.153.38}"
 PORT="${2:-5002}"
-DIR="${3:-kahoot}"
+DIR="${3:-shoot}"
 
 echo "==> 1/3 上传 UI + 启动脚本 ..."
 rsync -avz --progress \
@@ -16,7 +16,7 @@ rsync -avz --progress \
   "${SERVER}:~/${DIR}/templates/"
 
 rsync -avz \
-  kahoot_project/settings.py \
+  shoot_project/settings.py \
   start.sh stop.sh run.sh ensure_deps.sh \
   "${SERVER}:~/${DIR}/"
 

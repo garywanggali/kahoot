@@ -14,7 +14,7 @@ import django
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'kahoot_project.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'shoot_project.settings')
 django.setup()
 
 from game.models import Question, Room, RoomQuestion  # noqa: E402
@@ -200,7 +200,7 @@ async def run_flood(room, args):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Flood test for Kahoot room WebSockets')
+    parser = argparse.ArgumentParser(description='Flood test for Shoot room WebSockets')
     parser.add_argument('--players', type=int, default=300)
     parser.add_argument('--host', default='127.0.0.1')
     parser.add_argument('--port', type=int, default=8000)

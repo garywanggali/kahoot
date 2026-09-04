@@ -50,8 +50,8 @@ class Migration(migrations.Migration):
                 )),
             ],
             options={
-                'verbose_name': 'Kahoot 套题',
-                'verbose_name_plural': 'Kahoot 套题',
+                'verbose_name': 'Shoot 套题',
+                'verbose_name_plural': 'Shoot 套题',
                 'ordering': ['-created_at'],
             },
         ),

@@ -125,7 +125,7 @@
                             {% else %}
                             <div class="room-empty-tip">
                                 <p>{% trans "您还没有创建自己的测验套题" %}</p>
-                                <a href="{% url 'kahoot_new' %}" class="btn btn-outline btn-sm">{% trans "+ 去新建套题" %}</a>
+                                <a href="{% url 'shoot_new' %}" class="btn btn-outline btn-sm">{% trans "+ 去新建套题" %}</a>
                             </div>
                             {% endif %}
                         </div>
@@ -172,7 +172,7 @@
                     {% else %}
                         <div class="room-empty-tip">
                             <p>{% trans "当前暂无任何可用测验套题" %}</p>
-                            <a href="{% url 'kahoot_new' %}" class="btn btn-primary" style="margin-top: 0.5rem;">{% trans "+ 立即新建第一套 Kahoot" %}</a>
+                            <a href="{% url 'shoot_new' %}" class="btn btn-primary" style="margin-top: 0.5rem;">{% trans "+ 立即新建第一套 Shoot" %}</a>
                         </div>
                     {% endif %}
 

@@ -1,4 +1,4 @@
-"""Strict Excel (.xlsx) import for Kahoot quiz sets."""
+"""Strict Excel (.xlsx) import for Shoot quiz sets."""
 
 from __future__ import annotations
 
@@ -313,7 +313,7 @@ def build_template_xlsx() -> bytes:
 def import_quiz_set_from_xlsx(teacher, title: str, file_bytes: bytes) -> QuizSet:
     title = (title or '').strip()
     if not title:
-        raise ExcelImportError('请填写 Kahoot 名称')
+        raise ExcelImportError('请填写 Shoot 名称')
 
     raw_rows = read_rows_from_xlsx(file_bytes)
     validated = []

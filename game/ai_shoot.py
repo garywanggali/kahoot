@@ -1,4 +1,4 @@
-"""Shared AI Kahoot prompt building, validation, and persistence."""
+"""Shared AI Shoot prompt building, validation, and persistence."""
 
 from __future__ import annotations
 
@@ -45,7 +45,7 @@ QUESTION_JSON_SCHEMA = {
 }
 
 
-class AIKahootError(Exception):
+class AIShootError(Exception):
     """Raised when AI generation or validation fails."""
 
 
@@ -77,7 +77,7 @@ def is_valid_ai_short_answer(option_a: str) -> bool:
 def build_system_prompt() -> str:
     schema_text = json.dumps(QUESTION_JSON_SCHEMA, ensure_ascii=False, indent=2)
     return (
-        '你是一位资深教师，正在为课堂互动测验（类似 Kahoot）批量出题。'
+        '你是一位资深教师，正在为课堂互动测验（类似 Shoot）批量出题。'
         '你必须只输出一个 JSON 对象，不要输出 Markdown 或其它说明文字。'
         'JSON 结构必须符合下列 JSON Schema：\n'
         f'{schema_text}\n\n'
@@ -122,7 +122,7 @@ def validate_and_normalize_questions(
     expected_counts: dict[str, int],
 ) -> list[dict]:
     if not isinstance(raw_questions, list):
-        raise AIKahootError('AI 未返回题目列表')
+        raise AIShootError('AI 未返回题目列表')
 
     normalized = []
     for item in raw_questions:
@@ -185,7 +185,7 @@ def validate_and_normalize_questions(
 
     expected_total = sum(expected_counts.values())
     if len(normalized) < expected_total:
-        raise AIKahootError(
+        raise AIShootError(
             f'AI 仅生成了 {len(normalized)} 道有效题目（期望 {expected_total} 道），请重试。'
         )
 

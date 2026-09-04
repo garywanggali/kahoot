@@ -1,4 +1,4 @@
-# Kahoot 互动课堂测验平台 · 代码库完整指引文档
+# Shoot 互动课堂测验平台 · 代码库完整指引文档
 
 本文档面向全栈开发人员、维护者与协同合作者，详细梳理了本项目的系统架构、目录结构、数据模型、实时通信协议、核心业务逻辑、前端交互体系及运维部署流程。
 
@@ -6,7 +6,7 @@
 
 ## 一、项目架构总览
 
-本项目是一个基于 **Django 6 + Channels (Daphne) + WebSocket + SQLite** 的 Kahoot 风格互动课堂测验平台，采用混合架构设计：
+本项目是一个基于 **Django 6 + Channels (Daphne) + WebSocket + SQLite** 的 Shoot 风格互动课堂测验平台，采用混合架构设计：
 - **后端**：Django + Django Channels 处理 HTTP 请求与高并发全双工 WebSocket 长连接。
 - **内存层（Room Runtime）**：在 `room_cache.py` 中维护房间答题内存态，避免高频数据库写争用，定期/结题时批量写回数据库（Flush）。
 - **前端**：采用 Vanilla JS + Hotwired Turbo + 原生 SVG + CSS Design Tokens，保持高响应、低延迟，无前端框架构建负担。
@@ -41,7 +41,7 @@
 ## 二、目录结构速查
 
 ```text
-kahoot/
+shoot/
 ├── game/                         # 核心游戏业务 App
 │   ├── analytics.py              # 对战数据复盘与学情分析计算引擎
 │   ├── consumers.py              # WebSocket Consumer (处理进房、答题、切题、弹幕、换装)
@@ -50,14 +50,14 @@ kahoot/
 │   ├── views.py                  # HTTP 视图函数 (老师控制台、套题编辑、导入导出、房间管理)
 │   ├── urls.py                   # 路由配置
 │   ├── excel_import.py           # Excel 批量导入与模版导出 (含 openpyxl 下拉框校验)
-│   ├── ai_kahoot.py              # 阶跃星辰/StepFun AI 批量出题逻辑
+│   ├── ai_shoot.py              # 阶跃星辰/StepFun AI 批量出题逻辑
 │   ├── stepfun_client.py         # AI 接口 Client
 │   ├── question_save.py          # 题目保存与表单验证
 │   ├── quiz_set_utils.py         # 套题复制、克隆、与房间关联辅助函数
 │   ├── teacher_auth.py           # 教师权限与 Session 认证
 │   ├── tests.py                  # 单元测试 (计分规则、个性化头像、数据分析)
 │   └── tests_excel_import.py     # Excel 导入及数据校验单元测试
-├── kahoot_project/               # Django 项目配置目录
+├── shoot_project/               # Django 项目配置目录
 │   ├── settings.py               # 项目配置 (INSTALLED_APPS, CHANNEL_LAYERS, 静态/媒体资源)
 │   ├── asgi.py                   # ASGI 入口 (HTTP + WebSocket 路由分发)
 │   ├── urls.py                   # 全局 URL 分发
@@ -71,9 +71,9 @@ kahoot/
 │   │   ├── room_host.html        # 老师端大屏主持 (5阶段：等待大厅/答题中/排行榜/颁奖典礼/数据分析)
 │   │   ├── room_analytics.html   # 独立的对战数据分析报告页面
 │   │   ├── teacher_dashboard.html# 老师主控制台 (发房间/管题库/近期房间报告)
-│   │   ├── kahoot_editor.html    # 题库可视化编辑器 (支持定时自动保存)
-│   │   ├── kahoot_detail.html    # 题库详情
-│   │   ├── kahoot_import.html    # Excel 模版下载与上传解析界面
+│   │   ├── shoot_editor.html    # 题库可视化编辑器 (支持定时自动保存)
+│   │   ├── shoot_detail.html    # 题库详情
+│   │   ├── shoot_import.html    # Excel 模版下载与上传解析界面
 │   │   └── room_create.html      # 选择题库并发起房间
 ├── static/                       # 静态资源目录
 │   ├── css/
@@ -85,7 +85,7 @@ kahoot/
 │   │   ├── awards.js             # 3D 荣誉领奖台与金银铜金属勋章渲染
 │   │   ├── wordcloud.js          # 词云互动题渲染
 │   │   ├── bgm.js                # 全局跨页面常驻背景音乐控制
-│   │   └── kahoot_editor.js      # 可视化编辑器客户端逻辑
+│   │   └── shoot_editor.js      # 可视化编辑器客户端逻辑
 │   └── audio/                    # 背景音乐音频素材
 ├── deploy.sh                     # 本机一键同步与远程重启部署脚本
 ├── run.sh / stop.sh              # 服务器后台启动与停止控制脚本
@@ -243,7 +243,7 @@ python manage.py runserver 8000
 ssh gary@110.40.153.38
 
 # 进入项目目录
-cd ~/kahoot
+cd ~/shoot
 
 # 停止服务
 ./stop.sh

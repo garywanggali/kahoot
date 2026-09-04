@@ -10,14 +10,14 @@ from django.urls import reverse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.translation import gettext as _
 
-from .ai_kahoot import (
-    AIKahootError,
+from .ai_shoot import (
+    AIShootError,
     MAX_PER_TYPE,
     MAX_TOTAL_QUESTIONS,
     create_quiz_set_from_ai_data,
     question_type_label,
 )
-from .stepfun_client import generate_kahoot_questions, stepfun_configured
+from .stepfun_client import generate_shoot_questions, stepfun_configured
 from .excel_import import (
     ExcelImportError,
     MAX_IMPORT_ROWS,
@@ -491,7 +491,7 @@ def question_delete(request, pk):
         question.delete()
         messages.success(request, _('题目已删除'))
         if quiz_set_id:
-            return redirect('kahoot_editor', pk=quiz_set_id)
+            return redirect('shoot_editor', pk=quiz_set_id)
         return redirect('question_list')
     return render(request, 'game/question_confirm_delete.html', {
         'question': question,
@@ -612,7 +612,7 @@ def _save_question(request, teacher, question=None, quiz_set=None):
         question.save()
         messages.success(request, _('题目已更新'))
         if quiz_set:
-            return redirect('kahoot_editor', pk=quiz_set.pk)
+            return redirect('shoot_editor', pk=quiz_set.pk)
     else:
         new_question = Question.objects.create(
             text=text,
@@ -631,54 +631,54 @@ def _save_question(request, teacher, question=None, quiz_set=None):
             add_question_to_quiz_set(quiz_set, new_question)
         messages.success(request, _('题目已创建'))
         if quiz_set:
-            return redirect('kahoot_editor', pk=quiz_set.pk)
+            return redirect('shoot_editor', pk=quiz_set.pk)
         if quiz_set:
-            return redirect('kahoot_editor', pk=quiz_set.pk)
+            return redirect('shoot_editor', pk=quiz_set.pk)
 
     return redirect('question_list')
 
 
-def kahoot_new(request):
+def shoot_new(request):
     teacher, redirect_resp = require_teacher_or_redirect(request)
     if redirect_resp:
         return redirect_resp
-    pending_title = request.session.pop('kahoot_pending_title', '')
-    return render(request, 'game/kahoot_new.html', {
+    pending_title = request.session.pop('shoot_pending_title', '')
+    return render(request, 'game/shoot_new.html', {
         'quiz_set_count': own_quiz_sets(teacher).count(),
         'pending_title': pending_title,
     })
 
 
-def kahoot_start(request):
+def shoot_start(request):
     teacher, redirect_resp = require_teacher_or_redirect(request)
     if redirect_resp:
         return redirect_resp
     if request.method != 'POST':
-        return redirect('kahoot_new')
+        return redirect('shoot_new')
 
     title = request.POST.get('title', '').strip()
     action = request.POST.get('action', 'manual')
     if action == 'public':
-        return redirect('kahoot_public_list')
+        return redirect('shoot_public_list')
     if not title:
         messages.error(request, _('请填写题库名称'))
-        request.session['kahoot_pending_title'] = title
-        return redirect('kahoot_new')
+        request.session['shoot_pending_title'] = title
+        return redirect('shoot_new')
 
-    request.session['kahoot_pending_title'] = title
+    request.session['shoot_pending_title'] = title
 
     if action == 'ai':
-        return redirect('kahoot_ai')
+        return redirect('shoot_ai')
     elif action == 'excel':
-        return redirect('kahoot_import')
+        return redirect('shoot_import')
 
     # manual action
     quiz_set = QuizSet.objects.create(title=title[:200], teacher=teacher)
     messages.success(request, _('已创建「%(title)s」，请编辑第一道题') % {'title': quiz_set.title})
-    return redirect('kahoot_editor', pk=quiz_set.pk)
+    return redirect('shoot_editor', pk=quiz_set.pk)
 
 
-def kahoot_import(request):
+def shoot_import(request):
     teacher, redirect_resp = require_teacher_or_redirect(request)
     if redirect_resp:
         return redirect_resp
@@ -693,14 +693,14 @@ def kahoot_import(request):
         title = ctx['title']
         upload = request.FILES.get('excel_file')
         if not title:
-            messages.error(request, _('请填写 Kahoot 名称'))
-            return render(request, 'game/kahoot_import.html', ctx)
+            messages.error(request, _('请填写 Shoot 名称'))
+            return render(request, 'game/shoot_import.html', ctx)
         if not upload:
             messages.error(request, _('请选择要上传的 Excel 文件'))
-            return render(request, 'game/kahoot_import.html', ctx)
+            return render(request, 'game/shoot_import.html', ctx)
         if not upload.name.lower().endswith('.xlsx'):
             messages.error(request, _('仅支持 .xlsx 格式（Excel 2007+）'))
-            return render(request, 'game/kahoot_import.html', ctx)
+            return render(request, 'game/shoot_import.html', ctx)
 
         try:
             quiz_set = import_quiz_set_from_xlsx(teacher, title, upload.read())
@@ -709,18 +709,18 @@ def kahoot_import(request):
             if exc.row:
                 msg = f'第 {exc.row} 行：{msg}'
             messages.error(request, msg)
-            return render(request, 'game/kahoot_import.html', ctx)
+            return render(request, 'game/shoot_import.html', ctx)
 
         messages.success(
             request,
             _('已从 Excel 导入 %(count)s 道题到「%(title)s」') % {'count': quiz_set.question_count(), 'title': quiz_set.title},
         )
-        return redirect('kahoot_editor', pk=quiz_set.pk)
+        return redirect('shoot_editor', pk=quiz_set.pk)
 
-    return render(request, 'game/kahoot_import.html', ctx)
+    return render(request, 'game/shoot_import.html', ctx)
 
 
-def kahoot_import_template(request):
+def shoot_import_template(request):
     teacher, redirect_resp = require_teacher_or_redirect(request)
     if redirect_resp:
         return redirect_resp
@@ -729,12 +729,12 @@ def kahoot_import_template(request):
         build_template_xlsx(),
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     )
-    response['Content-Disposition'] = 'attachment; filename="kahoot_import_template.xlsx"'
+    response['Content-Disposition'] = 'attachment; filename="shoot_import_template.xlsx"'
     return response
 
 
 @ensure_csrf_cookie
-def kahoot_editor(request, pk):
+def shoot_editor(request, pk):
     teacher, redirect_resp = require_teacher_or_redirect(request)
     if redirect_resp:
         return redirect_resp
@@ -764,14 +764,14 @@ def kahoot_editor(request, pk):
         [question_to_editor_dict(q) for q in questions],
         ensure_ascii=False,
     )
-    return render(request, 'game/kahoot_editor.html', {
+    return render(request, 'game/shoot_editor.html', {
         'quiz_set': quiz_set,
         'questions_json': questions_json,
         'max_image_mb': MAX_QUESTION_IMAGE_BYTES // (1024 * 1024),
     })
 
 
-def kahoot_editor_meta(request, pk):
+def shoot_editor_meta(request, pk):
     teacher, err_resp = require_teacher_api(request)
     if err_resp:
         return err_resp
@@ -803,7 +803,7 @@ def kahoot_editor_meta(request, pk):
     })
 
 
-def kahoot_question_add(request, pk):
+def shoot_question_add(request, pk):
     teacher, err_resp = require_teacher_api(request)
     if err_resp:
         return err_resp
@@ -829,7 +829,7 @@ def kahoot_question_add(request, pk):
     return JsonResponse({'ok': True, 'question': question_to_editor_dict(question)})
 
 
-def kahoot_question_save(request, pk):
+def shoot_question_save(request, pk):
     teacher, err_resp = require_teacher_api(request)
     if err_resp:
         return err_resp
@@ -865,7 +865,7 @@ def kahoot_question_save(request, pk):
     return JsonResponse({'ok': True, 'question': question_to_editor_dict(question)})
 
 
-def kahoot_question_delete_api(request, pk, qid):
+def shoot_question_delete_api(request, pk, qid):
     teacher, err_resp = require_teacher_api(request)
     if err_resp:
         return err_resp
@@ -891,16 +891,16 @@ def _render_public_quiz_list(request, assign_mode=False):
     if redirect_resp:
         return redirect_resp
     search_query = (request.GET.get('q') or '').strip()
-    return render(request, 'game/kahoot_public.html', {
+    return render(request, 'game/shoot_public.html', {
         'public_quiz_sets': all_public_quiz_sets(search=search_query),
         'search_query': search_query,
         'teacher': teacher,
         'assign_mode': assign_mode,
-        'list_url_name': 'practice_assign' if assign_mode else 'kahoot_public_list',
+        'list_url_name': 'practice_assign' if assign_mode else 'shoot_public_list',
     })
 
 
-def kahoot_public_list(request):
+def shoot_public_list(request):
     return _render_public_quiz_list(request, assign_mode=False)
 
 
@@ -908,17 +908,17 @@ def practice_assign(request):
     return _render_public_quiz_list(request, assign_mode=True)
 
 
-def kahoot_public_preview(request, pk):
+def shoot_public_preview(request, pk):
     teacher, redirect_resp = require_teacher_or_redirect(request)
     if redirect_resp:
         return redirect_resp
     quiz_set = get_object_or_404(QuizSet, pk=pk)
     if not can_use_quiz_set(teacher, quiz_set):
         messages.error(request, _('无权预览该套题'))
-        return redirect('practice_assign' if request.GET.get('from') == 'assign' else 'kahoot_public_list')
+        return redirect('practice_assign' if request.GET.get('from') == 'assign' else 'shoot_public_list')
     search_query = (request.GET.get('q') or '').strip()
     from_assign = request.GET.get('from') == 'assign'
-    return render(request, 'game/kahoot_public_preview.html', {
+    return render(request, 'game/shoot_public_preview.html', {
         'quiz_set': quiz_set,
         'questions': quiz_set.get_questions(),
         'is_owner': can_edit_quiz_set(teacher, quiz_set),
@@ -927,24 +927,24 @@ def kahoot_public_preview(request, pk):
     })
 
 
-def kahoot_public_clone(request, pk):
+def shoot_public_clone(request, pk):
     teacher, redirect_resp = require_teacher_or_redirect(request)
     if redirect_resp:
         return redirect_resp
     source = get_object_or_404(QuizSet, pk=pk)
     if not can_use_quiz_set(teacher, source) or can_edit_quiz_set(teacher, source):
         messages.error(request, _('只能复制其他老师的公开套题'))
-        return redirect('kahoot_public_list')
+        return redirect('shoot_public_list')
     if request.method != 'POST':
-        return redirect('kahoot_public_list')
+        return redirect('shoot_public_list')
 
     title = request.POST.get('title', '').strip()
     new_set = clone_quiz_set(source, teacher, title=title)
     messages.success(request, _('已复制到我的题库：「%(title)s」') % {'title': new_set.title})
-    return redirect('kahoot_editor', pk=new_set.pk)
+    return redirect('shoot_editor', pk=new_set.pk)
 
 
-def kahoot_detail(request, pk):
+def shoot_detail(request, pk):
     """Legacy URL: redirect to editor or room creation (detail page removed)."""
     teacher, redirect_resp = require_teacher_or_redirect(request)
     if redirect_resp:
@@ -957,12 +957,12 @@ def kahoot_detail(request, pk):
         return redirect('question_list')
 
     if can_edit:
-        return redirect('kahoot_editor', pk=quiz_set.pk)
+        return redirect('shoot_editor', pk=quiz_set.pk)
 
     return redirect(f'{reverse("room_create")}?quiz_set={quiz_set.pk}')
 
 
-def kahoot_delete(request, pk):
+def shoot_delete(request, pk):
     teacher, redirect_resp = require_teacher_or_redirect(request)
     if redirect_resp:
         return redirect_resp
@@ -979,10 +979,10 @@ def kahoot_delete(request, pk):
         Question.objects.filter(pk__in=question_ids, teacher=teacher).delete()
         messages.success(request, _('已删除套题「%(title)s」') % {'title': title})
         return redirect('question_list')
-    return render(request, 'game/kahoot_confirm_delete.html', {'quiz_set': quiz_set})
+    return render(request, 'game/shoot_confirm_delete.html', {'quiz_set': quiz_set})
 
 
-def kahoot_create_room(request, pk):
+def shoot_create_room(request, pk):
     teacher, redirect_resp = require_teacher_or_redirect(request)
     if redirect_resp:
         return redirect_resp
@@ -991,7 +991,7 @@ def kahoot_create_room(request, pk):
         messages.error(request, _('无权使用该套题'))
         return redirect('question_list')
     if request.method != 'POST':
-        return redirect('kahoot_editor', pk=pk)
+        return redirect('shoot_editor', pk=pk)
 
     room_name = request.POST.get('name', '').strip()
     try:
@@ -1003,7 +1003,7 @@ def kahoot_create_room(request, pk):
         )
     except ValueError:
         messages.error(request, _('套题中还没有题目，请先添加题目'))
-        return redirect('kahoot_editor', pk=pk)
+        return redirect('shoot_editor', pk=pk)
 
     return redirect('room_host', pk=room.pk)
 
@@ -1030,15 +1030,15 @@ def _default_ai_counts() -> dict[str, int]:
 
 
 def _ai_form_context(request, **extra):
-    saved = request.session.get('ai_kahoot_form') or {}
+    saved = request.session.get('ai_shoot_form') or {}
     counts = extra.get('counts')
     if counts is None:
         counts = _parse_ai_counts(request) if request.method == 'POST' else saved.get('counts')
     if not counts:
         counts = _default_ai_counts()
-    kahoot_title = extra.get('kahoot_title', '')
-    if not kahoot_title:
-        kahoot_title = request.session.get('kahoot_pending_title', '')
+    shoot_title = extra.get('shoot_title', '')
+    if not shoot_title:
+        shoot_title = request.session.get('shoot_pending_title', '')
     topic = extra.get('topic')
     if topic is None:
         topic = request.POST.get('topic', '').strip() if request.method == 'POST' else saved.get('topic', '')
@@ -1052,7 +1052,7 @@ def _ai_form_context(request, **extra):
     return {
         'topic': topic or '',
         'description': description or '',
-        'kahoot_title': kahoot_title,
+        'shoot_title': shoot_title,
         'counts': counts,
         'ai_configured': stepfun_configured(),
         'max_total': MAX_TOTAL_QUESTIONS,
@@ -1068,35 +1068,35 @@ def _preview_labels_from(questions):
     ]
 
 
-def kahoot_ai(request):
+def shoot_ai(request):
     teacher, redirect_resp = require_teacher_or_redirect(request)
     if redirect_resp:
         return redirect_resp
 
-    preview = request.session.get('ai_kahoot_preview')
-    kahoot_title = request.session.get('kahoot_pending_title', '')
+    preview = request.session.get('ai_shoot_preview')
+    shoot_title = request.session.get('shoot_pending_title', '')
 
     if request.method == 'POST' and request.POST.get('action') == 'save':
         if not preview:
             messages.error(request, _('没有待保存的题目，请重新生成'))
-            return render(request, 'game/kahoot_ai.html', _ai_form_context(
-                request, kahoot_title=kahoot_title,
+            return render(request, 'game/shoot_ai.html', _ai_form_context(
+                request, shoot_title=shoot_title,
             ))
 
         title = (
-            request.session.get('kahoot_pending_title', '').strip()
-            or request.POST.get('kahoot_title', '').strip()
-            or kahoot_title
+            request.session.get('shoot_pending_title', '').strip()
+            or request.POST.get('shoot_title', '').strip()
+            or shoot_title
         )
         if not title:
             messages.error(request, _('缺少套题名称，请返回新建页重新设定名称'))
-            return render(request, 'game/kahoot_ai.html', _ai_form_context(
-                request, kahoot_title=kahoot_title, preview=_preview_labels_from(preview),
+            return render(request, 'game/shoot_ai.html', _ai_form_context(
+                request, shoot_title=shoot_title, preview=_preview_labels_from(preview),
             ))
 
         quiz_set = create_quiz_set_from_ai_data(title, preview, teacher)
-        request.session.pop('ai_kahoot_preview', None)
-        request.session.pop('kahoot_pending_title', None)
+        request.session.pop('ai_shoot_preview', None)
+        request.session.pop('shoot_pending_title', None)
         messages.success(
             request,
             _('已保存 %(count)s 道题到「%(title)s」，可在可视化编辑器中审核修改') % {
@@ -1104,7 +1104,7 @@ def kahoot_ai(request):
                 'title': quiz_set.title,
             },
         )
-        return redirect('kahoot_editor', pk=quiz_set.pk)
+        return redirect('shoot_editor', pk=quiz_set.pk)
 
     if request.method == 'POST':
         topic = request.POST.get('topic', '').strip()
@@ -1114,59 +1114,59 @@ def kahoot_ai(request):
 
         if not topic:
             messages.error(request, _('请填写主题/方向'))
-            return render(request, 'game/kahoot_ai.html', _ai_form_context(
+            return render(request, 'game/shoot_ai.html', _ai_form_context(
                 request, counts=counts,
             ))
         if total == 0:
             messages.error(request, _('请至少指定 1 道题'))
-            return render(request, 'game/kahoot_ai.html', _ai_form_context(
+            return render(request, 'game/shoot_ai.html', _ai_form_context(
                 request, counts=counts,
             ))
         if total > MAX_TOTAL_QUESTIONS:
             messages.error(request, _('题目总数不能超过 %(max)s 道') % {'max': MAX_TOTAL_QUESTIONS})
-            return render(request, 'game/kahoot_ai.html', _ai_form_context(
+            return render(request, 'game/shoot_ai.html', _ai_form_context(
                 request, counts=counts,
             ))
 
         try:
-            questions = generate_kahoot_questions(topic, description, counts)
-        except AIKahootError as e:
+            questions = generate_shoot_questions(topic, description, counts)
+        except AIShootError as e:
             messages.error(request, str(e))
-            return render(request, 'game/kahoot_ai.html', _ai_form_context(
+            return render(request, 'game/shoot_ai.html', _ai_form_context(
                 request, counts=counts,
             ))
 
-        posted_title = request.POST.get('kahoot_title', '').strip()
+        posted_title = request.POST.get('shoot_title', '').strip()
         if posted_title:
-            request.session['kahoot_pending_title'] = posted_title
-            kahoot_title = posted_title
+            request.session['shoot_pending_title'] = posted_title
+            shoot_title = posted_title
 
-        request.session['ai_kahoot_preview'] = questions
-        request.session['ai_kahoot_form'] = {
+        request.session['ai_shoot_preview'] = questions
+        request.session['ai_shoot_form'] = {
             'topic': topic,
             'description': description,
             'counts': counts,
         }
         messages.success(request, _('已生成 %(count)s 道题目，请预览后保存并进入编辑') % {'count': len(questions)})
-        return redirect('kahoot_ai')
+        return redirect('shoot_ai')
 
     preview_labels = _preview_labels_from(preview) if preview else None
 
-    return render(request, 'game/kahoot_ai.html', _ai_form_context(
+    return render(request, 'game/shoot_ai.html', _ai_form_context(
         request,
         preview=preview_labels,
-        kahoot_title=kahoot_title,
+        shoot_title=shoot_title,
     ))
 
 
-def kahoot_ai_discard(request):
+def shoot_ai_discard(request):
     teacher, redirect_resp = require_teacher_or_redirect(request)
     if redirect_resp:
         return redirect_resp
     if request.method == 'POST':
-        request.session.pop('ai_kahoot_preview', None)
+        request.session.pop('ai_shoot_preview', None)
         messages.info(request, _('已放弃本次 AI 生成结果'))
-    return redirect('kahoot_ai')
+    return redirect('shoot_ai')
 
 
 def room_create(request):
@@ -1187,7 +1187,7 @@ def room_create(request):
         }
 
         if not quiz_set_id:
-            messages.error(request, _('请选择一套 Kahoot 题目'))
+            messages.error(request, _('请选择一套 Shoot 题目'))
             return render(request, 'game/room_create.html', form_ctx)
 
         quiz_set = get_object_or_404(QuizSet, pk=quiz_set_id)
@@ -1243,13 +1243,26 @@ def room_state_api(request, room_code):
 
 
 def room_analytics_data(request, pk):
-    teacher, err_resp = require_teacher_api(request)
-    if err_resp:
-        return err_resp
     room = get_object_or_404(Room, pk=pk)
-    if not can_host_room(teacher, room):
+    teacher = get_current_teacher(request)
+    player_ok = (
+        request.session.get('room_code') == room.code
+        and bool(request.session.get('nickname'))
+    )
+    if teacher and can_host_room(teacher, room):
+        pass
+    elif player_ok:
+        pass
+    elif teacher is None and not player_ok:
+        return JsonResponse({'error': _('请先登录老师账号')}, status=401)
+    else:
         return JsonResponse({'error': _('无权查看该房间分析数据')}, status=403)
-    data = get_room_analytics_data(room)
+    try:
+        data = get_room_analytics_data(room)
+    except Exception:
+        logger = __import__('logging').getLogger(__name__)
+        logger.exception('Analytics failed for room %s', room.code)
+        return JsonResponse({'error': _('数据分析生成失败，请稍后重试')}, status=500)
     return JsonResponse(data)
 
 
@@ -1261,9 +1274,13 @@ def room_analytics_page(request, pk):
     if not can_host_room(teacher, room):
         messages.error(request, _('无权查看该房间分析数据'))
         return redirect('teacher_dashboard')
-    data = get_room_analytics_data(room)
+    try:
+        data = get_room_analytics_data(room)
+    except Exception:
+        messages.error(request, _('数据分析生成失败，请稍后重试'))
+        return redirect('teacher_dashboard')
     return render(request, 'game/room_analytics.html', {
         'room': room,
-        'analytics_json': json.dumps(data, ensure_ascii=False),
+        'analytics_json': json.dumps(data, ensure_ascii=False, allow_nan=False),
     })
 

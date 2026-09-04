@@ -1,4 +1,4 @@
-# English translations for Kahoot
+# English translations for Shoot
 msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
@@ -112,8 +112,8 @@ msgstr "Please enter quiz set title."
 msgid "已创建「%(title)s」，请编辑第一道题"
 msgstr "Created \"%(title)s\", please edit the first question."
 
-msgid "请填写 Kahoot 名称"
-msgstr "Please enter Kahoot title."
+msgid "请填写 Shoot 名称"
+msgstr "Please enter Shoot title."
 
 msgid "请选择要上传的 Excel 文件"
 msgstr "Please select an Excel file to upload."
@@ -181,8 +181,8 @@ msgstr "Generated %(count)s questions, please preview and save."
 msgid "已放弃本次 AI 生成结果"
 msgstr "Discarded AI generation results."
 
-msgid "请选择一套 Kahoot 题目"
-msgstr "Please select a Kahoot quiz set."
+msgid "请选择一套 Shoot 题目"
+msgstr "Please select a Shoot quiz set."
 
 msgid "所选套题无效或无权使用"
 msgstr "Selected quiz set is invalid or unauthorized."
@@ -199,8 +199,8 @@ msgstr "Room does not exist."
 msgid "无权查看该房间分析数据"
 msgstr "You do not have permission to view analytics for this room."
 
-msgid "Kahoot - every question. every answer."
-msgstr "Kahoot - every question. every answer."
+msgid "Shoot - every question. every answer."
+msgstr "Shoot - every question. every answer."
 
 msgid "房间号 / 练习码"
 msgstr "PIN / Practice code"
@@ -241,14 +241,14 @@ msgstr "No account? Register with invite code →"
 msgid "← <strong>返回学生加入</strong>"
 msgstr "← <strong>Back to Student Join</strong>"
 
-msgid "AI 生成 Kahoot - Kahoot"
-msgstr "AI Kahoot Generator - Kahoot"
+msgid "AI 生成 Shoot - Shoot"
+msgstr "AI Shoot Generator - Shoot"
 
-msgid "返回新建 Kahoot"
-msgstr "Back to New Kahoot"
+msgid "返回新建 Shoot"
+msgstr "Back to New Shoot"
 
-msgid "AI 智能生成 Kahoot"
-msgstr "AI Kahoot Generator"
+msgid "AI 智能生成 Shoot"
+msgstr "AI Shoot Generator"
 
 msgid ""
 "未检测到 <code>STEPFUN_API_KEY</code>。请在阶跃星辰开放平台创建 API Key 后设"
@@ -274,13 +274,13 @@ msgstr "Set in wizard, will be used upon saving"
 
 #, fuzzy, python-format
 #| msgid ""
-#| "未检测到套题名称，请 <a href=\"/teacher/kahoot/new/\">返回新建页</a> 先命"
+#| "未检测到套题名称，请 <a href=\"/teacher/shoot/new/\">返回新建页</a> 先命"
 #| "名题库再选择 AI 生成。"
 msgid ""
 "未检测到套题名称，请 <a href=\"%(new_url)s\">返回新建页</a> 先命名题库再选择 "
 "AI 生成。"
 msgstr ""
-"Quiz title missing. Please <a href=\"/teacher/kahoot/new/\">return to "
+"Quiz title missing. Please <a href=\"/teacher/shoot/new/\">return to "
 "wizard</a> to name your quiz first."
 
 msgid "主题 / 方向"
@@ -355,10 +355,10 @@ msgstr "AI is Generating Questions"
 msgid "通常需要 30 秒～2 分钟，请勿关闭或刷新页面"
 msgstr "Usually takes 30s to 2min, please do not close or refresh the page"
 
-msgid "删除套题 - Kahoot"
-msgstr "Delete Quiz Set - Kahoot"
+msgid "删除套题 - Shoot"
+msgstr "Delete Quiz Set - Shoot"
 
-msgid "确认删除整套 Kahoot？"
+msgid "确认删除整套 Shoot？"
 msgstr "Confirm Deleting Quiz Set?"
 
 #, python-format
@@ -375,11 +375,11 @@ msgid "取消"
 msgstr "Cancel"
 
 #, python-format
-msgid "编辑 %(title)s - Kahoot Studio"
-msgstr "Edit %(title)s - Kahoot Studio"
+msgid "编辑 %(title)s - Shoot Studio"
+msgstr "Edit %(title)s - Shoot Studio"
 
-msgid "Kahoot 名称"
-msgstr "Kahoot Title"
+msgid "Shoot 名称"
+msgstr "Shoot Title"
 
 msgid "已快速保存"
 msgstr "Auto-saved"
@@ -476,14 +476,14 @@ msgstr "When public, other teachers can discover and clone this quiz set."
 msgid "确认离开"
 msgstr "Confirm & Exit"
 
-msgid "Excel 导入题库 - Kahoot"
-msgstr "Excel Quiz Import - Kahoot"
+msgid "Excel 导入题库 - Shoot"
+msgstr "Excel Quiz Import - Shoot"
 
 msgid "Excel 导入题库"
 msgstr "Excel Quiz Import"
 
-msgid "按严格表头格式上传，一键生成整套 Kahoot"
-msgstr "Upload standard spreadsheet to generate a full Kahoot quiz set."
+msgid "按严格表头格式上传，一键生成整套 Shoot"
+msgstr "Upload standard spreadsheet to generate a full Shoot quiz set."
 
 msgid "下载模板 .xlsx"
 msgstr "Download Template .xlsx"
@@ -655,11 +655,11 @@ msgstr "Select from Public Bank"
 msgid "浏览其他老师公开的精选套题，一键选用或二次编辑修改。"
 msgstr "Browse public quiz sets from other teachers, clone to your library, or edit."
 
-msgid "布置练习 - Kahoot"
-msgstr "Assign Practice - Kahoot"
+msgid "布置练习 - Shoot"
+msgstr "Assign Practice - Shoot"
 
-msgid "公共题库 - Kahoot"
-msgstr "Public Question Bank - Kahoot"
+msgid "公共题库 - Shoot"
+msgstr "Public Question Bank - Shoot"
 
 msgid "布置练习"
 msgstr "Assign practice"
@@ -878,8 +878,8 @@ msgstr "Practice complete"
 msgid "本题库练习排行"
 msgstr "Practice leaderboard"
 
-msgid "删除题目 - Kahoot"
-msgstr "Delete Question - Kahoot"
+msgid "删除题目 - Shoot"
+msgstr "Delete Question - Shoot"
 
 msgid "确认删除题目？"
 msgstr "Confirm Deleting Question?"
@@ -1076,8 +1076,8 @@ msgstr "Create & Launch Room"
 msgid "当前暂无任何可用测验套题"
 msgstr "No quiz sets available currently."
 
-msgid "+ 立即新建第一套 Kahoot"
-msgstr "+ Create First Kahoot Now"
+msgid "+ 立即新建第一套 Shoot"
+msgstr "+ Create First Shoot Now"
 
 msgid "主持游戏"
 msgstr "Host Quiz"
@@ -1166,8 +1166,8 @@ msgstr ""
 msgid "+ 发起新房间"
 msgstr "+ Launch Room"
 
-msgid "新建 Kahoot / 我的题库"
-msgstr "Create Kahoot / My Question Bank"
+msgid "新建 Shoot / 我的题库"
+msgstr "Create Shoot / My Question Bank"
 
 msgid ""
 "支持手动编排或使用 AI 智能批量出题，自由配置单选、多选、判断与配图题型。"
@@ -1175,8 +1175,8 @@ msgstr ""
 "Create questions manually or generate them in bulk with AI, configuring "
 "single choice, multi choice, true/false, and image prompts."
 
-msgid "+ 新建 Kahoot"
-msgstr "+ New Kahoot"
+msgid "+ 新建 Shoot"
+msgstr "+ New Shoot"
 
 #, python-format
 msgid "管理我的题库 (%(count)s)"
@@ -1236,8 +1236,8 @@ msgstr "Save"
 msgid "保存设置"
 msgstr "Save Settings"
 
-msgid "老师注册 - Kahoot Studio"
-msgstr "Teacher Registration - Kahoot Studio"
+msgid "老师注册 - Shoot Studio"
+msgstr "Teacher Registration - Shoot Studio"
 
 msgid "邀请码"
 msgstr "Invite Code"

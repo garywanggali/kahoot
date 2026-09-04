@@ -1,5 +1,5 @@
 (function () {
-    const STORAGE_KEY = 'kahoot_bgm';
+    const STORAGE_KEY = 'shoot_bgm';
     const audio = document.getElementById('global-bgm');
     if (!audio) return;
 

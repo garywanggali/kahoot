@@ -38,7 +38,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'kahoot_project.urls'
+ROOT_URLCONF = 'shoot_project.urls'
 
 TEMPLATES = [
     {
@@ -56,8 +56,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'kahoot_project.wsgi.application'
-ASGI_APPLICATION = 'kahoot_project.asgi.application'
+WSGI_APPLICATION = 'shoot_project.wsgi.application'
+ASGI_APPLICATION = 'shoot_project.asgi.application'
 
 DATABASES = {
     'default': {

@@ -111,7 +111,7 @@ class FullProductFeatureQA(TestCase):
         dash = self.client.get(reverse('teacher_dashboard'))
         self.assertContains(dash, '发起新房间')
         self.assertContains(dash, '布置练习')
-        self.assertContains(dash, '新建 Kahoot')
+        self.assertContains(dash, '新建 Shoot')
         self.assertContains(dash, '管理我的题库')
         self.assertContains(dash, 'btn-open-settings')
 
@@ -150,31 +150,31 @@ class FullProductFeatureQA(TestCase):
             'password_confirm': 'secret123',
         })
 
-        wizard = self.client.get(reverse('kahoot_new'))
+        wizard = self.client.get(reverse('shoot_new'))
         self.assertContains(wizard, '从公共题库选用')
         self.assertContains(wizard, '手动')
         self.assertContains(wizard, 'Excel')
 
-        public_action = self.client.post(reverse('kahoot_start'), {
+        public_action = self.client.post(reverse('shoot_start'), {
             'title': '可忽略',
             'action': 'public',
         })
-        self.assertEqual(public_action.url, reverse('kahoot_public_list'))
+        self.assertEqual(public_action.url, reverse('shoot_public_list'))
 
-        created = self.client.post(reverse('kahoot_start'), {
+        created = self.client.post(reverse('shoot_start'), {
             'title': 'QA公开地理',
             'action': 'manual',
         })
         self.assertEqual(created.status_code, 302)
         quiz = QuizSet.objects.get(title='QA公开地理')
-        self.assertEqual(created.url, reverse('kahoot_editor', args=[quiz.pk]))
+        self.assertEqual(created.url, reverse('shoot_editor', args=[quiz.pk]))
 
-        editor = self.client.get(reverse('kahoot_editor', args=[quiz.pk]))
+        editor = self.client.get(reverse('shoot_editor', args=[quiz.pk]))
         self.assertEqual(editor.status_code, 200)
 
-        add = self.client.post(reverse('kahoot_question_add', args=[quiz.pk]))
+        add = self.client.post(reverse('shoot_question_add', args=[quiz.pk]))
         qid = add.json()['question']['id']
-        save = self.client.post(reverse('kahoot_question_save', args=[quiz.pk]), {
+        save = self.client.post(reverse('shoot_question_save', args=[quiz.pk]), {
             'question_id': qid,
             'question_type': 'single',
             'text': '中国的首都是？',
@@ -188,9 +188,9 @@ class FullProductFeatureQA(TestCase):
         self.assertEqual(save.status_code, 200)
         self.assertEqual(save.json()['question']['text'], '中国的首都是？')
 
-        add2 = self.client.post(reverse('kahoot_question_add', args=[quiz.pk]))
+        add2 = self.client.post(reverse('shoot_question_add', args=[quiz.pk]))
         qid2 = add2.json()['question']['id']
-        save2 = self.client.post(reverse('kahoot_question_save', args=[quiz.pk]), {
+        save2 = self.client.post(reverse('shoot_question_save', args=[quiz.pk]), {
             'question_id': qid2,
             'question_type': 'judgment',
             'text': '赤道穿过非洲。',
@@ -201,9 +201,9 @@ class FullProductFeatureQA(TestCase):
         })
         self.assertEqual(save2.status_code, 200)
 
-        add3 = self.client.post(reverse('kahoot_question_add', args=[quiz.pk]))
+        add3 = self.client.post(reverse('shoot_question_add', args=[quiz.pk]))
         qid3 = add3.json()['question']['id']
-        save3 = self.client.post(reverse('kahoot_question_save', args=[quiz.pk]), {
+        save3 = self.client.post(reverse('shoot_question_save', args=[quiz.pk]), {
             'question_id': qid3,
             'question_type': 'multiple',
             'text': '哪些是直辖市？',
@@ -218,9 +218,9 @@ class FullProductFeatureQA(TestCase):
         self.assertEqual(Question.objects.get(pk=qid3).question_type, Question.TYPE_MULTIPLE)
         self.assertTrue(Question.objects.get(pk=qid3).is_multiple_choice_correct('A,B,D'))
 
-        add4 = self.client.post(reverse('kahoot_question_add', args=[quiz.pk]))
+        add4 = self.client.post(reverse('shoot_question_add', args=[quiz.pk]))
         qid4 = add4.json()['question']['id']
-        save4 = self.client.post(reverse('kahoot_question_save', args=[quiz.pk]), {
+        save4 = self.client.post(reverse('shoot_question_save', args=[quiz.pk]), {
             'question_id': qid4,
             'question_type': 'short_answer',
             'text': '中国的首都叫什么？',
@@ -230,9 +230,9 @@ class FullProductFeatureQA(TestCase):
         self.assertEqual(save4.status_code, 200)
         self.assertTrue(Question.objects.get(pk=qid4).is_text_answer_correct('beijing'))
 
-        add5 = self.client.post(reverse('kahoot_question_add', args=[quiz.pk]))
+        add5 = self.client.post(reverse('shoot_question_add', args=[quiz.pk]))
         qid5 = add5.json()['question']['id']
-        save5 = self.client.post(reverse('kahoot_question_save', args=[quiz.pk]), {
+        save5 = self.client.post(reverse('shoot_question_save', args=[quiz.pk]), {
             'question_id': qid5,
             'question_type': 'word_cloud',
             'text': '用一个词形容中国',
@@ -241,7 +241,7 @@ class FullProductFeatureQA(TestCase):
         self.assertEqual(save5.status_code, 200)
         self.assertEqual(Question.objects.get(pk=qid5).question_type, Question.TYPE_WORD_CLOUD)
 
-        meta = self.client.post(reverse('kahoot_editor_meta', args=[quiz.pk]), {
+        meta = self.client.post(reverse('shoot_editor_meta', args=[quiz.pk]), {
             'title': 'QA公开地理',
             'is_public': '1',
         })
@@ -253,7 +253,7 @@ class FullProductFeatureQA(TestCase):
         self.assertEqual(len(code), 6)
         self.assertTrue(code.isalpha())
 
-        market = self.client.get(reverse('kahoot_public_list'))
+        market = self.client.get(reverse('shoot_public_list'))
         self.assertContains(market, 'QA公开地理')
         self.assertContains(market, code)
         self.assertContains(market, '复制发给学生')
@@ -266,7 +266,7 @@ class FullProductFeatureQA(TestCase):
         self.assertNotContains(assign, '复制到我的题库')
 
         preview = self.client.get(
-            reverse('kahoot_public_preview', args=[quiz.pk]),
+            reverse('shoot_public_preview', args=[quiz.pk]),
             {'from': 'assign'},
         )
         self.assertContains(preview, '中国的首都是？')
@@ -304,7 +304,7 @@ class FullProductFeatureQA(TestCase):
             'password_confirm': 'secret123',
         })
 
-        clone = self.client.post(reverse('kahoot_public_clone', args=[source.pk]), {
+        clone = self.client.post(reverse('shoot_public_clone', args=[source.pk]), {
             'title': '可克隆套题（副本）',
         })
         self.assertEqual(clone.status_code, 302)
@@ -319,7 +319,7 @@ class FullProductFeatureQA(TestCase):
         empty_post = self.client.post(reverse('room_create'), {'name': '空房'})
         self.assertEqual(empty_post.status_code, 200)
         self.assertFalse(Room.objects.filter(name='空房').exists())
-        self.assertContains(empty_post, '请选择一套 Kahoot 题目')
+        self.assertContains(empty_post, '请选择一套 Shoot 题目')
         self.assertContains(empty_post, 'join-inline-error')
 
         launched = self.client.post(reverse('room_create'), {
@@ -486,7 +486,7 @@ class FullProductFeatureQA(TestCase):
         session['teacher_id'] = teacher.pk
         session.save()
 
-        template = self.client.get(reverse('kahoot_import_template'))
+        template = self.client.get(reverse('shoot_import_template'))
         self.assertEqual(template.status_code, 200)
         self.assertIn('spreadsheet', template['Content-Type'])
 
@@ -494,23 +494,23 @@ class FullProductFeatureQA(TestCase):
         imported = import_quiz_set_from_xlsx(teacher, 'Excel QA 套题', xlsx)
         self.assertGreaterEqual(imported.question_count(), 3)
 
-        import_page = self.client.get(reverse('kahoot_import'))
+        import_page = self.client.get(reverse('shoot_import'))
         self.assertEqual(import_page.status_code, 200)
 
-        ai_page = self.client.get(reverse('kahoot_ai'))
+        ai_page = self.client.get(reverse('shoot_ai'))
         self.assertEqual(ai_page.status_code, 200)
         self.assertIn('data-turbo="false"', ai_page.content.decode())
 
         out = StringIO()
         call_command('seed_public_quizzes', stdout=out)
-        seeded = QuizSet.objects.filter(is_public=True, teacher__username='kahoot_market')
+        seeded = QuizSet.objects.filter(is_public=True, teacher__username='shoot_market')
         self.assertGreaterEqual(seeded.count(), 6)
         self.assertTrue(seeded.exclude(practice_code='').exclude(practice_code__isnull=True).exists())
-        market = self.client.get(reverse('kahoot_public_list'))
+        market = self.client.get(reverse('shoot_public_list'))
         self.assertContains(market, '世界地理入门')
         self.assertContains(market, '课堂暖场词云')
 
-        delete = self.client.post(reverse('kahoot_delete', args=[imported.pk]))
+        delete = self.client.post(reverse('shoot_delete', args=[imported.pk]))
         self.assertEqual(delete.status_code, 302)
         self.assertFalse(QuizSet.objects.filter(pk=imported.pk).exists())
 
@@ -519,8 +519,8 @@ class FullProductFeatureQA(TestCase):
         anon = self.client_class()
         self.assertEqual(anon.get(reverse('teacher_dashboard')).status_code, 302)
         self.assertEqual(anon.get(reverse('practice_assign')).status_code, 302)
-        self.assertEqual(anon.get(reverse('kahoot_public_list')).status_code, 302)
+        self.assertEqual(anon.get(reverse('shoot_public_list')).status_code, 302)
         self.assertEqual(anon.get(reverse('room_create')).status_code, 302)
-        self.assertEqual(anon.get(reverse('kahoot_new')).status_code, 302)
+        self.assertEqual(anon.get(reverse('shoot_new')).status_code, 302)
         self.assertEqual(anon.get(reverse('question_list')).status_code, 302)
         self.assertEqual(anon.get(reverse('practice_play', args=['ABCDEF'])).status_code, 302)

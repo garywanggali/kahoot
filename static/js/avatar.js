@@ -1,5 +1,5 @@
 /**
- * Kahoot-inspired Modular Avatar System (Industrial Craft Edition)
+ * Shoot-inspired Modular Avatar System (Industrial Craft Edition)
  * Currently supports: Face (expressions) & Hair (hairstyles)
  */
 (function (global) {
@@ -1274,7 +1274,7 @@
 
         const width = size;
         const height = size;
-        const className = options.className || 'kahoot-avatar-svg';
+        const className = options.className || 'shoot-avatar-svg';
 
         return `
             <svg class="${className}" width="${width}" height="${height}" viewBox="-8 -14 116 128" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="头像" style="overflow: visible; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.12));">

@@ -3,21 +3,21 @@
 
 {% block body_attrs %}data-turbo="false"{% endblock %}
 
-{% block title %}{% blocktranslate with title=quiz_set.title %}编辑 {{ title }} - Kahoot Studio{% endblocktranslate %}{% endblock %}
+{% block title %}{% blocktranslate with title=quiz_set.title %}编辑 {{ title }} - Shoot Studio{% endblocktranslate %}{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/kahoot_editor.css' %}?v=22">
+<link rel="stylesheet" href="{% static 'css/shoot_editor.css' %}?v=22">
 {% endblock %}
 
 {% block content %}
-<div class="kahoot-editor-app" id="kahoot-editor"
+<div class="shoot-editor-app" id="shoot-editor"
      data-quiz-id="{{ quiz_set.pk }}"
      data-dashboard-url="{% url 'question_list' %}">
     {% csrf_token %}
-    <header class="kahoot-editor-topbar">
-        <div class="kahoot-editor-topbar-left">
-            <input type="text" id="quiz-title-input" class="kahoot-editor-title-input"
-                   value="{{ quiz_set.title }}" maxlength="200" placeholder="{% trans 'Kahoot 名称' %}">
+    <header class="shoot-editor-topbar">
+        <div class="shoot-editor-topbar-left">
+            <input type="text" id="quiz-title-input" class="shoot-editor-title-input"
+                   value="{{ quiz_set.title }}" maxlength="200" placeholder="{% trans 'Shoot 名称' %}">
         </div>
         
         <!-- 顶部绿色极速保存通知条 -->
@@ -29,30 +29,30 @@
         </div>
 
         <!-- 右侧并列：保存键 + 退出键 -->
-        <div class="kahoot-editor-topbar-right">
+        <div class="shoot-editor-topbar-right">
             <button type="button" class="btn btn-outline" id="btn-save-quiz">{% trans "保存" %}</button>
             <button type="button" class="btn btn-primary" id="btn-exit-quiz">{% trans "离开" %}</button>
         </div>
     </header>
 
-    <div class="kahoot-editor-body">
-        <aside class="kahoot-editor-sidebar">
-            <div class="kahoot-editor-sidebar-head">
+    <div class="shoot-editor-body">
+        <aside class="shoot-editor-sidebar">
+            <div class="shoot-editor-sidebar-head">
                 <span>{% trans "题目" %}</span>
                 <button type="button" class="btn btn-primary btn-sm" id="btn-add-question">{% trans "+ 添加" %}</button>
             </div>
-            <ul class="kahoot-editor-q-list" id="question-list"></ul>
+            <ul class="shoot-editor-q-list" id="question-list"></ul>
         </aside>
 
-        <main class="kahoot-editor-stage">
-            <div class="kahoot-editor-preview" id="editor-preview">
+        <main class="shoot-editor-stage">
+            <div class="shoot-editor-preview" id="editor-preview">
                 <p class="question-number" id="preview-number"></p>
-                <div class="timer-bar kahoot-editor-timer"><div class="timer-fill"></div></div>
+                <div class="timer-bar shoot-editor-timer"><div class="timer-fill"></div></div>
 
                 <!-- 配图区域 -->
-                <div class="kahoot-editor-media" id="media-zone">
-                    <img id="preview-image" class="kahoot-editor-preview-img hidden" alt="">
-                    <div id="media-placeholder" class="kahoot-editor-media-placeholder">
+                <div class="shoot-editor-media" id="media-zone">
+                    <img id="preview-image" class="shoot-editor-preview-img hidden" alt="">
+                    <div id="media-placeholder" class="shoot-editor-media-placeholder">
                         <span>+</span>
                         <p id="media-placeholder-text">{% trans "点击上传题目图片（可选）" %}</p>
                     </div>
@@ -61,52 +61,52 @@
                 </div>
 
                 <!-- 题干输入框 -->
-                <textarea id="field-text" class="kahoot-editor-stem-input" rows="2"
+                <textarea id="field-text" class="shoot-editor-stem-input" rows="2"
                           placeholder="{% trans '输入题干…' %}" maxlength="500"></textarea>
 
                 <!-- ABCD 选项区 -->
-                <div id="options-panel" class="kahoot-editor-options">
-                    <div class="kahoot-editor-option option-a" data-key="A">
-                        <span class="kahoot-editor-option-icon">▲</span>
-                        <input type="text" class="kahoot-editor-option-input" id="field-option-a" placeholder="{% trans '选项 A' %}" maxlength="200">
-                        <button type="button" class="kahoot-editor-mark-correct" data-key="A" title="{% trans '标为正确答案' %}">✓</button>
+                <div id="options-panel" class="shoot-editor-options">
+                    <div class="shoot-editor-option option-a" data-key="A">
+                        <span class="shoot-editor-option-icon">▲</span>
+                        <input type="text" class="shoot-editor-option-input" id="field-option-a" placeholder="{% trans '选项 A' %}" maxlength="200">
+                        <button type="button" class="shoot-editor-mark-correct" data-key="A" title="{% trans '标为正确答案' %}">✓</button>
                     </div>
-                    <div class="kahoot-editor-option option-b" data-key="B">
-                        <span class="kahoot-editor-option-icon">◆</span>
-                        <input type="text" class="kahoot-editor-option-input" id="field-option-b" placeholder="{% trans '选项 B' %}" maxlength="200">
-                        <button type="button" class="kahoot-editor-mark-correct" data-key="B" title="{% trans '标为正确答案' %}">✓</button>
+                    <div class="shoot-editor-option option-b" data-key="B">
+                        <span class="shoot-editor-option-icon">◆</span>
+                        <input type="text" class="shoot-editor-option-input" id="field-option-b" placeholder="{% trans '选项 B' %}" maxlength="200">
+                        <button type="button" class="shoot-editor-mark-correct" data-key="B" title="{% trans '标为正确答案' %}">✓</button>
                     </div>
-                    <div class="kahoot-editor-option option-c" data-key="C">
-                        <span class="kahoot-editor-option-icon">●</span>
-                        <input type="text" class="kahoot-editor-option-input" id="field-option-c" placeholder="{% trans '选项 C' %}" maxlength="200">
-                        <button type="button" class="kahoot-editor-mark-correct" data-key="C" title="{% trans '标为正确答案' %}">✓</button>
+                    <div class="shoot-editor-option option-c" data-key="C">
+                        <span class="shoot-editor-option-icon">●</span>
+                        <input type="text" class="shoot-editor-option-input" id="field-option-c" placeholder="{% trans '选项 C' %}" maxlength="200">
+                        <button type="button" class="shoot-editor-mark-correct" data-key="C" title="{% trans '标为正确答案' %}">✓</button>
                     </div>
-                    <div class="kahoot-editor-option option-d" data-key="D">
-                        <span class="kahoot-editor-option-icon">■</span>
-                        <input type="text" class="kahoot-editor-option-input" id="field-option-d" placeholder="{% trans '选项 D' %}" maxlength="200">
-                        <button type="button" class="kahoot-editor-mark-correct" data-key="D" title="{% trans '标为正确答案' %}">✓</button>
+                    <div class="shoot-editor-option option-d" data-key="D">
+                        <span class="shoot-editor-option-icon">■</span>
+                        <input type="text" class="shoot-editor-option-input" id="field-option-d" placeholder="{% trans '选项 D' %}" maxlength="200">
+                        <button type="button" class="shoot-editor-mark-correct" data-key="D" title="{% trans '标为正确答案' %}">✓</button>
                     </div>
                 </div>
 
-                <div id="short-panel" class="kahoot-editor-short hidden">
+                <div id="short-panel" class="shoot-editor-short hidden">
                     <label>{% trans "参考答案（多个用 | 分隔）" %}</label>
                     <input type="text" id="field-short-correct" class="form-control" maxlength="200">
                 </div>
 
-                <div id="wordcloud-panel" class="kahoot-editor-hint hidden">
+                <div id="wordcloud-panel" class="shoot-editor-hint hidden">
                     <p>{% trans "词云题：学生提交文字后实时汇总，无标准答案。" %}</p>
                 </div>
 
-                <div id="explanation-panel" class="kahoot-editor-hint hidden">
+                <div id="explanation-panel" class="shoot-editor-hint hidden">
                     <p>{% trans "解释：只上传一张图片，上课铺满大屏供老师讲解，不限时；讲完后老师点下一题。学生端不显示、无需作答。" %}</p>
                 </div>
 
-                <p class="kahoot-editor-save-hint" id="save-status"></p>
+                <p class="shoot-editor-save-hint" id="save-status"></p>
             </div>
         </main>
 
-        <aside class="kahoot-editor-props">
-            <h3 class="kahoot-editor-props-title">{% trans "题目设置" %}</h3>
+        <aside class="shoot-editor-props">
+            <h3 class="shoot-editor-props-title">{% trans "题目设置" %}</h3>
             <div class="form-group">
                 <label for="field-type">{% trans "题型" %}</label>
                 <select id="field-type" class="form-control">
@@ -132,7 +132,7 @@
                 </select>
             </div>
             <p class="form-hint" id="type-hint">{% trans "单选：点击 ✓ 标记唯一正确答案" %}</p>
-            <div class="kahoot-editor-props-actions">
+            <div class="shoot-editor-props-actions">
                 <button type="button" class="btn btn-primary btn-block" id="btn-save-question">{% trans "保存本题" %}</button>
                 <button type="button" class="btn btn-outline btn-block" id="btn-delete-question">{% trans "删除本题" %}</button>
             </div>
@@ -179,5 +179,5 @@
 const INITIAL_QUESTIONS = {{ questions_json|safe }};
 const MAX_IMAGE_MB = {{ max_image_mb }};
 </script>
-<script src="{% static 'js/kahoot_editor.js' %}?v=24"></script>
+<script src="{% static 'js/shoot_editor.js' %}?v=24"></script>
 {% endblock %}

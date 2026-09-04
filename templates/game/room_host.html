@@ -3,7 +3,7 @@
 
 {% block body_attrs %}data-turbo="false"{% endblock %}
 
-{% block title %}{% trans "主持游戏" %} - {{ room.code }} - Kahoot Studio{% endblock %}
+{% block title %}{% trans "主持游戏" %} - {{ room.code }} - Shoot Studio{% endblock %}
 
 {% block global_topbar %}{% endblock %}
 
@@ -247,7 +247,7 @@
 {% block extra_js %}
 <script src="{% static 'js/awards.js' %}?v=6"></script>
 <script src="{% static 'js/wordcloud.js' %}?v=5"></script>
-<script src="{% static 'js/analytics.js' %}?v=5"></script>
+<script src="{% static 'js/analytics.js' %}?v=6"></script>
 <script src="{% static 'js/question_countdown.js' %}?v=3"></script>
 <script>
 function _t(key, ...args) {
@@ -517,7 +517,7 @@ function showHostQuestion(state) {
     if (currentHostQuestionId === q.id) return;
     currentHostQuestionId = q.id;
 
-    const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+    const isEn = window.ShootI18n ? window.ShootI18n.isEn() : false;
     const typeLabel = _t('qtype.' + q.question_type);
     const qNumText = isEn
         ? `${typeLabel} Question ${state.current_question_index + 1} of ${state.total_questions}`
@@ -655,7 +655,7 @@ function renderWaitingLobbyPlayers(leaderboard) {
 function renderQuestionReveal(state) {
     const q = state.question || {};
     const reveal = q.reveal || {};
-    const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+    const isEn = window.ShootI18n ? window.ShootI18n.isEn() : false;
     const typeLabel = _t('qtype.label.' + (q.question_type || 'single'));
     const isExplanation = q.question_type === 'explanation';
     const isRanking = state.status === 'leaderboard';
@@ -804,7 +804,7 @@ function nextQuestion() {
     const btn = document.getElementById('btn-next');
     if (btn) {
         btn.disabled = true;
-        const isEn = window.KahootI18n ? window.KahootI18n.isEn() : false;
+        const isEn = window.ShootI18n ? window.ShootI18n.isEn() : false;
         btn.dataset.label = btn.textContent;
         btn.textContent = isEn ? 'Loading…' : '正在切题…';
     }

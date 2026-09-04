@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static i18n %}
 
-{% block title %}{% trans "数据分析报告" %} - {{ room.name|default:room.code }} - Kahoot Studio{% endblock %}
+{% block title %}{% trans "数据分析报告" %} - {{ room.name|default:room.code }} - Shoot Studio{% endblock %}
 
 {% block global_topbar %}{% endblock %}
 
@@ -33,7 +33,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/analytics.js' %}?v=4"></script>
+<script src="{% static 'js/analytics.js' %}?v=6"></script>
 <script>
     const INITIAL_ANALYTICS_DATA = {{ analytics_json|safe }};
     document.addEventListener('DOMContentLoaded', () => {

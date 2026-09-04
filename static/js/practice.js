@@ -42,7 +42,7 @@
     var timerInterval = null;
     var countdown = window.QuestionCountdown ? window.QuestionCountdown.create('question-countdown') : null;
 
-    var STORAGE_AVATAR_KEY = 'kahoot_player_avatar';
+    var STORAGE_AVATAR_KEY = 'shoot_player_avatar';
     var myAvatar = (function () {
         try {
             var saved = localStorage.getItem(STORAGE_AVATAR_KEY);
