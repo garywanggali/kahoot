@@ -241,7 +241,7 @@
 
 {% block extra_js %}
 <script src="{% static 'js/awards.js' %}?v=6"></script>
-<script src="{% static 'js/wordcloud.js' %}?v=3"></script>
+<script src="{% static 'js/wordcloud.js' %}?v=5"></script>
 <script src="{% static 'js/analytics.js' %}?v=5"></script>
 <script src="{% static 'js/question_countdown.js' %}?v=3"></script>
 <script>
@@ -344,7 +344,11 @@ function handleHostEvent(event, data) {
             showHostDanmaku(data);
             break;
         case 'word_cloud_updated':
-            renderWordCloud('host-word-cloud-display', data.words);
+            renderWordCloud('host-word-cloud-display', (data && data.words) || []);
+            const lbCloud = document.getElementById('host-leaderboard-word-cloud-wrap');
+            if (lbCloud && !lbCloud.classList.contains('hidden')) {
+                renderWordCloud('host-leaderboard-word-cloud', (data && data.words) || []);
+            }
             break;
         case 'answers_updated':
             updateHostAnswerProgress(data);
@@ -544,11 +548,17 @@ function showHostQuestion(state) {
     }
     if (stemBox) stemBox.classList.remove('hidden');
     if (isTextType) {
-        if (stemBox) stemBox.classList.add('stem-hero');
+        if (stemBox) {
+            stemBox.classList.add('stem-hero');
+            stemBox.classList.toggle('stem-with-cloud', isWordCloud);
+        }
         container.innerHTML = '';
         container.classList.add('hidden');
     } else {
-        if (stemBox) stemBox.classList.remove('stem-hero');
+        if (stemBox) {
+            stemBox.classList.remove('stem-hero');
+            stemBox.classList.remove('stem-with-cloud');
+        }
         container.classList.remove('hidden');
         const isJudgment = q.question_type === 'judgment';
         container.classList.toggle('judgment-options', isJudgment);

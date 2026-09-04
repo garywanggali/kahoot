@@ -90,6 +90,10 @@
                 </button>
             </div>
         </div>
+        <div id="practice-word-cloud-wrap" class="word-cloud-wrap hidden">
+            <p class="word-cloud-title">{% trans "本题词云" %}</p>
+            <div id="practice-word-cloud-display" class="word-cloud-display"></div>
+        </div>
         <button type="button" id="submit-multi-btn" class="btn btn-primary submit-multi-btn hidden">{% trans "提交答案" %}</button>
         <button type="button" id="btn-skip-explanation" class="btn btn-primary submit-multi-btn hidden">{% trans "下一题" %}</button>
         <div id="feedback-stage" class="play-feedback-stage hidden">
@@ -108,6 +112,7 @@
             <h2 class="host-stage-title">{% trans "练习完成" %}</h2>
         </div>
         <p class="practice-final-score" id="practice-final-score"></p>
+        <div id="practice-word-clouds" class="practice-word-clouds hidden"></div>
         <div id="practice-podium" class="host-podium-outer" style="width: 100%;"></div>
         <h3 class="final-rankings-title" id="practice-rank-title">{% trans "本题库练习排行" %}</h3>
         <div id="practice-leaderboard" class="host-leaderboard-scroll-list" style="max-height: 320px; width: 100%; max-width: 600px;"></div>
@@ -144,7 +149,8 @@ window.PRACTICE_BOOT = {
     },
 };
 </script>
+<script src="{% static 'js/wordcloud.js' %}?v=5"></script>
 <script src="{% static 'js/awards.js' %}?v=6"></script>
 <script src="{% static 'js/question_countdown.js' %}?v=3"></script>
-<script src="{% static 'js/practice.js' %}?v=2"></script>
+<script src="{% static 'js/practice.js' %}?v=4"></script>
 {% endblock %}

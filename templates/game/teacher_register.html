@@ -30,6 +30,13 @@
             <div class="card-industrial">
                 <form method="post">
                     {% csrf_token %}
+                    {% for message in messages %}
+                    {% if 'error' in message.tags %}
+                    <div class="join-inline-error">
+                        <p>{{ message }}</p>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
                     
                     <div class="form-group-industrial">
                         <label for="invite_code">{% trans "邀请码" %}</label>

@@ -255,7 +255,12 @@ class RoomConsumer(AsyncWebsocketConsumer):
             return
 
         selected = self.normalize_answer_selection(question, data)
-        if selected is None:
+        if not selected:
+            if question.question_type == Question.TYPE_WORD_CLOUD:
+                await self.send(text_data=json.dumps({
+                    'event': 'answer_rejected',
+                    'data': {'reason': 'empty', 'message': '请输入一个词'},
+                }))
             return
 
         question_id = question.pk
@@ -436,7 +441,7 @@ class RoomConsumer(AsyncWebsocketConsumer):
             if not text:
                 return None
             if question.question_type == Question.TYPE_WORD_CLOUD:
-                return normalize_word_cloud_text(text)
+                return normalize_word_cloud_text(text) or None
             return text[:SHORT_ANSWER_MAX_LENGTH]
 
         if question.question_type == Question.TYPE_MULTIPLE:

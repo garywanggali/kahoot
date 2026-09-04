@@ -12,6 +12,7 @@ from django.utils import timezone
 
 from .models import PracticeAttempt, Question, QuizSet, _parse_avatar_json
 from .question_save import _question_image_url
+from .text_utils import normalize_word_cloud_text
 from .utils import QUESTION_COUNTDOWN_SECONDS, calculate_points
 
 PRACTICE_CODE_LENGTH = 6
@@ -141,6 +142,11 @@ def record_practice_answer(
     owned_ids = {q.id for q in attempt.quiz_set.get_questions()}
     if question.id not in owned_ids:
         raise ValueError('题目不属于该套题')
+
+    if question.question_type == Question.TYPE_WORD_CLOUD:
+        selected = normalize_word_cloud_text(selected or '')
+        if not selected:
+            raise ValueError('请输入一个词')
 
     is_correct, points = score_practice_answer(
         question, selected, max(0, int(response_time_ms or 0)),

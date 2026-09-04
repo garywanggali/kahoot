@@ -102,6 +102,12 @@
             </div>
         </div>
 
+        <div id="play-word-cloud-wrap" class="word-cloud-wrap hidden">
+            <p id="play-word-cloud-status" class="word-cloud-status hidden">{% trans "已提交" %}</p>
+            <p class="word-cloud-title">{% trans "大家正在说" %}</p>
+            <div id="play-word-cloud-display" class="word-cloud-display"></div>
+        </div>
+
         <button type="button" id="submit-multi-btn" class="btn btn-primary submit-multi-btn hidden"
                 onclick="submitMultiAnswer()">{% trans "提交答案" %}</button>
 
@@ -205,6 +211,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'js/wordcloud.js' %}?v=5"></script>
 <script src="{% static 'js/awards.js' %}?v=6"></script>
 <script src="{% static 'js/analytics.js' %}?v=4"></script>
 <script src="{% static 'js/question_countdown.js' %}?v=3"></script>
@@ -416,8 +423,16 @@ function handleEvent(event, data) {
             submitInFlight = false;
             showAnswerFeedback(data);
             break;
+        case 'word_cloud_updated':
+            if (playQuestionType === 'word_cloud') {
+                showPlayWordCloud((data && data.words) || []);
+            }
+            break;
         case 'answer_rejected':
             unlockAnswerUi();
+            if (playQuestionType === 'word_cloud' && data && data.message) {
+                markPlayWordCloudSubmitted(data.message);
+            }
             break;
         case 'danmaku':
             showDanmaku(data);
@@ -442,6 +457,31 @@ function hideQuestionInputUi() {
     document.getElementById('text-answer-group').classList.add('hidden');
     document.getElementById('submit-multi-btn').classList.add('hidden');
     document.getElementById('timer-bar').classList.add('hidden');
+}
+
+function showPlayWordCloud(words) {
+    const wrap = document.getElementById('play-word-cloud-wrap');
+    if (!wrap) return;
+    wrap.classList.remove('hidden');
+    const title = wrap.querySelector('.word-cloud-title');
+    if (title) title.textContent = _t('play.word_cloud_title');
+    if (typeof renderWordCloud === 'function') {
+        renderWordCloud('play-word-cloud-display', words || []);
+    }
+}
+
+function hidePlayWordCloud() {
+    const wrap = document.getElementById('play-word-cloud-wrap');
+    if (wrap) wrap.classList.add('hidden');
+    const status = document.getElementById('play-word-cloud-status');
+    if (status) status.classList.add('hidden');
+}
+
+function markPlayWordCloudSubmitted(label) {
+    const status = document.getElementById('play-word-cloud-status');
+    if (!status) return;
+    status.textContent = label || _t('fb.submitted_short');
+    status.classList.remove('hidden');
 }
 
 function showInterQuestionWaiting() {
@@ -472,6 +512,7 @@ function applyState(state) {
     }
 
     if (state.status === 'waiting') {
+        hidePlayWordCloud();
         document.getElementById('waiting-screen').classList.remove('hidden');
         startWaitingStatePoll();
     } else {
@@ -483,6 +524,7 @@ function applyState(state) {
     }
 
     if (state.status === 'ended') {
+        hidePlayWordCloud();
         document.getElementById('ended-screen').classList.remove('hidden');
         clearTimer();
         if (typeof renderAwardsCeremony === 'function') {
@@ -545,6 +587,7 @@ function showQuestion(state) {
     questionStartTime = null;
     clearResultRevealTimer();
     hideFeedbackStage();
+    hidePlayWordCloud();
     hideQuestionInputUi();
     hideQuestionStemUi();
     clearTimer();
@@ -609,6 +652,12 @@ function renderPlayQuestion(state) {
         textInput.placeholder = q.question_type === 'word_cloud' ? _t('play.text_placeholder_wordcloud') : _t('play.text_placeholder');
         textBtn.disabled = false;
         setTimeout(() => textInput.focus(), 80);
+    }
+
+    if (q.question_type === 'word_cloud') {
+        showPlayWordCloud(q.word_cloud || []);
+    } else {
+        hidePlayWordCloud();
     }
 
     const imgWrap = document.getElementById('question-image-wrap');
@@ -704,7 +753,12 @@ function toggleMultiOption(key, btn) {
 function submitTextAnswer() {
     if (hasAnswered || submitInFlight || questionPhase !== 'live') return;
     const text = document.getElementById('text-answer-input').value.trim();
-    if (!text) return;
+    if (!text) {
+        if (playQuestionType === 'word_cloud') {
+            markPlayWordCloudSubmitted(_t('play.word_cloud_need_word'));
+        }
+        return;
+    }
     if (!questionStartTime) questionStartTime = Date.now();
     submitInFlight = true;
     hasAnswered = true;
@@ -970,6 +1024,13 @@ function showAnswerFeedback(data) {
     };
     clearTimer();
     hideQuestionInputUi();
+    if (playQuestionType === 'word_cloud') {
+        hideFeedbackStage();
+        markPlayWordCloudSubmitted(_t('fb.submitted'));
+        const wrap = document.getElementById('play-word-cloud-wrap');
+        if (wrap) wrap.classList.remove('hidden');
+        return;
+    }
     renderFeedbackCard({
         type: 'submitted',
         title: _t('fb.submitted'),
@@ -984,7 +1045,6 @@ function showQuestionResult(state) {
     clearResultRevealTimer();
     clearTimer();
     hideQuestionInputUi();
-    hideQuestionStemUi();
     lockAnswerUi();
 
     const q = state.question;
@@ -992,6 +1052,9 @@ function showQuestionResult(state) {
     const isExplanation = q && q.question_type === 'explanation';
     const showRanking = state.status === 'leaderboard';
     const ranking = showRanking ? state.leaderboard : null;
+    if (!isWordCloud || showRanking) {
+        hideQuestionStemUi();
+    }
 
     if (isExplanation) {
         renderFeedbackCard({
@@ -1004,12 +1067,22 @@ function showQuestionResult(state) {
     }
 
     if (isWordCloud || lastAnswerResult.no_score) {
-        renderFeedbackCard({
-            type: 'submitted',
-            title: lastAnswerResult.answered ? _t('fb.submitted_short') : _t('fb.question_ended'),
-            showWaitingHint: !showRanking,
-            leaderboard: ranking,
-        });
+        if (isWordCloud) {
+            showPlayWordCloud(q.word_cloud || []);
+            markPlayWordCloudSubmitted(
+                lastAnswerResult.answered ? _t('fb.submitted_short') : _t('fb.question_ended'),
+            );
+        }
+        if (showRanking) {
+            renderFeedbackCard({
+                type: 'submitted',
+                title: lastAnswerResult.answered ? _t('fb.submitted_short') : _t('fb.question_ended'),
+                showWaitingHint: false,
+                leaderboard: ranking,
+            });
+        } else {
+            hideFeedbackStage();
+        }
         return;
     }
 

@@ -31,6 +31,13 @@
             
             <form method="post" id="form-room-create">
                 {% csrf_token %}
+                {% for message in messages %}
+                {% if 'error' in message.tags %}
+                <div class="join-inline-error">
+                    <p>{{ message }}</p>
+                </div>
+                {% endif %}
+                {% endfor %}
                 
                 <!-- 房间名称输入区 -->
                 <div class="room-form-section" style="margin-bottom: 1.75rem;">

@@ -1771,11 +1771,134 @@ td {
     flex-shrink: 0;
 }
 
+.word-cloud-wrap {
+    flex: 1 1 auto;
+    min-height: 160px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.55rem;
+    padding: 0.75rem 0.85rem 0.9rem;
+    margin: 0.15rem 0 0.45rem;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 247, 237, 0.88) 100%);
+    border: 2.5px solid #18181b;
+    border-radius: 16px;
+    box-shadow: 0 4px 0 #18181b;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.word-cloud-title {
+    margin: 0;
+    font-family: var(--token-font-hero, var(--font-display));
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #71717a;
+    flex-shrink: 0;
+}
+
+.word-cloud-status {
+    margin: 0 0 0.35rem;
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: #c2410c;
+}
+
+.word-cloud-question {
+    margin: 0;
+    font-family: var(--token-font-hero, var(--font-display));
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #18181b;
+}
+
+.word-cloud-display {
+    flex: 1 1 auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: center;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem 0.75rem;
+    min-height: 110px;
+}
+
+.word-cloud-empty {
+    margin: 0;
+    width: 100%;
+    text-align: center;
+    font-weight: 700;
+    color: #a1a1aa;
+}
+
+.word-cloud-tag {
+    display: inline-flex;
+    align-items: baseline;
+    line-height: 1.15;
+    padding: 0.12rem 0.35rem;
+    border-radius: 999px;
+    font-family: var(--token-font-hero, var(--font-display));
+    letter-spacing: -0.01em;
+    word-break: break-word;
+    transform: rotate(var(--wc-tilt, 0deg));
+    transform-origin: center;
+}
+
+.word-cloud-tag.wc-c0 { color: #ea580c; }
+.word-cloud-tag.wc-c1 { color: #2563eb; }
+.word-cloud-tag.wc-c2 { color: #16a34a; }
+.word-cloud-tag.wc-c3 { color: #db2777; }
+.word-cloud-tag.wc-c4 { color: #7c3aed; }
+.word-cloud-tag.wc-c5 { color: #0f766e; }
+
 .word-cloud-tag sub {
     font-size: 0.65em;
     margin-left: 0.15rem;
     opacity: 0.75;
     font-weight: 500;
+}
+
+.host-stem-box.stem-with-cloud {
+    flex: 0 0 auto;
+    min-height: 64px;
+    max-height: 110px;
+    padding: 0.7rem 1.15rem;
+}
+
+#host-playing:has(.word-cloud-wrap:not(.hidden)),
+#host-leaderboard:has(.word-cloud-wrap:not(.hidden)) {
+    justify-content: flex-start;
+}
+
+#host-leaderboard-word-cloud-wrap.word-cloud-wrap {
+    min-height: 220px;
+}
+
+.play-screen .word-cloud-wrap {
+    margin-top: 0.85rem;
+    min-height: 180px;
+}
+
+.practice-word-clouds {
+    width: 100%;
+    max-width: 720px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    margin: 0.75rem auto 1rem;
+}
+
+.practice-result-cloud {
+    min-height: 140px;
+}
+
+#play-word-cloud-wrap.hidden,
+#practice-word-cloud-wrap.hidden,
+.practice-word-clouds.hidden {
+    display: none !important;
 }
 
 .kahoot-choice-grid {

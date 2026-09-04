@@ -118,6 +118,8 @@
         'play.question_num': '第 %s / %s 题',
         'play.text_placeholder': '在此输入你的答案...',
         'play.text_placeholder_wordcloud': '输入一个词或短语...',
+        'play.word_cloud_title': '大家正在说',
+        'play.word_cloud_need_word': '请输入一个词',
         'play.btn_submit': '提交答案',
         'play.waiting_next': '等待下一题...',
         'play.explanation_title': '老师正在讲解',
@@ -302,6 +304,7 @@
         'practice.final_score': '总分 %s',
         'practice.your_rank': '第 %s 名',
         'practice.empty_board': '还没有其他人的练习记录',
+        'practice.word_cloud_title': '本题词云',
     };
 
     const DICT_EN = {
@@ -417,6 +420,8 @@
         'play.question_num': 'Question %s of %s',
         'play.text_placeholder': 'Type your answer here...',
         'play.text_placeholder_wordcloud': 'Type a word or short phrase...',
+        'play.word_cloud_title': 'What people are saying',
+        'play.word_cloud_need_word': 'Please enter a word',
         'play.btn_submit': 'Submit Answer',
         'play.waiting_next': 'Waiting for next question...',
         'play.explanation_title': 'Teacher is explaining',
@@ -601,6 +606,7 @@
         'practice.final_score': 'Score %s',
         'practice.your_rank': 'Rank #%s',
         'practice.empty_board': 'No other practice runs yet',
+        'practice.word_cloud_title': 'Word cloud',
     };
 
     function getCookie(name) {

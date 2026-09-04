@@ -1176,8 +1176,8 @@ class ClickThroughSafetyTests(TestCase):
         html = render_to_string('base.html', request=request)
         self.assertIn('name="csrf-token"', html)
         self.assertIn('csrfmiddlewaretoken', html)
-        self.assertIn('style.css?v=471', html)
-        self.assertIn('i18n.js?v=10', html)
+        self.assertIn('style.css?v=473', html)
+        self.assertIn('i18n.js?v=12', html)
         self.assertIn('data-action="toggle-lang"', html)
 
 
@@ -1303,14 +1303,14 @@ class PublicQuizLibraryTests(TestCase):
         from django.core.management import call_command
         from django.urls import reverse
 
-        from .models import QuizSet
+        from .models import Question, QuizSet
 
         out = StringIO()
         call_command('seed_public_quizzes', stdout=out)
         call_command('seed_public_quizzes', stdout=out)
         self.assertGreaterEqual(
             QuizSet.objects.filter(is_public=True, teacher__username='kahoot_market').count(),
-            5,
+            6,
         )
         resp = self.client.get(reverse('kahoot_public_list'))
         self.assertContains(resp, '世界地理入门')
@@ -1318,7 +1318,15 @@ class PublicQuizLibraryTests(TestCase):
         self.assertContains(resp, '中国历史常识')
         self.assertContains(resp, '科学判断小测验')
         self.assertContains(resp, '趣味英语词汇')
+        self.assertContains(resp, '课堂暖场词云')
         self.assertContains(resp, '题库精选')
+        self.assertTrue(
+            Question.objects.filter(
+                teacher__username='kahoot_market',
+                question_type=Question.TYPE_WORD_CLOUD,
+                text='用一个词形容今天的心情',
+            ).exists()
+        )
         self.assertTrue(
             QuizSet.objects.filter(is_public=True, teacher__username='kahoot_market')
             .exclude(practice_code='')
@@ -1464,4 +1472,155 @@ class PracticeModeTests(TestCase):
         self.assertEqual(classify_join_code('123456'), ('pin', '123456'))
         self.assertEqual(classify_join_code('abCdef'), ('practice', 'ABCDEF'))
         self.assertEqual(classify_join_code('AB12CD')[0], 'invalid')
+
+
+class WordCloudAggregationTests(TestCase):
+    def test_merges_case_and_whitespace(self):
+        from .word_cloud import collapse_word_cloud_texts
+
+        words = collapse_word_cloud_texts(['Happy', 'happy', ' HAPPY ', 'joy', 'Joy', '  '])
+        by_key = {item['text'].casefold(): item for item in words}
+        self.assertEqual(by_key['happy']['count'], 3)
+        self.assertEqual(by_key['joy']['count'], 2)
+        self.assertEqual(by_key['happy']['text'], 'Happy')
+
+        punct = collapse_word_cloud_texts(['开心！', '开心', '开心。', '!!!'])
+        self.assertEqual(len(punct), 1)
+        self.assertEqual(punct[0]['text'], '开心')
+        self.assertEqual(punct[0]['count'], 3)
+
+    def test_live_pending_does_not_double_count_flushed_answer(self):
+        from .models import Answer, Player, Room
+        from .room_cache import PendingAnswer, drop_runtime, get_runtime, join_player
+        from .word_cloud import aggregate_word_cloud
+
+        room = Room.objects.create(code='888001', name='Cloud Room')
+        question = Question.objects.create(
+            text='用一个词形容今天',
+            question_type=Question.TYPE_WORD_CLOUD,
+            option_a='', option_b='', option_c='', option_d='',
+            correct_option='',
+        )
+        from .models import RoomQuestion
+        RoomQuestion.objects.create(room=room, question=question, order=0)
+        drop_runtime(room.code)
+        runtime = get_runtime(room)
+        join_player(runtime, 'Ada', 'sess-ada')
+        from .room_cache import flush_runtime_force
+        flush_runtime_force(runtime)
+        player = Player.objects.get(session_id='sess-ada')
+        Answer.objects.create(
+            room=room, player=player, question=question,
+            selected_option='Happy', is_correct=False, points=0, response_time_ms=200,
+        )
+        runtime.pending_answers.append(PendingAnswer(
+            session_id='sess-ada',
+            question_id=question.id,
+            selected='happy',
+            is_correct=False,
+            points=0,
+            response_time_ms=200,
+        ))
+        cloud = aggregate_word_cloud(room.code, question.id, runtime)
+        self.assertEqual(len(cloud), 1)
+        self.assertEqual(cloud[0]['count'], 1)
+        drop_runtime(room.code)
+
+    def test_practice_word_cloud_roundtrip(self):
+        import json
+
+        from django.urls import reverse
+
+        from .models import QuizSet, Teacher
+        from .practice_utils import ensure_practice_code
+        from .quiz_set_utils import add_question_to_quiz_set
+
+        teacher = Teacher.objects.create(username='cloud_teacher')
+        quiz = QuizSet.objects.create(title='词云练习', teacher=teacher, is_public=True)
+        question = Question.objects.create(
+            text='用一个词形容春天',
+            question_type=Question.TYPE_WORD_CLOUD,
+            option_a='', option_b='', option_c='', option_d='',
+            correct_option='', teacher=teacher,
+        )
+        add_question_to_quiz_set(quiz, question)
+        code = ensure_practice_code(quiz)
+
+        self.client.post(reverse('join_room'), {'code': code, 'nickname': '春游'})
+        start = self.client.post(
+            reverse('practice_start', args=[code]),
+            data=json.dumps({'avatar': {'face': 0, 'hair': 0}}),
+            content_type='application/json',
+        )
+        token = start.json()['token']
+        empty = self.client.post(
+            reverse('practice_answer', args=[code]),
+            data=json.dumps({
+                'token': token, 'question_id': question.id,
+                'selected': '   ', 'response_time_ms': 100,
+            }),
+            content_type='application/json',
+        )
+        self.assertEqual(empty.status_code, 400)
+
+        answered = self.client.post(
+            reverse('practice_answer', args=[code]),
+            data=json.dumps({
+                'token': token, 'question_id': question.id,
+                'selected': 'Warm', 'response_time_ms': 400,
+            }),
+            content_type='application/json',
+        )
+        self.assertEqual(answered.status_code, 200)
+        self.assertTrue(answered.json()['no_score'])
+        self.assertEqual(answered.json()['word_cloud'][0]['text'], 'Warm')
+        self.assertEqual(answered.json()['word_cloud'][0]['count'], 1)
+
+        other = self.client_class()
+        other.post(reverse('join_room'), {'code': code, 'nickname': '同学'})
+        start2 = other.post(
+            reverse('practice_start', args=[code]),
+            data=json.dumps({'avatar': {'face': 1, 'hair': 1}}),
+            content_type='application/json',
+        )
+        token2 = start2.json()['token']
+        other.post(
+            reverse('practice_answer', args=[code]),
+            data=json.dumps({
+                'token': token2, 'question_id': question.id,
+                'selected': 'warm', 'response_time_ms': 300,
+            }),
+            content_type='application/json',
+        )
+        done = other.post(
+            reverse('practice_finish', args=[code]),
+            data=json.dumps({'token': token2}),
+            content_type='application/json',
+        )
+        clouds = done.json()['word_clouds']
+        self.assertEqual(len(clouds), 1)
+        self.assertEqual(clouds[0]['words'][0]['count'], 2)
+
+    def test_play_and_host_templates_include_cloud_ui(self):
+        from django.template.loader import render_to_string
+
+        from .models import Room
+
+        room = Room.objects.create(code='888002', name='Host Cloud')
+        play = render_to_string('game/play.html', {
+            'room': room,
+            'nickname': 'Ada',
+            'initial_state_json': '{}',
+        })
+        self.assertIn('play-word-cloud-wrap', play)
+        self.assertIn('js/wordcloud.js?v=5', play)
+        self.assertIn('word_cloud_updated', play)
+
+        host = render_to_string('game/room_host.html', {
+            'room': room,
+            'questions': [],
+            'initial_state_json': '{}',
+        })
+        self.assertIn('host-word-cloud-display', host)
+        self.assertIn('js/wordcloud.js?v=5', host)
 

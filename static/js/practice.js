@@ -137,6 +137,48 @@
         if (stage) stage.classList.add('hidden');
     }
 
+    function escapeHtml(text) {
+        var div = document.createElement('div');
+        div.textContent = text == null ? '' : String(text);
+        return div.innerHTML;
+    }
+
+    function hidePracticeWordCloud() {
+        var wrap = document.getElementById('practice-word-cloud-wrap');
+        if (wrap) wrap.classList.add('hidden');
+    }
+
+    function showPracticeWordCloud(words) {
+        var wrap = document.getElementById('practice-word-cloud-wrap');
+        var title = wrap ? wrap.querySelector('.word-cloud-title') : null;
+        if (title) title.textContent = t('practice.word_cloud_title', '本题词云');
+        if (wrap) wrap.classList.remove('hidden');
+        if (typeof renderWordCloud === 'function') {
+            renderWordCloud('practice-word-cloud-display', words || []);
+        }
+    }
+
+    function renderPracticeResultClouds(clouds) {
+        var cloudsEl = document.getElementById('practice-word-clouds');
+        if (!cloudsEl) return;
+        if (!clouds || !clouds.length || typeof renderWordCloud !== 'function') {
+            cloudsEl.classList.add('hidden');
+            cloudsEl.innerHTML = '';
+            return;
+        }
+        cloudsEl.classList.remove('hidden');
+        cloudsEl.innerHTML = clouds.map(function (item, i) {
+            return '<div class="word-cloud-wrap practice-result-cloud">' +
+                '<p class="word-cloud-title">' + escapeHtml(t('practice.word_cloud_title', '本题词云')) + '</p>' +
+                '<p class="word-cloud-question">' + escapeHtml(item.text || '') + '</p>' +
+                '<div id="practice-result-cloud-' + i + '" class="word-cloud-display"></div>' +
+                '</div>';
+        }).join('');
+        clouds.forEach(function (item, i) {
+            renderWordCloud('practice-result-cloud-' + i, item.words || []);
+        });
+    }
+
     function showFeedback(type, title, detail) {
         var stage = document.getElementById('feedback-stage');
         var card = document.getElementById('feedback-card');
@@ -161,6 +203,16 @@
         if (textInput) textInput.disabled = true;
         if (textBtn) textBtn.disabled = true;
         if (multi) multi.disabled = true;
+    }
+
+    function unlockAnswerUi() {
+        document.querySelectorAll('.option-btn').forEach(function (b) { b.disabled = false; });
+        var textInput = document.getElementById('text-answer-input');
+        var textBtn = document.getElementById('submit-text-btn');
+        var multi = document.getElementById('submit-multi-btn');
+        if (textInput) textInput.disabled = false;
+        if (textBtn) textBtn.disabled = false;
+        if (multi) multi.disabled = false;
     }
 
     function clearTimer() {
@@ -202,6 +254,7 @@
         selectedOptions = new Set();
         questionStartTime = Date.now();
         hideFeedback();
+        hidePracticeWordCloud();
 
         var total = quiz.total_questions || (quiz.questions || []).length;
         var numEl = document.getElementById('question-number');
@@ -263,6 +316,10 @@
         if (textInput) {
             textInput.value = '';
             textInput.disabled = false;
+            textInput.maxLength = q.question_type === 'word_cloud' ? 40 : 100;
+            textInput.placeholder = q.question_type === 'word_cloud'
+                ? t('play.text_placeholder_wordcloud', '输入一个词或短语...')
+                : t('play.text_placeholder', '在此输入你的答案...');
         }
         var textBtn = document.getElementById('submit-text-btn');
         if (textBtn) textBtn.disabled = false;
@@ -319,7 +376,12 @@
         if ((q.question_type === 'short_answer' || q.question_type === 'word_cloud') && !selected) {
             var input = document.getElementById('text-answer-input');
             selected = input ? input.value.trim() : '';
-            if (!selected && q.question_type === 'short_answer') return;
+            if (!selected) {
+                if (q.question_type === 'word_cloud') {
+                    showFeedback('wrong', t('play.word_cloud_need_word', '请输入一个词'));
+                }
+                return;
+            }
         }
         hasAnswered = true;
         submitInFlight = true;
@@ -335,19 +397,33 @@
         }).then(function (data) {
             score = data.score || score;
             submitInFlight = false;
-            var type = data.no_score ? 'submitted' : (data.is_correct ? 'correct' : (selected ? 'wrong' : 'timeup'));
-            var title = data.no_score
-                ? t('fb.submitted', '已提交')
-                : (data.is_correct ? t('fb.correct', '对') : (selected ? t('fb.wrong', '错') : t('fb.timeup', '时间到')));
-            var detail = data.no_score ? '' : ('+' + (data.points || 0) + ' · ' + t('practice.score_now', '总分 %s', score));
-            showFeedback(type, title, detail);
+            var waitMs = 1200;
+            if (q.question_type === 'word_cloud') {
+                hideFeedback();
+                var textGroup = document.getElementById('text-answer-group');
+                if (textGroup) textGroup.classList.add('hidden');
+                showPracticeWordCloud(data.word_cloud || []);
+                waitMs = 2600;
+            } else {
+                var type = data.no_score ? 'submitted' : (data.is_correct ? 'correct' : (selected ? 'wrong' : 'timeup'));
+                var title = data.no_score
+                    ? t('fb.submitted', '已提交')
+                    : (data.is_correct ? t('fb.correct', '对') : (selected ? t('fb.wrong', '错') : t('fb.timeup', '时间到')));
+                var detail = data.no_score ? '' : ('+' + (data.points || 0) + ' · ' + t('practice.score_now', '总分 %s', score));
+                showFeedback(type, title, detail);
+            }
             setTimeout(function () {
                 index += 1;
                 beginQuestion();
-            }, 1200);
-        }).catch(function () {
+            }, waitMs);
+        }).catch(function (err) {
             submitInFlight = false;
             hasAnswered = false;
+            unlockAnswerUi();
+            showFeedback(
+                'wrong',
+                (err && err.message) || t('status.error', '操作失败'),
+            );
         });
     }
 
@@ -362,6 +438,7 @@
                 var rank = data.rank ? t('practice.your_rank', '第 %s 名', data.rank) : '';
                 scoreEl.textContent = t('practice.final_score', '总分 %s', data.score) + (rank ? ' · ' + rank : '');
             }
+            renderPracticeResultClouds(data.word_clouds || []);
             if (typeof window.renderAwardsCeremony === 'function') {
                 window.renderAwardsCeremony(
                     data.leaderboard || [],

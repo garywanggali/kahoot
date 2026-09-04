@@ -22,6 +22,9 @@ source venv/bin/activate
 log "数据库迁移..."
 python manage.py migrate --noinput
 
+log "公开题库样例..."
+python manage.py seed_public_quizzes
+
 log "收集静态文件..."
 rm -rf staticfiles
 python manage.py collectstatic --noinput

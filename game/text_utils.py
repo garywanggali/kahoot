@@ -8,8 +8,15 @@ def normalize_answer_text(text: str) -> str:
     return ' '.join(text.strip().split()).lower()
 
 
+_WORD_CLOUD_PUNCT = ''.join([
+    '.,!?;:\'\"()[]{}<>',
+    '，。！？；：、…~～·•',
+    '“”‘’（）【】《》',
+])
+
+
 def normalize_word_cloud_text(text: str) -> str:
-    cleaned = ' '.join(text.strip().split())
+    cleaned = ' '.join(text.strip().split()).strip(_WORD_CLOUD_PUNCT)
     return cleaned[:WORD_CLOUD_MAX_LENGTH]
 
 

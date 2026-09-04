@@ -21,6 +21,11 @@ def _q(text, qtype, option_a, option_b, option_c, option_d, correct, time_limit=
     }
 
 
+def _wc(text, time_limit=30):
+    dash = Question.TEXT_OPTION_PLACEHOLDER
+    return _q(text, Question.TYPE_WORD_CLOUD, dash, dash, dash, dash, '', time_limit)
+
+
 PUBLIC_CATALOG = [
     {
         'title': '世界地理入门',
@@ -70,6 +75,14 @@ PUBLIC_CATALOG = [
             _q('Dog 是哪种动物？', Question.TYPE_SINGLE, '猫', '狗', '鸟', '鱼', 'B', 12),
             _q('下列哪些是颜色单词？（多选）', Question.TYPE_MULTIPLE, 'red', 'run', 'blue', 'jump', 'A,C', 20),
             _q('“谢谢”用英语怎么说？（简答）', Question.TYPE_SHORT_ANSWER, 'thank you|thanks|Thank you|Thanks', Question.TEXT_OPTION_PLACEHOLDER, Question.TEXT_OPTION_PLACEHOLDER, Question.TEXT_OPTION_PLACEHOLDER, 'A', 20),
+        ],
+    },
+    {
+        'title': '课堂暖场词云',
+        'questions': [
+            _wc('用一个词形容今天的心情'),
+            _wc('提到“中国”，你最先想到哪个词？'),
+            _wc('这学期你最想学会什么？', 40),
         ],
     },
 ]

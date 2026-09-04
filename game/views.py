@@ -250,6 +250,9 @@ def practice_answer(request, practice_code):
         )
     except ValueError as exc:
         return _practice_json_error(str(exc), 400)
+    if question.question_type == Question.TYPE_WORD_CLOUD:
+        from .word_cloud import aggregate_practice_word_cloud
+        result['word_cloud'] = aggregate_practice_word_cloud(attempt.quiz_set, question.id)
     return JsonResponse({'ok': True, **result})
 
 
@@ -264,11 +267,13 @@ def practice_finish(request, practice_code):
     finish_practice_attempt(attempt)
     board = practice_leaderboard(attempt.quiz_set)
     me = next((row for row in board if row['nickname'] == attempt.nickname), None)
+    from .word_cloud import practice_word_clouds
     return JsonResponse({
         'ok': True,
         'score': attempt.score,
         'rank': me['rank'] if me else None,
         'leaderboard': board,
+        'word_clouds': practice_word_clouds(attempt.quiz_set),
     })
 
 
