@@ -275,7 +275,7 @@ class JoinRoomViewTests(TestCase):
         self.assertIn('房间号不存在', content)
         self.assertIn('join-inline-error', content)
         self.assertIn('keycaps-stage', content)
-        self.assertIn('输入6位码', content)
+        self.assertIn('6位数字 / 字母PIN', content)
         self.assertIn('[0-9A-Za-z]{6}', content)
 
     def test_letter_code_unknown_keeps_landing(self):
