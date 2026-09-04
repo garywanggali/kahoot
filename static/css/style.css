@@ -461,8 +461,11 @@ a:hover {
 }
 
 .input-pin::placeholder {
-    letter-spacing: normal !important;
-    color: #c4c4be !important;
+    font-family: var(--font-hero), var(--font-body), sans-serif !important;
+    font-size: 1.15rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.04em !important;
+    color: #b0b0a8 !important;
 }
 
 /* High-Impact CTA Button (Clean Industrial Safety Orange + Kinetic Sliding Text) */

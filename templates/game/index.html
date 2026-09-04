@@ -56,10 +56,9 @@
                         <div class="form-group-industrial">
                             <label for="code">{% trans "房间号 / 练习码" %}</label>
                             <input type="text" id="code" name="code" class="input-industrial input-pin"
-                                   placeholder="{% trans '6位数字PIN / 6位字母练习码' %}" maxlength="6"
+                                   placeholder="{% trans '输入6位码' %}" maxlength="6"
                                    pattern="[0-9A-Za-z]{6}" inputmode="text" spellcheck="false"
                                    value="{{ code|default:'' }}" required autofocus autocomplete="off">
-                            <p class="join-code-hint">{% trans "数字码加入老师房间，字母码进入公开题库个人练习。" %}</p>
                         </div>
                         <div class="form-group-industrial">
                             <label for="nickname">{% trans "昵称" %}</label>
