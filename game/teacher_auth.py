@@ -74,6 +74,7 @@ def apply_teacher_settings(teacher: Teacher, payload: dict) -> tuple[Teacher | N
         avatar_payload = {
             'face': payload.get('avatar_face', payload.get('face', 0)),
             'hair': payload.get('avatar_hair', payload.get('hair', 0)),
+            'acc': payload.get('avatar_acc', payload.get('acc', 0)),
         }
 
     username_raw = str(payload.get('username') or teacher.username).strip()

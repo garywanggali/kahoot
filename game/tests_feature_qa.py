@@ -41,7 +41,7 @@ class FullProductFeatureQA(TestCase):
         self.assertEqual(home.status_code, 200)
         html = home.content.decode()
         self.assertIn('keycaps-stage', html)
-        self.assertIn('6位数字PIN / 6位字母练习码', html)
+        self.assertIn('6位数字 / 字母PIN', html)
         self.assertIn('[0-9A-Za-z]{6}', html)
         self.assertIn('登录老师控制台', html)
         self.assertIn('邀请码注册', html)

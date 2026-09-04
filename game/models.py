@@ -8,8 +8,9 @@ from django.db import models
 from .text_utils import normalize_answer_text, split_acceptable_answers
 from .validators import validate_question_image
 
-AVATAR_FACE_MAX = 7
-AVATAR_HAIR_MAX = 7
+AVATAR_FACE_MAX = 63
+AVATAR_HAIR_MAX = 63
+AVATAR_ACC_MAX = 63
 
 
 def _parse_avatar_json(raw) -> dict:
@@ -20,15 +21,17 @@ def _parse_avatar_json(raw) -> dict:
         except Exception:
             data = None
     if not isinstance(data, dict):
-        return {'face': 0, 'hair': 0}
+        return {'face': 0, 'hair': 0, 'acc': 0}
     try:
         face = int(data.get('face', 0))
         hair = int(data.get('hair', 0))
+        acc = int(data.get('acc', data.get('accessory', 0)))
     except (TypeError, ValueError):
-        return {'face': 0, 'hair': 0}
+        return {'face': 0, 'hair': 0, 'acc': 0}
     return {
         'face': max(0, min(AVATAR_FACE_MAX, face)),
         'hair': max(0, min(AVATAR_HAIR_MAX, hair)),
+        'acc': max(0, min(AVATAR_ACC_MAX, acc)),
     }
 
 

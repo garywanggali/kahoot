@@ -124,6 +124,7 @@
             <div class="settings-avatar-block">
                 <input type="hidden" name="avatar_face" id="settings-avatar-face" value="{{ teacher.get_avatar_dict.face }}">
                 <input type="hidden" name="avatar_hair" id="settings-avatar-hair" value="{{ teacher.get_avatar_dict.hair }}">
+                <input type="hidden" name="avatar_acc" id="settings-avatar-acc" value="{{ teacher.get_avatar_dict.acc }}">
                 <div id="settings-avatar-preview" class="settings-avatar-preview"></div>
                 <div class="settings-avatar-controls">
                     <div class="avatar-picker-row">
@@ -146,6 +147,18 @@
                             </button>
                             <span id="settings-hair-name" class="picker-val-name"></span>
                             <button type="button" class="picker-btn" id="settings-hair-next" aria-label="{% trans '下一个发型' %}">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="avatar-picker-row">
+                        <span class="picker-label">{% trans "配饰" %}</span>
+                        <div class="picker-control">
+                            <button type="button" class="picker-btn" id="settings-acc-prev" aria-label="{% trans '上一个配饰' %}">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                            </button>
+                            <span id="settings-acc-name" class="picker-val-name"></span>
+                            <button type="button" class="picker-btn" id="settings-acc-next" aria-label="{% trans '下一个配饰' %}">
                                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
                             </button>
                         </div>
@@ -259,12 +272,16 @@ function renderSettingsAvatar() {
     }
     const faceEl = document.getElementById('settings-face-name');
     const hairEl = document.getElementById('settings-hair-name');
+    const accEl = document.getElementById('settings-acc-name');
     if (faceEl) faceEl.textContent = window.AvatarSystem.getFaceName(settingsAvatar.face);
     if (hairEl) hairEl.textContent = window.AvatarSystem.getHairName(settingsAvatar.hair);
+    if (accEl) accEl.textContent = window.AvatarSystem.getAccName(settingsAvatar.acc);
     const faceInput = document.getElementById('settings-avatar-face');
     const hairInput = document.getElementById('settings-avatar-hair');
+    const accInput = document.getElementById('settings-avatar-acc');
     if (faceInput) faceInput.value = String(settingsAvatar.face);
     if (hairInput) hairInput.value = String(settingsAvatar.hair);
+    if (accInput) accInput.value = String(settingsAvatar.acc || 0);
 }
 
 function cycleSettingsFace(delta) {
@@ -278,6 +295,14 @@ function cycleSettingsHair(delta) {
     if (!window.AvatarSystem) return;
     const total = window.AvatarSystem.HAIRS.length;
     settingsAvatar.hair = (settingsAvatar.hair + delta + total) % total;
+    renderSettingsAvatar();
+}
+
+function cycleSettingsAcc(delta) {
+    if (!window.AvatarSystem) return;
+    const total = window.AvatarSystem.ACCESSORIES.length;
+    const cur = settingsAvatar.acc || 0;
+    settingsAvatar.acc = (cur + delta + total) % total;
     renderSettingsAvatar();
 }
 
@@ -365,6 +390,13 @@ document.getElementById('settings-face-prev')?.addEventListener('click', () => c
 document.getElementById('settings-face-next')?.addEventListener('click', () => cycleSettingsFace(1));
 document.getElementById('settings-hair-prev')?.addEventListener('click', () => cycleSettingsHair(-1));
 document.getElementById('settings-hair-next')?.addEventListener('click', () => cycleSettingsHair(1));
+document.getElementById('settings-acc-prev')?.addEventListener('click', () => cycleSettingsAcc(-1));
+document.getElementById('settings-acc-next')?.addEventListener('click', () => cycleSettingsAcc(1));
+document.getElementById('settings-avatar-carti')?.addEventListener('click', () => {
+    if (!window.AvatarSystem) return;
+    settingsAvatar = window.AvatarSystem.applyLook('wlr');
+    renderSettingsAvatar();
+});
 document.getElementById('settings-avatar-random')?.addEventListener('click', () => {
     if (!window.AvatarSystem) return;
     settingsAvatar = window.AvatarSystem.random();

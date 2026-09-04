@@ -56,10 +56,9 @@
                         <div class="form-group-industrial">
                             <label for="code">{% trans "房间号 / 练习码" %}</label>
                             <input type="text" id="code" name="code" class="input-industrial input-pin"
-                                   placeholder="{% trans '6位数字PIN / 6位字母练习码' %}" maxlength="6"
+                                   placeholder="{% trans '6位数字 / 字母PIN' %}" maxlength="6"
                                    pattern="[0-9A-Za-z]{6}" inputmode="text" spellcheck="false"
                                    value="{{ code|default:'' }}" required autofocus autocomplete="off">
-                            <p class="join-code-hint">{% trans "数字码加入老师房间，字母码进入公开题库个人练习。" %}</p>
                         </div>
                         <div class="form-group-industrial">
                             <label for="nickname">{% trans "昵称" %}</label>
@@ -67,9 +66,14 @@
                                    placeholder="{% trans '输入你的昵称' %}" maxlength="50"
                                    value="{{ nickname|default:'' }}" required autocomplete="nickname">
                         </div>
-                        <button type="submit" class="btn-industrial-primary" id="btn-submit-student">
-                            <span>{% trans "进入游戏" %}</span>
-                            <span>→</span>
+                        <button type="submit" class="btn-industrial-primary btn-particle-orange" id="btn-submit-student">
+                            <span class="inner">
+                                <span>{% trans "进入游戏" %}</span>
+                                <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5">
+                                    <path d="M5 12h14"></path>
+                                    <path d="m12 5 7 7-7 7"></path>
+                                </svg>
+                            </span>
                         </button>
                     </form>
                     
@@ -101,9 +105,14 @@
                             <input type="password" id="password" name="password" class="input-industrial"
                                    placeholder="{% trans '注册时设置的密码（不是邀请码）' %}" required autocomplete="current-password">
                         </div>
-                        <button type="submit" class="btn-industrial-primary" id="btn-submit-teacher">
-                            <span>{% trans "登录老师控制台" %}</span>
-                            <span>→</span>
+                        <button type="submit" class="btn-industrial-primary btn-particle-orange" id="btn-submit-teacher">
+                            <span class="inner">
+                                <span>{% trans "登录老师控制台" %}</span>
+                                <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5">
+                                    <path d="M5 12h14"></path>
+                                    <path d="m12 5 7 7-7 7"></path>
+                                </svg>
+                            </span>
                         </button>
                     </form>
                     
@@ -118,24 +127,6 @@
                     </div>
                 </div>
 
-            </div>
-        </div>
-
-        <!-- 底部极简特性标签栏 -->
-        <div class="landing-features-bar">
-            <div class="landing-feature-item">
-                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                <span>{% trans "即连即答" %}</span>
-            </div>
-            <span class="landing-feature-sep">·</span>
-            <div class="landing-feature-item">
-                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
-                <span>{% trans "像素捏脸" %}</span>
-            </div>
-            <span class="landing-feature-sep">·</span>
-            <div class="landing-feature-item">
-                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                <span>{% trans "学情复盘" %}</span>
             </div>
         </div>
 

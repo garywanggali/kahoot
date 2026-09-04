@@ -74,9 +74,14 @@
 
         <!-- 底部开始游戏控制条 -->
         <div class="host-waiting-foot">
-            <button id="btn-start" class="token-btn-primary btn-host-large-start" onclick="startGame()">
-                <span>{% trans "开始游戏" %}</span>
-                <span>→</span>
+            <button id="btn-start" class="token-btn-primary btn-host-large-start btn-particle-orange" onclick="startGame()">
+                <span class="inner">
+                    <span>{% trans "开始游戏" %}</span>
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5">
+                        <path d="M5 12h14"></path>
+                        <path d="m12 5 7 7-7 7"></path>
+                    </svg>
+                </span>
             </button>
         </div>
     </div>
@@ -344,10 +349,14 @@ function handleHostEvent(event, data) {
             showHostDanmaku(data);
             break;
         case 'word_cloud_updated':
-            renderWordCloud('host-word-cloud-display', (data && data.words) || []);
-            const lbCloud = document.getElementById('host-leaderboard-word-cloud-wrap');
-            if (lbCloud && !lbCloud.classList.contains('hidden')) {
-                renderWordCloud('host-leaderboard-word-cloud', (data && data.words) || []);
+            {
+                const playingCloud = document.getElementById('host-word-cloud-wrap');
+                if (playingCloud) playingCloud.classList.remove('hidden');
+                renderWordCloud('host-word-cloud-display', (data && data.words) || []);
+                const lbCloud = document.getElementById('host-leaderboard-word-cloud-wrap');
+                if (lbCloud && !lbCloud.classList.contains('hidden')) {
+                    renderWordCloud('host-leaderboard-word-cloud', (data && data.words) || []);
+                }
             }
             break;
         case 'answers_updated':

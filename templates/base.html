@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/design_tokens.css' %}?v=3">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=473">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=474">
     <meta name="turbo-cache-control" content="no-cache">
     <meta name="csrf-token" content="{{ csrf_token }}">
     <script src="{% static 'js/i18n.js' %}?v=12"></script>
@@ -29,9 +29,51 @@
 
         {% block content %}{% endblock %}
     </div>
-    <script src="{% static 'js/avatar.js' %}?v=2"></script>
+    <script src="{% static 'js/avatar.js' %}?v=3"></script>
     <script src="{% static 'js/analytics.js' %}?v=5"></script>
     <script src="{% static 'js/bgm.js' %}?v=5"></script>
+    <script>
+    function initKineticButtons() {
+        document.querySelectorAll('.btn-particle-orange, .btn-industrial-primary, .btn-host-large-start').forEach(btn => {
+            if (!btn.querySelector('.original') || !btn.querySelector('.letters')) {
+                const inner = btn.querySelector('.inner') || btn;
+                const textNodes = Array.from(inner.querySelectorAll('span:not(.icon):not(.btn-icon), strong, b'))
+                    .concat(Array.from(inner.childNodes).filter(n => n.nodeType === 3));
+                const textTarget = textNodes.find(n => n.textContent && n.textContent.trim().length > 0);
+                const svgIcon = inner.querySelector('svg');
+                
+                const rawText = (textTarget ? textTarget.textContent.trim() : (inner.textContent || '')).replace(/→|←/g, '').trim();
+                if (rawText && rawText.length > 0) {
+                    const origDiv = document.createElement('div');
+                    origDiv.className = 'original';
+                    origDiv.innerHTML = `<span>${rawText}</span>` + (svgIcon ? svgIcon.outerHTML : '<svg class="icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>');
+
+                    const lettersDiv = document.createElement('div');
+                    lettersDiv.className = 'letters';
+                    lettersDiv.setAttribute('aria-hidden', 'true');
+                    
+                    Array.from(rawText).forEach((char) => {
+                        const charSpan = document.createElement('span');
+                        charSpan.className = 'char';
+                        charSpan.textContent = char;
+                        lettersDiv.appendChild(charSpan);
+                    });
+                    if (svgIcon) {
+                        lettersDiv.appendChild(svgIcon.cloneNode(true));
+                    } else {
+                        lettersDiv.insertAdjacentHTML('beforeend', '<svg class="icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>');
+                    }
+
+                    btn.innerHTML = '';
+                    btn.appendChild(origDiv);
+                    btn.appendChild(lettersDiv);
+                }
+            }
+        });
+    }
+    document.addEventListener('DOMContentLoaded', initKineticButtons);
+    document.addEventListener('turbo:load', initKineticButtons);
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
