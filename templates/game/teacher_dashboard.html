@@ -57,9 +57,13 @@
                     </p>
                 </div>
 
-                <div class="dual-card-footer">
+                <div class="dual-card-footer dual-footer-stacked">
                     <a href="{% url 'room_create' %}" class="btn-dual-primary">
                         <span>{% trans "+ 发起新房间" %}</span>
+                        <span>→</span>
+                    </a>
+                    <a href="{% url 'practice_assign' %}" class="btn-dual-outline" id="btn-assign-practice">
+                        <span>{% trans "布置练习" %}</span>
                         <span>→</span>
                     </a>
                 </div>

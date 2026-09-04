@@ -15,6 +15,7 @@ urlpatterns = [
     path('teacher/register/', views.teacher_register, name='teacher_register'),
     path('teacher/logout/', views.teacher_logout, name='teacher_logout'),
     path('teacher/', views.teacher_dashboard, name='teacher_dashboard'),
+    path('teacher/practice/', views.practice_assign, name='practice_assign'),
     path('teacher/settings/', views.teacher_settings, name='teacher_settings'),
     path('teacher/kahoot/new/', views.kahoot_new, name='kahoot_new'),
     path('teacher/kahoot/start/', views.kahoot_start, name='kahoot_start'),

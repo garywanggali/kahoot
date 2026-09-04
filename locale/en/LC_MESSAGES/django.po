@@ -240,6 +240,24 @@ msgstr "Select a quiz set, generate a 6-digit PIN to project on the big screen, 
 msgid "+ 发起新房间"
 msgstr "+ Launch Room"
 
+msgid "布置练习"
+msgstr "Assign practice"
+
+msgid "布置练习 - Kahoot"
+msgstr "Assign Practice - Kahoot"
+
+msgid "浏览公开题库，复制 6 位字母练习码发给学生（钉钉 / 微信均可）。学生在首页输入该码即可个人练习。"
+msgstr "Browse public quizzes and copy the 6-letter practice code to send to students (DingTalk, WeChat, etc.). They enter it on the home page to practice solo."
+
+msgid "复制练习码"
+msgstr "Copy code"
+
+msgid "复制发给学生"
+msgstr "Copy for students"
+
+msgid "返回布置练习"
+msgstr "Back to assign practice"
+
 msgid "新建 Kahoot / 我的题库"
 msgstr "Create Kahoot / My Question Bank"
 

@@ -881,17 +881,26 @@ def kahoot_question_delete_api(request, pk, qid):
     return JsonResponse({'ok': True})
 
 
-def kahoot_public_list(request):
+def _render_public_quiz_list(request, assign_mode=False):
     teacher, redirect_resp = require_teacher_or_redirect(request)
     if redirect_resp:
         return redirect_resp
     search_query = (request.GET.get('q') or '').strip()
-    public_sets = all_public_quiz_sets(search=search_query)
     return render(request, 'game/kahoot_public.html', {
-        'public_quiz_sets': public_sets,
+        'public_quiz_sets': all_public_quiz_sets(search=search_query),
         'search_query': search_query,
         'teacher': teacher,
+        'assign_mode': assign_mode,
+        'list_url_name': 'practice_assign' if assign_mode else 'kahoot_public_list',
     })
+
+
+def kahoot_public_list(request):
+    return _render_public_quiz_list(request, assign_mode=False)
+
+
+def practice_assign(request):
+    return _render_public_quiz_list(request, assign_mode=True)
 
 
 def kahoot_public_preview(request, pk):
@@ -901,13 +910,15 @@ def kahoot_public_preview(request, pk):
     quiz_set = get_object_or_404(QuizSet, pk=pk)
     if not can_use_quiz_set(teacher, quiz_set):
         messages.error(request, _('无权预览该套题'))
-        return redirect('kahoot_public_list')
+        return redirect('practice_assign' if request.GET.get('from') == 'assign' else 'kahoot_public_list')
     search_query = (request.GET.get('q') or '').strip()
+    from_assign = request.GET.get('from') == 'assign'
     return render(request, 'game/kahoot_public_preview.html', {
         'quiz_set': quiz_set,
         'questions': quiz_set.get_questions(),
         'is_owner': can_edit_quiz_set(teacher, quiz_set),
         'search_query': search_query,
+        'from_assign': from_assign,
     })
 
 

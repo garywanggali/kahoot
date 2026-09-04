@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load static i18n %}
 
 {% block title %}{% blocktranslate with title=quiz_set.title %}预览 {{ title }} - 公共题库{% endblocktranslate %}{% endblock %}
 
@@ -8,12 +8,12 @@
 {% block content %}
 <div class="studio-header-bar">
     <div class="studio-title-group">
-        <a href="{% url 'kahoot_public_list' %}{% if search_query %}?q={{ search_query|urlencode }}{% endif %}" class="btn-back">
+        <a href="{% if from_assign %}{% url 'practice_assign' %}{% else %}{% url 'kahoot_public_list' %}{% endif %}{% if search_query %}?q={{ search_query|urlencode }}{% endif %}" class="btn-back">
             <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="19" y1="12" x2="5" y2="12"></line>
                 <polyline points="12 19 5 12 12 5"></polyline>
             </svg>
-            <span>{% trans "返回公共题库" %}</span>
+            <span>{% if from_assign %}{% trans "返回布置练习" %}{% else %}{% trans "返回公共题库" %}{% endif %}</span>
         </a>
         <h1 class="studio-main-title">{{ quiz_set.title }}</h1>
         <p class="form-hint">
@@ -22,7 +22,15 @@
         {% if quiz_set.practice_code %}
         <p class="practice-code-share">
             {% trans "练习码" %}
-            <span class="practice-code-pill">{{ quiz_set.practice_code }}</span>
+            <button type="button" class="practice-code-pill practice-code-copy-btn"
+                    data-practice-code="{{ quiz_set.practice_code }}"
+                    data-quiz-title="{{ quiz_set.title|escape }}"
+                    data-copy-kind="code"
+                    title="{% trans '复制练习码' %}">{{ quiz_set.practice_code }}</button>
+            <button type="button" class="btn-action-preview btn-copy-practice"
+                    data-practice-code="{{ quiz_set.practice_code }}"
+                    data-quiz-title="{{ quiz_set.title|escape }}"
+                    data-copy-kind="share">{% trans "复制发给学生" %}</button>
             <span class="form-hint" style="display:inline; margin:0;">{% trans "学生在首页输入该字母码即可个人练习" %}</span>
         </p>
         {% endif %}
@@ -94,4 +102,9 @@
     <p class="text-muted-block">{% trans "这套题还没有题目。" %}</p>
     {% endif %}
 </div>
+<div id="practice-copy-toast" class="practice-copy-toast hidden" role="status" aria-live="polite"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/practice_copy.js' %}?v=1"></script>
 {% endblock %}

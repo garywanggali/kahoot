@@ -941,6 +941,9 @@ class TeacherSettingsTests(TestCase):
         self.assertContains(resp, 'btn-open-settings')
         self.assertContains(resp, 'settings-overlay')
         self.assertContains(resp, 'teacher-settings-form')
+        self.assertContains(resp, '布置练习')
+        self.assertContains(resp, reverse('practice_assign'))
+        self.assertContains(resp, reverse('room_create'))
 
     def test_update_profile_without_password(self):
         import json
@@ -1143,6 +1146,7 @@ class ClickThroughSafetyTests(TestCase):
 
         css = (Path(settings.BASE_DIR) / 'static' / 'css' / 'style.css').read_text()
         self.assertIn('.q-countdown.hidden', css)
+        self.assertIn('.practice-copy-toast.hidden', css)
         self.assertIn('.play-feedback-stage.hidden', css)
         self.assertIn('.settings-overlay.hidden', css)
         self.assertIn('.ai-loading-overlay.hidden', css)
@@ -1172,8 +1176,8 @@ class ClickThroughSafetyTests(TestCase):
         html = render_to_string('base.html', request=request)
         self.assertIn('name="csrf-token"', html)
         self.assertIn('csrfmiddlewaretoken', html)
-        self.assertIn('style.css?v=470', html)
-        self.assertIn('i18n.js?v=9', html)
+        self.assertIn('style.css?v=471', html)
+        self.assertIn('i18n.js?v=10', html)
         self.assertIn('data-action="toggle-lang"', html)
 
 
@@ -1226,7 +1230,28 @@ class PublicQuizLibraryTests(TestCase):
         self.assertContains(resp, reverse('kahoot_public_preview', args=[self.quiz.pk]))
         self.assertContains(resp, '预览')
         self.assertContains(resp, self.quiz.practice_code)
+        self.assertContains(resp, '复制发给学生')
         self.assertNotContains(resp, '私有套题')
+
+    def test_assign_practice_from_dashboard(self):
+        from django.urls import reverse
+
+        page = self.client.get(reverse('practice_assign'))
+        self.assertEqual(page.status_code, 200)
+        self.assertContains(page, '布置练习')
+        self.assertContains(page, '返回控制台')
+        self.assertContains(page, '亚洲地理公开课')
+        self.assertContains(page, self.quiz.practice_code)
+        self.assertContains(page, '复制发给学生')
+        self.assertContains(page, 'data-copy-kind="share"')
+        self.assertContains(page, reverse('teacher_dashboard'))
+        self.assertNotContains(page, '复制到我的题库')
+        preview = self.client.get(
+            reverse('kahoot_public_preview', args=[self.quiz.pk]),
+            {'from': 'assign'},
+        )
+        self.assertContains(preview, '返回布置练习')
+        self.assertContains(preview, reverse('practice_assign'))
 
     def test_search_matches_title_author_and_question_text(self):
         from django.urls import reverse

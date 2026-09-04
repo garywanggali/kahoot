@@ -68,3 +68,24 @@ msgstr "还没有账号？邀请码注册 →"
 
 msgid "← <strong>返回学生加入</strong>"
 msgstr "← <strong>返回学生加入</strong>"
+
+msgid "布置练习"
+msgstr "布置练习"
+
+msgid "布置练习 - Kahoot"
+msgstr "布置练习 - Kahoot"
+
+msgid "浏览公开题库，复制 6 位字母练习码发给学生（钉钉 / 微信均可）。学生在首页输入该码即可个人练习。"
+msgstr "浏览公开题库，复制 6 位字母练习码发给学生（钉钉 / 微信均可）。学生在首页输入该码即可个人练习。"
+
+msgid "复制练习码"
+msgstr "复制练习码"
+
+msgid "复制发给学生"
+msgstr "复制发给学生"
+
+msgid "返回控制台"
+msgstr "返回控制台"
+
+msgid "返回布置练习"
+msgstr "返回布置练习"

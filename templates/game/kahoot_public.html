@@ -1,13 +1,24 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load static i18n %}
 
-{% block title %}{% trans "公共题库 - Kahoot" %}{% endblock %}
+{% block title %}{% if assign_mode %}{% trans "布置练习 - Kahoot" %}{% else %}{% trans "公共题库 - Kahoot" %}{% endif %}{% endblock %}
 
 {% block global_topbar %}{% endblock %}
 
 {% block content %}
 <div class="studio-header-bar">
     <div class="studio-title-group">
+        {% if assign_mode %}
+        <a href="{% url 'teacher_dashboard' %}" class="btn-back">
+            <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>{% trans "返回控制台" %}</span>
+        </a>
+        <h1 class="studio-main-title">{% trans "布置练习" %}</h1>
+        <p class="form-hint">{% trans "浏览公开题库，复制 6 位字母练习码发给学生（钉钉 / 微信均可）。学生在首页输入该码即可个人练习。" %}</p>
+        {% else %}
         <a href="{% url 'kahoot_new' %}" class="btn-back">
             <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="19" y1="12" x2="5" y2="12"></line>
@@ -17,14 +28,15 @@
         </a>
         <h1 class="studio-main-title">{% trans "公共题库" %}</h1>
         <p class="form-hint">{% trans "预览公开套题、分享练习码，或复制到我的题库修改" %}</p>
+        {% endif %}
     </div>
     <div class="studio-header-actions">
         {% include "includes/lang_switcher.html" %}
     </div>
 </div>
 
-<div class="card card-glass quiz-list-card public-library-card">
-    <form method="get" action="{% url 'kahoot_public_list' %}" class="public-search-form" role="search">
+<div class="card card-glass quiz-list-card public-library-card{% if assign_mode %} assign-practice-card{% endif %}">
+    <form method="get" action="{% url list_url_name %}" class="public-search-form" role="search">
         <svg class="public-search-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="11" cy="11" r="7"></circle>
             <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
@@ -35,7 +47,7 @@
                aria-label="{% trans '搜索公共题库' %}">
         <button type="submit" class="public-search-submit">{% trans "搜索" %}</button>
         {% if search_query %}
-        <a href="{% url 'kahoot_public_list' %}" class="public-search-clear">{% trans "清除" %}</a>
+        <a href="{% url list_url_name %}" class="public-search-clear">{% trans "清除" %}</a>
         {% endif %}
     </form>
 
@@ -57,7 +69,7 @@
                     <td>
                         <div class="quiz-title-cell">
                             <span class="row-num-pill">{% if forloop.counter < 10 %}0{% endif %}{{ forloop.counter }}</span>
-                            <a href="{% url 'kahoot_public_preview' qs.pk %}{% if search_query %}?q={{ search_query|urlencode }}{% endif %}"
+                            <a href="{% url 'kahoot_public_preview' qs.pk %}{% if assign_mode %}?from=assign{% endif %}{% if search_query %}{% if assign_mode %}&{% else %}?{% endif %}q={{ search_query|urlencode }}{% endif %}"
                                class="quiz-title-link">
                                 <strong>{{ qs.title }}</strong>
                             </a>
@@ -68,7 +80,11 @@
                     </td>
                     <td>
                         {% if qs.practice_code %}
-                        <span class="practice-code-pill">{{ qs.practice_code }}</span>
+                        <button type="button" class="practice-code-pill practice-code-copy-btn"
+                                data-practice-code="{{ qs.practice_code }}"
+                                data-quiz-title="{{ qs.title|escape }}"
+                                data-copy-kind="code"
+                                title="{% trans '复制练习码' %}">{{ qs.practice_code }}</button>
                         {% else %}
                         <span class="time-text-contrast">—</span>
                         {% endif %}
@@ -84,8 +100,15 @@
                     </td>
                     <td style="text-align: right;">
                         <div class="table-actions-inline">
-                            <a href="{% url 'kahoot_public_preview' qs.pk %}{% if search_query %}?q={{ search_query|urlencode }}{% endif %}"
+                            {% if qs.practice_code %}
+                            <button type="button" class="btn-action-preview btn-copy-practice"
+                                    data-practice-code="{{ qs.practice_code }}"
+                                    data-quiz-title="{{ qs.title|escape }}"
+                                    data-copy-kind="share">{% trans "复制发给学生" %}</button>
+                            {% endif %}
+                            <a href="{% url 'kahoot_public_preview' qs.pk %}{% if assign_mode %}?from=assign{% endif %}{% if search_query %}{% if assign_mode %}&{% else %}?{% endif %}q={{ search_query|urlencode }}{% endif %}"
                                class="btn-action-preview">{% trans "预览" %}</a>
+                            {% if not assign_mode %}
                             {% if teacher and qs.teacher_id == teacher.pk %}
                             <a href="{% url 'kahoot_editor' qs.pk %}" class="btn-action-edit-contrast">{% trans "去编辑" %}</a>
                             {% else %}
@@ -94,6 +117,7 @@
                                 <input type="hidden" name="title" value="{{ qs.title }} ({% trans '副本' %})">
                                 <button type="submit" class="btn-action-edit-contrast">{% trans "复制到我的题库" %}</button>
                             </form>
+                            {% endif %}
                             {% endif %}
                         </div>
                     </td>
@@ -113,7 +137,7 @@
         {% if search_query %}
         <h4 class="empty-state-title">{% trans "没有找到匹配的套题" %}</h4>
         <p class="empty-state-desc">{% blocktranslate with query=search_query %}没有与「{{ query }}」匹配的公开套题，试试其他关键词。{% endblocktranslate %}</p>
-        <a href="{% url 'kahoot_public_list' %}" class="btn-dual-primary" style="max-width: 240px; margin: 0 auto;">
+        <a href="{% url list_url_name %}" class="btn-dual-primary" style="max-width: 240px; margin: 0 auto;">
             {% trans "查看全部公共题库" %}
         </a>
         {% else %}
@@ -123,4 +147,9 @@
     </div>
     {% endif %}
 </div>
+<div id="practice-copy-toast" class="practice-copy-toast hidden" role="status" aria-live="polite"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/practice_copy.js' %}?v=1"></script>
 {% endblock %}
